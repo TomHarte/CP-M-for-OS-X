@@ -1,0 +1,388 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4B582985160197E0009515A6 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B582984160197E0009515A6 /* Cocoa.framework */; };
+		4B58298F160197E0009515A6 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4B58298D160197E0009515A6 /* InfoPlist.strings */; };
+		4B582991160197E0009515A6 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B582990160197E0009515A6 /* main.m */; };
+		4B582995160197E0009515A6 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 4B582993160197E0009515A6 /* Credits.rtf */; };
+		4B582998160197E0009515A6 /* CPMDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B582997160197E0009515A6 /* CPMDocument.m */; };
+		4B58299B160197E0009515A6 /* CPMDocument.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4B582999160197E0009515A6 /* CPMDocument.xib */; };
+		4B58299E160197E0009515A6 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4B58299C160197E0009515A6 /* MainMenu.xib */; };
+		4B5829B616019899009515A6 /* BDOS.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829A616019899009515A6 /* BDOS.m */; };
+		4B5829B716019899009515A6 /* FileControlBlock.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829A816019899009515A6 /* FileControlBlock.m */; };
+		4B5829B816019899009515A6 /* BIOS.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829AB16019899009515A6 /* BIOS.m */; };
+		4B5829B916019899009515A6 /* TerminalView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829AD16019899009515A6 /* TerminalView.m */; };
+		4B5829BA16019899009515A6 /* FuseTestRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829B016019899009515A6 /* FuseTestRunner.m */; };
+		4B5829BB16019899009515A6 /* Processor.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829B216019899009515A6 /* Processor.m */; };
+		4B5829BC16019899009515A6 /* RAMModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829B516019899009515A6 /* RAMModule.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		4B582980160197E0009515A6 /* CPM for OS X.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CPM for OS X.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4B582984160197E0009515A6 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		4B582987160197E0009515A6 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		4B582988160197E0009515A6 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		4B582989160197E0009515A6 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		4B58298C160197E0009515A6 /* CPM for OS X-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "CPM for OS X-Info.plist"; sourceTree = "<group>"; };
+		4B58298E160197E0009515A6 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		4B582990160197E0009515A6 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		4B582992160197E0009515A6 /* CPM for OS X-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CPM for OS X-Prefix.pch"; sourceTree = "<group>"; };
+		4B582994160197E0009515A6 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
+		4B582996160197E0009515A6 /* CPMDocument.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPMDocument.h; sourceTree = "<group>"; };
+		4B582997160197E0009515A6 /* CPMDocument.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPMDocument.m; sourceTree = "<group>"; };
+		4B58299A160197E0009515A6 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/CPMDocument.xib; sourceTree = "<group>"; };
+		4B58299D160197E0009515A6 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		4B5829A516019899009515A6 /* BDOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BDOS.h; sourceTree = "<group>"; };
+		4B5829A616019899009515A6 /* BDOS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BDOS.m; sourceTree = "<group>"; };
+		4B5829A716019899009515A6 /* FileControlBlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileControlBlock.h; sourceTree = "<group>"; };
+		4B5829A816019899009515A6 /* FileControlBlock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileControlBlock.m; sourceTree = "<group>"; };
+		4B5829AA16019899009515A6 /* BIOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BIOS.h; sourceTree = "<group>"; };
+		4B5829AB16019899009515A6 /* BIOS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BIOS.m; sourceTree = "<group>"; };
+		4B5829AC16019899009515A6 /* TerminalView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalView.h; sourceTree = "<group>"; };
+		4B5829AD16019899009515A6 /* TerminalView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalView.m; sourceTree = "<group>"; };
+		4B5829AF16019899009515A6 /* FuseTestRunner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FuseTestRunner.h; sourceTree = "<group>"; };
+		4B5829B016019899009515A6 /* FuseTestRunner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FuseTestRunner.m; sourceTree = "<group>"; };
+		4B5829B116019899009515A6 /* Processor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Processor.h; sourceTree = "<group>"; };
+		4B5829B216019899009515A6 /* Processor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Processor.m; sourceTree = "<group>"; };
+		4B5829B416019899009515A6 /* RAMModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RAMModule.h; sourceTree = "<group>"; };
+		4B5829B516019899009515A6 /* RAMModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RAMModule.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4B58297D160197E0009515A6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B582985160197E0009515A6 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4B582975160197E0009515A6 = {
+			isa = PBXGroup;
+			children = (
+				4B58298A160197E0009515A6 /* CPM for OS X */,
+				4B582983160197E0009515A6 /* Frameworks */,
+				4B582981160197E0009515A6 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4B582981160197E0009515A6 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4B582980160197E0009515A6 /* CPM for OS X.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4B582983160197E0009515A6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4B582984160197E0009515A6 /* Cocoa.framework */,
+				4B582986160197E0009515A6 /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		4B582986160197E0009515A6 /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4B582987160197E0009515A6 /* AppKit.framework */,
+				4B582988160197E0009515A6 /* CoreData.framework */,
+				4B582989160197E0009515A6 /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		4B58298A160197E0009515A6 /* CPM for OS X */ = {
+			isa = PBXGroup;
+			children = (
+				4B5829A416019899009515A6 /* BDOS */,
+				4B5829A916019899009515A6 /* BIOS */,
+				4B5829AE16019899009515A6 /* Processor */,
+				4B5829B316019899009515A6 /* RAM */,
+				4B582996160197E0009515A6 /* CPMDocument.h */,
+				4B582997160197E0009515A6 /* CPMDocument.m */,
+				4B582999160197E0009515A6 /* CPMDocument.xib */,
+				4B58299C160197E0009515A6 /* MainMenu.xib */,
+				4B58298B160197E0009515A6 /* Supporting Files */,
+			);
+			path = "CPM for OS X";
+			sourceTree = "<group>";
+		};
+		4B58298B160197E0009515A6 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				4B58298C160197E0009515A6 /* CPM for OS X-Info.plist */,
+				4B58298D160197E0009515A6 /* InfoPlist.strings */,
+				4B582990160197E0009515A6 /* main.m */,
+				4B582992160197E0009515A6 /* CPM for OS X-Prefix.pch */,
+				4B582993160197E0009515A6 /* Credits.rtf */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		4B5829A416019899009515A6 /* BDOS */ = {
+			isa = PBXGroup;
+			children = (
+				4B5829A516019899009515A6 /* BDOS.h */,
+				4B5829A616019899009515A6 /* BDOS.m */,
+				4B5829A716019899009515A6 /* FileControlBlock.h */,
+				4B5829A816019899009515A6 /* FileControlBlock.m */,
+			);
+			path = BDOS;
+			sourceTree = "<group>";
+		};
+		4B5829A916019899009515A6 /* BIOS */ = {
+			isa = PBXGroup;
+			children = (
+				4B5829AA16019899009515A6 /* BIOS.h */,
+				4B5829AB16019899009515A6 /* BIOS.m */,
+				4B5829AC16019899009515A6 /* TerminalView.h */,
+				4B5829AD16019899009515A6 /* TerminalView.m */,
+			);
+			path = BIOS;
+			sourceTree = "<group>";
+		};
+		4B5829AE16019899009515A6 /* Processor */ = {
+			isa = PBXGroup;
+			children = (
+				4B5829AF16019899009515A6 /* FuseTestRunner.h */,
+				4B5829B016019899009515A6 /* FuseTestRunner.m */,
+				4B5829B116019899009515A6 /* Processor.h */,
+				4B5829B216019899009515A6 /* Processor.m */,
+			);
+			path = Processor;
+			sourceTree = "<group>";
+		};
+		4B5829B316019899009515A6 /* RAM */ = {
+			isa = PBXGroup;
+			children = (
+				4B5829B416019899009515A6 /* RAMModule.h */,
+				4B5829B516019899009515A6 /* RAMModule.m */,
+			);
+			path = RAM;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4B58297F160197E0009515A6 /* CPM for OS X */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4B5829A1160197E0009515A6 /* Build configuration list for PBXNativeTarget "CPM for OS X" */;
+			buildPhases = (
+				4B58297C160197E0009515A6 /* Sources */,
+				4B58297D160197E0009515A6 /* Frameworks */,
+				4B58297E160197E0009515A6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "CPM for OS X";
+			productName = "CPM for OS X";
+			productReference = 4B582980160197E0009515A6 /* CPM for OS X.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		4B582977160197E0009515A6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = CPM;
+				LastUpgradeCheck = 0440;
+				ORGANIZATIONNAME = "Thomas Harte";
+			};
+			buildConfigurationList = 4B58297A160197E0009515A6 /* Build configuration list for PBXProject "CPM for OS X" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 4B582975160197E0009515A6;
+			productRefGroup = 4B582981160197E0009515A6 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4B58297F160197E0009515A6 /* CPM for OS X */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4B58297E160197E0009515A6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B58298F160197E0009515A6 /* InfoPlist.strings in Resources */,
+				4B582995160197E0009515A6 /* Credits.rtf in Resources */,
+				4B58299B160197E0009515A6 /* CPMDocument.xib in Resources */,
+				4B58299E160197E0009515A6 /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4B58297C160197E0009515A6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B582991160197E0009515A6 /* main.m in Sources */,
+				4B582998160197E0009515A6 /* CPMDocument.m in Sources */,
+				4B5829B616019899009515A6 /* BDOS.m in Sources */,
+				4B5829B716019899009515A6 /* FileControlBlock.m in Sources */,
+				4B5829B816019899009515A6 /* BIOS.m in Sources */,
+				4B5829B916019899009515A6 /* TerminalView.m in Sources */,
+				4B5829BA16019899009515A6 /* FuseTestRunner.m in Sources */,
+				4B5829BB16019899009515A6 /* Processor.m in Sources */,
+				4B5829BC16019899009515A6 /* RAMModule.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		4B58298D160197E0009515A6 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4B58298E160197E0009515A6 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		4B582993160197E0009515A6 /* Credits.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4B582994160197E0009515A6 /* en */,
+			);
+			name = Credits.rtf;
+			sourceTree = "<group>";
+		};
+		4B582999160197E0009515A6 /* CPMDocument.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4B58299A160197E0009515A6 /* en */,
+			);
+			name = CPMDocument.xib;
+			sourceTree = "<group>";
+		};
+		4B58299C160197E0009515A6 /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4B58299D160197E0009515A6 /* en */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		4B58299F160197E0009515A6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		4B5829A0160197E0009515A6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		4B5829A2160197E0009515A6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "CPM for OS X/CPM for OS X-Prefix.pch";
+				INFOPLIST_FILE = "CPM for OS X/CPM for OS X-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		4B5829A3160197E0009515A6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "CPM for OS X/CPM for OS X-Prefix.pch";
+				INFOPLIST_FILE = "CPM for OS X/CPM for OS X-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4B58297A160197E0009515A6 /* Build configuration list for PBXProject "CPM for OS X" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4B58299F160197E0009515A6 /* Debug */,
+				4B5829A0160197E0009515A6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4B5829A1160197E0009515A6 /* Build configuration list for PBXNativeTarget "CPM for OS X" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4B5829A2160197E0009515A6 /* Debug */,
+				4B5829A3160197E0009515A6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 4B582977160197E0009515A6 /* Project object */;
+}

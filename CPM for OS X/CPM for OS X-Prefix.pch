@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'CPM for OS X' target in the 'CPM for OS X' project
+//
+
+#ifdef __OBJC__
+	#import <Cocoa/Cocoa.h>
+#endif
