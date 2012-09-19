@@ -1337,6 +1337,10 @@
 {
 	NSTimeInterval timeAtStart = [NSDate timeIntervalSinceReferenceDate];
 
+	// we're going to call this thing millions of times a second, probably, so caching the IMP
+	// is a pragmatic performance optimisation
+	IMP executeFromStandardPage = [self methodForSelector:@selector(executeFromStandardPage)];
+
 	while(!isBlocked && [NSDate timeIntervalSinceReferenceDate] - timeAtStart < timeInterval)
 	{
 		// we'll do 1000 instructions in between each check of the current time;
@@ -1349,21 +1353,20 @@
 			{
 				case 5:
 					isBlocked = [self.delegate processor:self isMakingBDOSCall:bcRegister&0xff parameter:deRegister];
-					if(!isBlocked) programCounter = [self pop];
-//					[self unblock];
+					programCounter = [self pop];
 				break;
 
 				default:
 					if(programCounter >= _biosAddress)
 					{
 						isBlocked = [self.delegate processor:self isMakingBIOSCall:(programCounter - _biosAddress) / 3];
-						if(!isBlocked) [self unblock];
+						programCounter = [self pop];
 					}
 					else
 					{			
 						indexRegister = &hlRegister;
 						addOffset = false;
-						[self executeFromStandardPage];
+						executeFromStandardPage(self, @selector(executeFromStandardPage));
 					}
 				break;
 			}
@@ -1373,7 +1376,6 @@
 
 - (void)unblock
 {
-	programCounter = [self pop];
 	isBlocked = NO;
 }
 
