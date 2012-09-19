@@ -120,11 +120,12 @@
 	switch(call)
 	{
 		case 0:		shouldBlock = [self exitProgram];								break;
+		case 1:		shouldBlock = [_bios readCharacterAndEcho];						break;
 		case 2:		shouldBlock = [self writeConsoleOutput:parameter];				break;
 		case 6:		shouldBlock = [self directConsoleIOWithParameter:parameter];	break;
 		case 9:		shouldBlock = [self outputStringWithParameter:parameter];		break;
 		case 11:	shouldBlock = [self getConsoleStatus];							break;
-		case 12:	shouldBlock = [self liftHead];									break;
+		case 12:	shouldBlock = [self getVersionNumber];							break;	// [self liftHead] is CPM 1
 		case 13:	shouldBlock = [self resetAllDisks];								break;
 		case 15:	shouldBlock = [self openFileWithParameter:parameter];			break;
 		case 16:	shouldBlock = [self closeFileWithParameter:parameter];			break;
@@ -170,6 +171,16 @@
 	NSLog(@"!!Processor did halt!!");
 }
 
+- (BOOL)getVersionNumber
+{
+	// load version number into A
+	_processor.afRegister = 0x2000 | (_processor.afRegister&0xff);
+
+	// load system type into B
+	_processor.bcRegister = 0x0000 | (_processor.bcRegister&0xff);
+
+	return NO;
+}
 
 - (BOOL)writeConsoleOutput:(uint16_t)character
 {

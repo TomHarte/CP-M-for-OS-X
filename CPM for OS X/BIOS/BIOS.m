@@ -15,6 +15,7 @@
 	CPMProcessor *_processor;
 
 	BOOL _isWaitingOnConsoleInput;
+	BOOL _shouldEcho;
 }
 
 + (id)BIOSWithTerminalView:(CPMTerminalView *)terminalView processor:(CPMProcessor *)processor
@@ -95,6 +96,21 @@
 	return [_terminalView hasCharacterToDequeue] ? 0xff : 0x00;
 }
 
+- (BOOL)readCharacterAndEcho
+{
+	uint8_t character = [self dequeueCharacterIfAvailable];
+	if(character)
+	{
+		[self writeConsoleOutput:character];
+		_processor.afRegister = (_processor.afRegister&0xff) | (character << 8);
+		return NO;
+	}
+
+	_isWaitingOnConsoleInput = YES;
+	_shouldEcho = YES;
+	return YES;
+}
+
 - (void)writeConsoleOutput:(uint8_t)characer
 {
 	[_terminalView writeCharacter:characer];
@@ -106,8 +122,15 @@
 	{
 		unichar nextInput = [terminalView dequeueBufferedCharacter];
 		_processor.afRegister = (_processor.afRegister&0xff) | (nextInput << 8);
+
+		if(_shouldEcho)
+		{
+			[self writeConsoleOutput:nextInput];
+		}
+
 		[_processor unblock];
 		_isWaitingOnConsoleInput = NO;
+		_shouldEcho = NO;
 	}
 }
 

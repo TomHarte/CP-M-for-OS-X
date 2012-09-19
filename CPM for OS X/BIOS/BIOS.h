@@ -25,6 +25,7 @@
 // call-ins for the BDOS
 - (uint8_t)consoleStatus;						// i.e. CONST, function 2
 - (void)writeConsoleOutput:(uint8_t)characer;	// i.e. CONOUT, function 4
+- (CPMProcessorShouldBlock)readCharacterAndEcho;
 
 - (uint8_t)dequeueCharacterIfAvailable;			// BDOS call 6, e = 0xff
 
