@@ -1325,7 +1325,7 @@
 - (void)runUntilPC:(uint16_t)targetPC
 {
 	int maxInstructionCount = 1000;
-	while(programCounter != targetPC && maxInstructionCount--)// && [NSDate timeIntervalSinceReferenceDate] - timeAtStart < 0.5)
+	while(programCounter != targetPC && maxInstructionCount--)
 	{
 		indexRegister = &hlRegister;
 		addOffset = false;
@@ -1349,26 +1349,16 @@
 
 		while(!isBlocked && internalCount--)
 		{
-			switch(programCounter)
+			if(programCounter >= _biosAddress)
 			{
-				case 5:
-					isBlocked = [self.delegate processor:self isMakingBDOSCall:bcRegister&0xff parameter:deRegister];
-					programCounter = [self pop];
-				break;
-
-				default:
-					if(programCounter >= _biosAddress)
-					{
-						isBlocked = [self.delegate processor:self isMakingBIOSCall:(programCounter - _biosAddress) / 3];
-						programCounter = [self pop];
-					}
-					else
-					{			
-						indexRegister = &hlRegister;
-						addOffset = false;
-						executeFromStandardPage(self, @selector(executeFromStandardPage));
-					}
-				break;
+				isBlocked = [self.delegate processor:self isMakingBIOSCall:(programCounter - _biosAddress) / 3];
+				programCounter = [self pop];
+			}
+			else
+			{			
+				indexRegister = &hlRegister;
+				addOffset = false;
+				executeFromStandardPage(self, @selector(executeFromStandardPage));
 			}
 		}
 	}
