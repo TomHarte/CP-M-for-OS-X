@@ -78,6 +78,13 @@
 		[_memory setValue:biosAddress&0xff atAddress:6];
 		[_memory setValue:biosAddress >> 8 atAddress:7];
 
+		// set the top of the stack to be the address 0000 so that programs
+		// that use return to exit function appropriately; also give SP a
+		// sensible corresponding value
+		[_memory setValue:0x00 atAddress:biosAddress-1];
+		[_memory setValue:0x00 atAddress:biosAddress-2];
+		_processor.spRegister = biosAddress-2;
+
 		// also set the default DMA address
 		_dmaAddress = 0x80;
 
@@ -108,21 +115,23 @@
 {
 //		case 10:	/* buffered console input */					break;
 
+	CPMProcessorShouldBlock shouldBlock = NO;
+
 	switch(call)
 	{
-		case 0:		return [self exitProgram];
-		case 2:		return [self writeConsoleOutput:parameter];
-		case 6:		return [self directConsoleIOWithParameter:parameter];
-		case 9:		return [self outputStringWithParameter:parameter];
-		case 11:	return [self getConsoleStatus];
-		case 12:	return [self liftHead];
-		case 13:	return [self resetAllDisks];
-		case 15:	return [self openFileWithParameter:parameter];
-		case 16:	return [self closeFileWithParameter:parameter];
-		case 20:	return [self readNextRecordWithParameter:parameter];
-		case 25:	return [self getCurrentDrive];
-		case 26:	return [self setDMAAddressWithParameter:parameter];
-		case 33:	return [self readRandomRecordWithParameter:parameter];
+		case 0:		shouldBlock = [self exitProgram];								break;
+		case 2:		shouldBlock = [self writeConsoleOutput:parameter];				break;
+		case 6:		shouldBlock = [self directConsoleIOWithParameter:parameter];	break;
+		case 9:		shouldBlock = [self outputStringWithParameter:parameter];		break;
+		case 11:	shouldBlock = [self getConsoleStatus];							break;
+		case 12:	shouldBlock = [self liftHead];									break;
+		case 13:	shouldBlock = [self resetAllDisks];								break;
+		case 15:	shouldBlock = [self openFileWithParameter:parameter];			break;
+		case 16:	shouldBlock = [self closeFileWithParameter:parameter];			break;
+		case 20:	shouldBlock = [self readNextRecordWithParameter:parameter];		break;
+		case 25:	shouldBlock = [self getCurrentDrive];							break;
+		case 26:	shouldBlock = [self setDMAAddressWithParameter:parameter];		break;
+		case 33:	shouldBlock = [self readRandomRecordWithParameter:parameter];	break;
 
 		case 17:	// search for first
 			NSLog(@"file search: TODO");
@@ -138,7 +147,10 @@
 		break;
 	}
 
-	return NO;
+	// "For reasons of compatibility, register A = L and register B = H upon return in all cases."
+	processor.hlRegister = (processor.afRegister >> 8) | (processor.bcRegister & 0xff00);
+
+	return shouldBlock;
 }
 
 - (CPMProcessorShouldBlock)processor:(CPMProcessor *)processor isMakingBIOSCall:(uint8_t)call
