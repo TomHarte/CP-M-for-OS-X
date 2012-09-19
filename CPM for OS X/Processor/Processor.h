@@ -48,5 +48,6 @@ typedef BOOL CPMProcessorShouldBlock;
 @property (nonatomic, assign) uint8_t rRegister;
 
 @property (nonatomic, assign) uint16_t biosAddress;
+@property (nonatomic, readonly) BOOL isBlocked;
 
 @end

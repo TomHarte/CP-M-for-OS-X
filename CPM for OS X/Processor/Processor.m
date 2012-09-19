@@ -1371,6 +1371,8 @@
 	isBlocked = NO;
 }
 
+@synthesize isBlocked;
+
 - (void)setAfRegister:(uint16_t)afRegister
 {
 	lastSignResult = afRegister & LLZ80FlagSign;
