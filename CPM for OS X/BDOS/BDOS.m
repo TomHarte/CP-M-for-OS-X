@@ -66,7 +66,7 @@
 		_processor.delegate = self;
 
 		// setup the standard BIOS call
-		[_memory setValue:0xcd atAddress:0];
+		[_memory setValue:0xc3 atAddress:0];
 		[_memory setValue:(biosAddress+3)&0xff atAddress:1];
 		[_memory setValue:(biosAddress+3) >> 8 atAddress:2];
 
@@ -74,7 +74,7 @@
 		// BIOS theoretically starts — this is where the cold start
 		// routine would go on a real CP/M machine and we're trying
 		// to use the absolute minimal amount of memory possible
-		[_memory setValue:0xcd atAddress:5];
+		[_memory setValue:0xc3 atAddress:5];
 		[_memory setValue:biosAddress&0xff atAddress:6];
 		[_memory setValue:biosAddress >> 8 atAddress:7];
 
