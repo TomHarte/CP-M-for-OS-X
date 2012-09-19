@@ -63,6 +63,8 @@
 	if(self)
 	{
 		memory = [RAM retain];
+		indexRegister = &hlRegister;
+		addOffset = NO;
 	}
 
 	return self;
@@ -1288,14 +1290,18 @@
 							break;
 							case 1:
 								indexRegister = &ixRegister;
-								addOffset = true;
+								addOffset = YES;
 								[self executeFromStandardPage];
+								indexRegister = &hlRegister;
+								addOffset = NO;
 							break;
 							case 2: [self executeFromEDPage];				break;
 							case 3:
 								indexRegister = &iyRegister;
-								addOffset = true;
+								addOffset = YES;
 								[self executeFromStandardPage];
+								indexRegister = &hlRegister;
+								addOffset = NO;
 							break;
 						}
 					}
@@ -1327,8 +1333,6 @@
 	int maxInstructionCount = 1000;
 	while(programCounter != targetPC && maxInstructionCount--)
 	{
-		indexRegister = &hlRegister;
-		addOffset = false;
 		[self executeFromStandardPage];
 	}
 }
@@ -1356,8 +1360,6 @@
 			}
 			else
 			{			
-				indexRegister = &hlRegister;
-				addOffset = false;
 				executeFromStandardPage(self, @selector(executeFromStandardPage));
 			}
 		}
