@@ -101,30 +101,33 @@ typedef enum
 
 - (void)writeCharacter:(char)character
 {
-	switch(escapeStatus)
-	{
-		case CPMTerminalViewEscapeStatusNone:
-			[self writeNormalCharacter:character];
-		break;
-		
-		case CPMTerminalViewEscapeStatusExpectingCharacter:
-			[self writeEscapeCharacter:character];
-		break;
+	dispatch_async(dispatch_get_main_queue(),
+	^{
+		switch(escapeStatus)
+		{
+			case CPMTerminalViewEscapeStatusNone:
+				[self writeNormalCharacter:character];
+			break;
+			
+			case CPMTerminalViewEscapeStatusExpectingCharacter:
+				[self writeEscapeCharacter:character];
+			break;
 
-		case CPMTerminalViewEscapeStatusExpectingNumber:
-			[self writeEscapeNumber:character];
-		break;
+			case CPMTerminalViewEscapeStatusExpectingNumber:
+				[self writeEscapeNumber:character];
+			break;
 
-		case CPMTerminalViewEscapeStatusExpectingYCoordinate:
-			escapeStatus = CPMTerminalViewEscapeStatusExpectingXCoordinate;
-			cursorY = (character - 32)%kCPMTerminalViewHeight;
-		break;
+			case CPMTerminalViewEscapeStatusExpectingYCoordinate:
+				escapeStatus = CPMTerminalViewEscapeStatusExpectingXCoordinate;
+				cursorY = (character - 32)%kCPMTerminalViewHeight;
+			break;
 
-		case CPMTerminalViewEscapeStatusExpectingXCoordinate:
-			escapeStatus = CPMTerminalViewEscapeStatusNone;
-			cursorX = (character - 32)%kCPMTerminalViewWidth;
-		break;
-	}
+			case CPMTerminalViewEscapeStatusExpectingXCoordinate:
+				escapeStatus = CPMTerminalViewEscapeStatusNone;
+				cursorX = (character - 32)%kCPMTerminalViewWidth;
+			break;
+		}
+	});
 }
 
 - (void)writeEscapeCharacter:(char)character
@@ -517,15 +520,21 @@ typedef enum
 
 - (BOOL)hasCharacterToDequeue
 {
-	return incomingString.length;
+	@synchronized(self)
+	{
+		return incomingString.length;
+	}
 }
 
 - (unichar)dequeueBufferedCharacter
 {
-	if(!incomingString.length) return 0;
-	unichar character = [incomingString characterAtIndex:0];
-	[incomingString deleteCharactersInRange:NSMakeRange(0, 1)];
-	return character;
+	@synchronized(self)
+	{
+		if(!incomingString.length) return 0;
+		unichar character = [incomingString characterAtIndex:0];
+		[incomingString deleteCharactersInRange:NSMakeRange(0, 1)];
+		return character;
+	}
 }
 
 - (NSDragOperation)draggingEntered:(id < NSDraggingInfo >)sender
@@ -536,17 +545,20 @@ typedef enum
 
 - (void)addStringToInputQueue:(NSString *)string
 {
-	const char *asciiString = [string cStringUsingEncoding:NSASCIIStringEncoding];
+	@synchronized(self)
+	{
+		const char *asciiString = [string cStringUsingEncoding:NSASCIIStringEncoding];
 
-	if(!asciiString) return;
+		if(!asciiString) return;
 
-	NSString *postAsciiString =
-		[[[NSString alloc] initWithBytesNoCopy:(void *)asciiString length:strlen(asciiString) encoding:NSASCIIStringEncoding freeWhenDone:NO] autorelease];
+		NSString *postAsciiString =
+			[[[NSString alloc] initWithBytesNoCopy:(void *)asciiString length:strlen(asciiString) encoding:NSASCIIStringEncoding freeWhenDone:NO] autorelease];
 
-	if(![postAsciiString length]) return;
+		if(![postAsciiString length]) return;
 
-	[incomingString appendString:postAsciiString];
-	[self.delegate terminalViewDidAddCharactersToBuffer:self];
+		[incomingString appendString:postAsciiString];
+		[self.delegate terminalViewDidAddCharactersToBuffer:self];
+	}
 }
 
 @end

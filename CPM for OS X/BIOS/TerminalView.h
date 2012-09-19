@@ -18,11 +18,17 @@
 
 @interface CPMTerminalView : NSView <NSDraggingDestination>
 
+/*
+	These three are thread safe.
+*/
 - (void)writeCharacter:(char)character;
 
 - (BOOL)hasCharacterToDequeue;
 - (unichar)dequeueBufferedCharacter;
 
+/*
+	The following two are intended for use on the main queue only.
+*/
 @property (nonatomic, assign) id <CPMTerminaViewDelegate> delegate;
 @property (nonatomic, readonly) CGSize idealSize;
 

@@ -24,6 +24,7 @@
 	NSURL *_sourceURL;
 	CPMBDOS *_bdos;
 	NSTimer *_executionTimer;
+	dispatch_queue_t serialDispatchQueue;
 }
 
 - (void)close
@@ -31,6 +32,10 @@
 	[_bdos release], _bdos = nil;
 	[_executionTimer invalidate], _executionTimer = nil;
 	[_sourceURL release], _sourceURL = nil;
+	if(serialDispatchQueue)
+	{
+		dispatch_release(serialDispatchQueue), serialDispatchQueue = NULL;
+	}
 }
 
 - (NSString *)windowNibName
@@ -51,6 +56,7 @@
 	_bdos.basePath = [[_sourceURL path] stringByDeletingLastPathComponent];
 
 	// call our execution timer 50 times a second, as a nod towards PAL
+	serialDispatchQueue = dispatch_queue_create("CPM dispatch queue", DISPATCH_QUEUE_SERIAL);
 	_executionTimer = [NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(doMoreProcessing:) userInfo:nil repeats:YES];
 
 	[aController.window setContentAspectRatio:[self.terminalView idealSize]];
@@ -81,7 +87,10 @@
 	// this method is being called 50 times a second, so if we run the processor
 	// now for 0.002 of a second we'll end up topping out at 0.002 * 50 = 0.01 (ie, 10%)
 	// of the time spent on processing
-	[_bdos runForTimeInterval:0.002];
+	dispatch_async(serialDispatchQueue,
+	^{
+		[_bdos runForTimeInterval:0.002];
+	});
 }
 
 

@@ -1263,8 +1263,8 @@
 							hlRegister = temporaryValue;
 						}
 						break;
-						case 6: NSLog(@"DI");												break;
-						case 7: NSLog(@"EI");												break;
+						case 6: break;//NSLog(@"DI");												break;
+						case 7: break;//NSLog(@"EI");												break;
 					}
 				break;
 				case 4:
