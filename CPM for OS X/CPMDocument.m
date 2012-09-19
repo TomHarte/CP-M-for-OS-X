@@ -25,6 +25,9 @@
 	CPMBDOS *_bdos;
 	NSTimer *_executionTimer;
 	dispatch_queue_t serialDispatchQueue;
+
+	NSUInteger _blockedCount;
+	BOOL _disallowFastExecution;
 }
 
 - (void)close
@@ -84,12 +87,47 @@
 
 - (void)doMoreProcessing:(NSTimer *)timer
 {
-	// this method is being called 50 times a second, so if we run the processor
-	// now for 0.002 of a second we'll end up topping out at 0.002 * 50 = 0.01 (ie, 10%)
-	// of the time spent on processing
+	/*
+
+		Logic is:
+
+			- ordinarily (ie, when fast execution isn't disallowed) allow up to 90%
+			utilisation; but
+			- if that full amount is used for a second then cut avaiable CPU time
+			down to just 50%; and
+			- restore full speed execution only if the alotted 50% isn't used for
+			at least a second.
+
+		So the motivation is not to penalise apps that occasionally do a lot of
+		processing but mostly block waiting for input while preventing apps that
+		run a busy loop from wasting your modern multi-tasking computer's
+		processing time.
+
+	*/
 	dispatch_async(serialDispatchQueue,
 	^{
-		[_bdos runForTimeInterval:0.002];
+		if(_disallowFastExecution)
+		{
+			[_bdos runForTimeInterval:0.01];
+			if(_bdos.didBlock)
+			{
+				_blockedCount++;
+				if(_blockedCount == 100) _disallowFastExecution = NO;
+			}
+			else
+				_blockedCount = 0;
+		}
+		else
+		{
+			[_bdos runForTimeInterval:0.018];
+			if(!_bdos.didBlock)
+			{
+				_blockedCount++;
+				if(_blockedCount == 56) _disallowFastExecution = YES;
+			}
+			else
+				_blockedCount = 0;
+		}
 	});
 }
 

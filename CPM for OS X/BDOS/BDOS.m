@@ -109,6 +109,10 @@
 - (void)runForTimeInterval:(NSTimeInterval)interval;
 {
 	[_processor runForTimeInterval:interval];
+	
+	// didBlock should return whether the processor blocked at any
+	// time, but for now we'll just report whether it's blocked now
+	_didBlock = _processor.isBlocked;
 }
 
 - (CPMProcessorShouldBlock)processor:(CPMProcessor *)processor isMakingBDOSCall:(uint8_t)call parameter:(uint16_t)parameter

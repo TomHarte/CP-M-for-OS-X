@@ -18,6 +18,7 @@
 
 - (void)runForTimeInterval:(NSTimeInterval)interval;
 
+@property (nonatomic, readonly) BOOL didBlock;
 @property (nonatomic, retain) NSString *basePath;
 
 @end
