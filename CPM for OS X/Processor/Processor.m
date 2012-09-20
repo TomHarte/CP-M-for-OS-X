@@ -780,7 +780,7 @@
 
 							int lowNibble = aRegister&0xf;
 							aRegister = (aRegister&0xf0) | (temporaryValue >> 4);
-							temporaryValue = (uint8_t)((temporaryValue << 4) | (lowNibble << 4));
+							temporaryValue = (uint8_t)((temporaryValue << 4) | lowNibble);
 
 							generalFlags =
 								[self parity:aRegister] |
