@@ -484,7 +484,7 @@ typedef enum
 {
     NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
 
-	[self addStringToInputQueue:[pasteboard stringForType:NSPasteboardTypeString]];
+	[self addStringToInputQueue:[pasteboard stringForType:NSPasteboardTypeString] filterToASCII:YES];
 }
 
 /*
@@ -520,8 +520,22 @@ typedef enum
 */
 - (void)keyDown:(NSEvent *)event
 {
-	NSString *characters = [event characters];
-	[self addStringToInputQueue:characters];
+	switch([event keyCode])
+	{
+		// the cursor keys are remapped to the WordStar diamond,
+		// since it seems to be quite widely used
+		case 123:	[self addStringToInputQueue:@"\23" filterToASCII:NO];	break;	// left
+		case 126:	[self addStringToInputQueue:@"\5" filterToASCII:NO];	break;	// up
+		case 125:	[self addStringToInputQueue:@"\30" filterToASCII:NO];	break;	// down
+		case 124:	[self addStringToInputQueue:@"\4" filterToASCII:NO];	break;	// right
+
+		default:
+		{
+			NSString *characters = [event characters];
+			[self addStringToInputQueue:characters filterToASCII:YES];
+		}
+		break;
+	}
 }
 
 - (BOOL)hasCharacterToDequeue
@@ -549,20 +563,28 @@ typedef enum
 	return NSDragOperationLink;
 }
 
-- (void)addStringToInputQueue:(NSString *)string
+- (void)addStringToInputQueue:(NSString *)string filterToASCII:(BOOL)filterToASCII
 {
-	@synchronized(self)
+	NSString *filteredString = string;
+
+	if(filterToASCII)
 	{
 		const char *asciiString = [string cStringUsingEncoding:NSASCIIStringEncoding];
 
 		if(!asciiString) return;
 
-		NSString *postAsciiString =
+		filteredString =
 			[[[NSString alloc] initWithBytesNoCopy:(void *)asciiString length:strlen(asciiString) encoding:NSASCIIStringEncoding freeWhenDone:NO] autorelease];
+	}
 
-		if(![postAsciiString length]) return;
+	if(![filteredString length]) return;
 
-		[incomingString appendString:postAsciiString];
+	@synchronized(self)
+	{
+		[incomingString appendString:filteredString];
+
+		// TODO: is it safe to contact the delegate on this queue? Probably the delegate's
+		// concern but at the minute this isn't being handled properly
 		[self.delegate terminalViewDidAddCharactersToBuffer:self];
 	}
 }
