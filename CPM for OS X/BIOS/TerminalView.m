@@ -103,6 +103,8 @@ typedef enum
 {
 	dispatch_async(dispatch_get_main_queue(),
 	^{
+//		printf("%c", character);
+
 		switch(escapeStatus)
 		{
 			case CPMTerminalViewEscapeStatusNone:
