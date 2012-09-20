@@ -85,6 +85,17 @@
 		[_memory setValue:0x00 atAddress:biosAddress-2];
 		_processor.spRegister = biosAddress-2;
 
+		// the things pointed to beyond the BIOS address should all be jumps
+		// to actual program code; some CP/M programs read the addresses and
+		// use other means to get into the BIOS. So we need to set up appropriate
+		// jump statments
+		for(int c = biosAddress; c < 65536; c+= 3)
+		{
+			[_memory setValue:0xc3 atAddress:c];
+			[_memory setValue:c&0xff atAddress:c+1];
+			[_memory setValue:(c >> 8) atAddress:c+2];
+		}
+
 		// also set the default DMA address
 		_dmaAddress = 0x80;
 
