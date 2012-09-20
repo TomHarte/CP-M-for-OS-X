@@ -996,8 +996,14 @@
 					// dec r
 				break;
 				case 6:
-					*[self rTable:y] = readByteFromPC();
+				{
+					// note: we could currently be in indexed addressing mode, in which case both
+					// [self rTable:y] and readByteFromPC() read from the PC. It's therefore invalid
+					// to combine the two lines below into a single.
+					uint8_t *address = [self rTable:y];
+					*address = readByteFromPC();
 					// LD r, nn
+				}
 				break;
 				case 7:
 				{
@@ -1147,7 +1153,7 @@
 								(uint8_t)(
 									(generalFlags & LLZ80FlagParityOverflow) |
 									((generalFlags & LLZ80FlagCarry) << 4) |	// so half carry is what carry was
-									((generalFlags^LLZ80FlagCarry)&LLZ80FlagCarry));
+									((generalFlags&LLZ80FlagCarry)^LLZ80FlagCarry));
 						}
 						break;
 					}
