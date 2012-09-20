@@ -1172,7 +1172,7 @@
 			else
 			{
 				uint8_t *dest = (z == 6) ? [self hlrTable:y] : [self rTable:y];
-				uint8_t *source = [self rTable:z];
+				uint8_t *source = (y == 6) ? [self hlrTable:z] : [self rTable:z];
 
 				*dest = *source;
 				// LD r, r
