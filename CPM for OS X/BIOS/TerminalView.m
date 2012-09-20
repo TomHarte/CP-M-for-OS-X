@@ -18,7 +18,7 @@ typedef enum
 } CPMTerminalViewEscapeStatus;
 
 #define kCPMTerminalViewWidth	80
-#define kCPMTerminalViewHeight	25
+#define kCPMTerminalViewHeight	24
 
 #define kCPMTerminalAttributeInverseVideoOn			0x01
 #define kCPMTerminalAttributeReducedIntensityOn		0x02
