@@ -135,7 +135,7 @@
 
 	CPMProcessorShouldBlock shouldBlock = NO;
 
-//	NSLog(@"BDOS call %d", call);
+//	NSLog(@"BDOS %d", call);
 
 	switch(call)
 	{

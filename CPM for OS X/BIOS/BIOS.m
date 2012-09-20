@@ -49,6 +49,7 @@
 
 - (CPMProcessorShouldBlock)makeCall:(int)callNumber
 {
+//	NSLog(@"BIOS %d", callNumber);
 	switch(callNumber)
 	{
 		default:
