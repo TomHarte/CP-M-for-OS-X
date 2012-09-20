@@ -23,6 +23,8 @@
 	uint16_t _dmaAddress;
 
 	NSMutableDictionary *_fileHandlesByControlBlock;
+
+	NSEnumerator *_searchEnumerator;
 }
 
 + (id)BDOSWithContentsOfURL:(NSURL *)URL terminalView:(CPMTerminalView *)terminalView
@@ -113,6 +115,7 @@
 	[_bios release], _bios = nil;
 	[_fileHandlesByControlBlock release], _fileHandlesByControlBlock = nil;
 	[_basePath release], _basePath = nil;
+	[_searchEnumerator release], _searchEnumerator = nil;
 
 	[super dealloc];
 }
@@ -132,6 +135,8 @@
 
 	CPMProcessorShouldBlock shouldBlock = NO;
 
+//	NSLog(@"BDOS call %d", call);
+
 	switch(call)
 	{
 		case 0:		shouldBlock = [self exitProgram];								break;
@@ -144,15 +149,12 @@
 		case 13:	shouldBlock = [self resetAllDisks];								break;
 		case 15:	shouldBlock = [self openFileWithParameter:parameter];			break;
 		case 16:	shouldBlock = [self closeFileWithParameter:parameter];			break;
+		case 17:	shouldBlock	= [self searchForFirstWithParameter:parameter];		break;
+		case 18:	shouldBlock	= [self searchForNextWithParameter:parameter];		break;
 		case 20:	shouldBlock = [self readNextRecordWithParameter:parameter];		break;
 		case 25:	shouldBlock = [self getCurrentDrive];							break;
 		case 26:	shouldBlock = [self setDMAAddressWithParameter:parameter];		break;
 		case 33:	shouldBlock = [self readRandomRecordWithParameter:parameter];	break;
-
-		case 17:	// search for first
-			NSLog(@"file search: TODO");
-			processor.afRegister |= 0xff00;
-		break;
 
 		case 14:	// select disk
 			processor.afRegister = (processor.afRegister&0x00ff);
@@ -235,13 +237,53 @@
 	return [CPMFileControlBlock fileControlBlockWithAddress:parameter inMemory:_memory];
 }
 
+- (BOOL)searchForFirstWithParameter:(uint16_t)parameter
+{
+	[_searchEnumerator release], _searchEnumerator = nil;
+
+	if(!self.basePath)
+	{
+		_processor.afRegister |= 0xff00;
+	}
+	else
+	{
+		CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
+
+		NSError *error = nil;
+		NSArray *allFilesInPath = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:self.basePath error:&error];
+
+		NSArray *matchingFiles = [allFilesInPath filteredArrayUsingPredicate:fileControlBlock.matchesPredicate];
+		NSLog(@"%@ versus %@ begat %@", allFilesInPath, fileControlBlock, matchingFiles);
+
+		_searchEnumerator = [[matchingFiles objectEnumerator] retain];
+		return [self searchForNextWithParameter:parameter];
+	}
+
+	return NO;
+}
+
+- (BOOL)searchForNextWithParameter:(uint16_t)parameter
+{
+	NSString *nextFileName = [_searchEnumerator nextObject];
+	if(!nextFileName)
+	{
+		_processor.afRegister |= 0xff00;
+		[_searchEnumerator release], _searchEnumerator = nil;
+	}
+
+	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:_dmaAddress];
+	fileControlBlock.nameWithExtension = nextFileName;
+	_processor.afRegister &= 0xff;
+	return NO;
+}
+
 - (BOOL)openFileWithParameter:(uint16_t)parameter
 {
 	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
 
 	NSError *error = nil;
 
-	NSString *fullPath = [NSString stringWithFormat:@"%@.%@", fileControlBlock.fileName, fileControlBlock.fileType];
+	NSString *fullPath = [fileControlBlock nameWithExtension];
 	if(self.basePath)
 	{
 		fullPath = [self.basePath stringByAppendingPathComponent:fullPath];

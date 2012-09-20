@@ -10,6 +10,13 @@
 #import "RAMModule.h"
 #include <string.h>
 
+@interface CPMFileControlBlock ()
+
+@property (nonatomic, retain) NSString *fileName;
+@property (nonatomic, retain) NSString *fileType;
+
+@end
+
 @implementation CPMFileControlBlock
 {
 	CPMRAMModule *memory;
@@ -120,6 +127,102 @@
 - (NSString *)description
 {
 	return [NSString stringWithFormat:@"%@ [.] %@, drive %d", self.fileName, self.fileType, self.drive];
+}
+
+- (NSString *)nameWithExtension
+{
+	if([self.fileType length])
+		return [NSString stringWithFormat:@"%@.%@", self.fileName, self.fileType];
+	else
+		return self.fileName;
+}
+
+- (void)unpackNameWithExtension:(NSString *)evaluatedObject toName:(NSString **)comparisonName extension:(NSString **)comparisonType
+{
+	*comparisonType = nil;
+
+	// find the name and type from the incoming file name
+	if([evaluatedObject rangeOfString:@"."].location == NSNotFound)
+	{
+		// if there's no dot in this file name then
+		// just trim it if necessary
+		*comparisonName = evaluatedObject;
+	}
+	else
+	{
+		// there's a dot in it, so at least two components
+		NSArray *components = [evaluatedObject componentsSeparatedByString:@"."];
+		*comparisonName = [components objectAtIndex:0];
+		*comparisonType = [components objectAtIndex:1];
+	}
+
+	// trim appropriately (TODO: maybe some Win95-style mangling?)
+	if([*comparisonName length] > 8)
+		*comparisonName = [*comparisonName substringToIndex:8];
+
+	if([*comparisonType length] > 3)
+		*comparisonType = [*comparisonType substringToIndex:3];
+}
+
+- (NSPredicate *)matchesPredicate
+{
+	return [NSPredicate predicateWithBlock:^BOOL(NSString *evaluatedObject, NSDictionary *bindings)
+	{
+		NSString *comparisonName = nil, *comparisonType = nil;
+		[self unpackNameWithExtension:evaluatedObject toName:&comparisonName extension:&comparisonType];
+
+		// now compare
+		BOOL areEqual = [self wildcardComparePattern:self.fileName string:comparisonName];
+		areEqual &= [self wildcardComparePattern:self.fileType string:comparisonType];
+
+		return areEqual;
+	}];
+}
+
+- (BOOL)wildcardComparePattern:(NSString *)pattern string:(NSString *)string
+{
+	for(NSUInteger index = 0; index < [pattern length]; index++)
+	{
+		unichar patternCharacter = [pattern characterAtIndex:index];
+
+		if(index < string.length)
+		{
+			unichar stringCharacter = [string characterAtIndex:index];
+			
+			if(patternCharacter != '?' && stringCharacter != patternCharacter)
+				return NO;
+		}
+		else
+		{
+			if(patternCharacter != '?')
+				return NO;
+		}
+	}
+
+	return YES;
+}
+
+- (void)setNameWithExtension:(NSString *)nameWithExtension
+{
+	// split up the input string
+	NSString *name, *type;
+	[self unpackNameWithExtension:nameWithExtension toName:&name extension:&type];
+
+	// store to our local properties
+	self.fileName = name;
+	self.fileType = type;
+
+	// write out to memory
+	for(int index = 0; index < 8; index++)
+	{
+		unichar character = (index < name.length) ? [name characterAtIndex:index] : ' ';
+		[memory setValue:character&0xff atAddress:baseAddress+1+index];
+	}
+	for(int index = 0; index < 3; index++)
+	{
+		unichar character = (index < type.length) ? [type characterAtIndex:index] : ' ';
+		[memory setValue:character&0xff atAddress:baseAddress+9+index];
+	}
 }
 
 @end
