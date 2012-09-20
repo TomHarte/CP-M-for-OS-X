@@ -864,7 +864,10 @@
 
 - (void)executeFromStandardPage
 {
-//	printf("%04x AF:%04x BC:%04x DE:%04x HL:%04x SP:%04x [%02x %02x %02x %02x]\n", programCounter, afRegister, bcRegister, deRegister, hlRegister, spRegister, RAM[programCounter], RAM[programCounter+1], RAM[programCounter+2], RAM[programCounter+3]);
+//	static BOOL isLogging = NO;
+//	if(programCounter == 29292) isLogging = YES;
+//	if(isLogging)
+//		printf("%04x AF:%04x BC:%04x DE:%04x HL:%04x SP:%04x [%02x %02x %02x %02x]\n", programCounter, self.afRegister, bcRegister, deRegister, hlRegister, spRegister, [memory valueAtAddress:programCounter], [memory valueAtAddress:programCounter+1], [memory valueAtAddress:programCounter+2], [memory valueAtAddress:programCounter+3]);
 
 	rRegister = (rRegister+1)&127;	// for the sake of incrementing this somewhere; we don't really care for accuracy
 	uint8_t opcode = readByteFromPC();
