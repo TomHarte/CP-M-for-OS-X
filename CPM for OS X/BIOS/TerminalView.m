@@ -137,7 +137,9 @@ typedef enum
 	escapeStatus = CPMTerminalViewEscapeStatusNone;
 	switch(character)
 	{
-		default: break;
+		default:
+			NSLog(@"unknown escape character %02x", character);
+		break;
 		case 'B':
 		case 'C':
 			escapeStatus = CPMTerminalViewEscapeStatusExpectingNumber;
@@ -194,6 +196,7 @@ typedef enum
 	[self setNeedsDisplay:YES];
 	if(character < 32)
 	{
+//		NSLog(@"control code %02x", character);
 		switch(character)
 		{
 			default: break;
@@ -231,7 +234,8 @@ typedef enum
 			return;
 
 			case 30:	// home cursor (?)
-				NSLog(@"should home cursor (?)");
+				cursorX = cursorY = 0;
+//				NSLog(@"should home cursor (?)");
 			return;
 			
 			case 27: escapeStatus = CPMTerminalViewEscapeStatusExpectingCharacter; return;
