@@ -41,7 +41,7 @@
 	if(self)
 	{
 		memory = [someMemory retain];
-		baseAddress = baseAddress;
+		baseAddress = address;
 
 		NSData *data = [memory dataAtAddress:address length:36];
 		uint8_t *bytes = (uint8_t *)[data bytes];
