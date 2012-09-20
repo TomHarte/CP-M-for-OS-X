@@ -31,9 +31,6 @@ typedef enum
 	char attributes[kCPMTerminalViewWidth * kCPMTerminalViewHeight];
 	int cursorX, cursorY, currentAttribute;
 
-	CPMTerminalViewEscapeStatus escapeStatus;
-	BOOL escapeCharacterWasB;
-
 	NSMutableAttributedString *attributedString;
 	NSMutableString *incomingString;
 	NSMutableArray *inverseRegions, *halfIntensityInverseRegions;
@@ -44,6 +41,9 @@ typedef enum
 
 	int flashCount;
 	NSTimer *flashTimer;
+
+	uint8_t inputQueue[8];
+	unsigned int inputQueueWritePointer;
 }
 
 - (void)doCommonInit
@@ -103,85 +103,69 @@ typedef enum
 {
 	dispatch_async(dispatch_get_main_queue(),
 	^{
-//		printf("%c", character);
-
-		switch(escapeStatus)
+		if(!inputQueueWritePointer)
 		{
-			case CPMTerminalViewEscapeStatusNone:
+			// if this is the start of an escape sequence then get queueing;
+			// otherwise output the thing and move on with our lives
+			if(character == 27)
+			{
+				inputQueue[inputQueueWritePointer++] = character;
+			}
+			else
+			{
 				[self writeNormalCharacter:character];
-			break;
-			
-			case CPMTerminalViewEscapeStatusExpectingCharacter:
-				[self writeEscapeCharacter:character];
-			break;
-
-			case CPMTerminalViewEscapeStatusExpectingNumber:
-				[self writeEscapeNumber:character];
-			break;
-
-			case CPMTerminalViewEscapeStatusExpectingYCoordinate:
-				escapeStatus = CPMTerminalViewEscapeStatusExpectingXCoordinate;
-				cursorY = (character - 32)%kCPMTerminalViewHeight;
-			break;
-
-			case CPMTerminalViewEscapeStatusExpectingXCoordinate:
-				escapeStatus = CPMTerminalViewEscapeStatusNone;
-				cursorX = (character - 32)%kCPMTerminalViewWidth;
-			break;
+			}
 		}
-	});
-}
+		else
+		{
+			inputQueue[inputQueueWritePointer++] = character;
 
-- (void)writeEscapeCharacter:(char)character
-{
-	escapeStatus = CPMTerminalViewEscapeStatusNone;
-	switch(character)
-	{
-		default:
-			NSLog(@"unknown escape character %02x", character);
-		break;
-		case 'B':
-		case 'C':
-			escapeStatus = CPMTerminalViewEscapeStatusExpectingNumber;
-			escapeCharacterWasB = (character == 'B');
-		break;
-
-		case '=':
-			escapeStatus = CPMTerminalViewEscapeStatusExpectingYCoordinate;
-		break;
-	}
-}
-
-- (void)writeEscapeNumber:(char)character
-{
-	escapeStatus = CPMTerminalViewEscapeStatusNone;
-
+			switch(inputQueue[1])
+			{
+				case '=':
+					if(inputQueueWritePointer == 4)
+					{
+						cursorY = (inputQueue[2] - 32)%kCPMTerminalViewHeight;
+						cursorX = (inputQueue[3] - 32)%kCPMTerminalViewWidth;
+						inputQueueWritePointer = 0;
+					}
+				break;
+				
+				case 'B':
+				case 'C':
+					if(inputQueueWritePointer == 3)
+					{
 #define applyAttribute(attr)	\
-			if(escapeCharacterWasB)\
+			if(inputQueue[1] == 'B')\
 				currentAttribute |= attr;\
 			else\
 				currentAttribute &= ~attr;
 
-	switch(character)
-	{
-		default:
-			NSLog(@"ignored control %c", character);
-		break;
-		case '0':
-			applyAttribute(kCPMTerminalAttributeInverseVideoOn);
-		break;
-		case '1':
-			applyAttribute(kCPMTerminalAttributeReducedIntensityOn);
-		break;
-		case '3':
-			applyAttribute(kCPMTerminalAttributeUnderlinedOn);
-		break;
-		case '4':
-			applyAttribute(kCPMTerminalAttributeBlinkingOn);
-		break;
-	}
-	
+						switch(inputQueue[2])
+						{
+							default:
+								NSLog(@"ignored control %c", character);
+							break;
+							case '0':
+								applyAttribute(kCPMTerminalAttributeInverseVideoOn);
+							break;
+							case '1':
+								applyAttribute(kCPMTerminalAttributeReducedIntensityOn);
+							break;
+							case '3':
+								applyAttribute(kCPMTerminalAttributeUnderlinedOn);
+							break;
+							case '4':
+								applyAttribute(kCPMTerminalAttributeBlinkingOn);
+							break;
+						}
 #undef applyAttribute
+						inputQueueWritePointer = 0;
+					}
+				break;
+			}
+		}
+	});
 }
 
 - (void)clearFrom:(int)start to:(int)end
@@ -237,8 +221,6 @@ typedef enum
 				cursorX = cursorY = 0;
 //				NSLog(@"should home cursor (?)");
 			return;
-			
-			case 27: escapeStatus = CPMTerminalViewEscapeStatusExpectingCharacter; return;
 		}
 	}
 
