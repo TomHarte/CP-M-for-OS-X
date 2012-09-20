@@ -830,7 +830,7 @@
 			case 2:
 				if(z == 6)
 				{
-					[self res:z source:[self indexPlusOffset:displacement]];
+					[self res:y source:[self indexPlusOffset:displacement]];
 				}
 				else
 				{
@@ -840,7 +840,7 @@
 			case 3:
 				if(z == 6)
 				{
-					[self set:z source:[self indexPlusOffset:displacement]];
+					[self set:y source:[self indexPlusOffset:displacement]];
 				}
 				else
 				{
