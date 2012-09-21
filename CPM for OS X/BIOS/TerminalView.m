@@ -43,7 +43,8 @@ typedef enum
 	NSTimer *flashTimer;
 
 	uint8_t inputQueue[8];
-	unsigned int inputQueueWritePointer;
+	NSUInteger inputQueueWritePointer;
+	NSUInteger longestSequence;
 
 	NSMutableDictionary *sequencesToActions;
 }
@@ -72,13 +73,20 @@ typedef enum
 
 	// install the ADM-3A control codes
 	[self installADM3AControlCodes];
+
+	// hence determine the longest sequence we have
+	for(CPMTerminalControlSequence *controlSequence in [sequencesToActions allValues])
+	{
+		if(controlSequence.requiredLength > longestSequence)
+			longestSequence = controlSequence.requiredLength;
+	}
 }
 
 - (void)installADM3AControlCodes
 {
 	[self addControlSequence:
 		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\36="
+			terminalControlSequenceWithStart:@"\33="
 			requiredLength:4
 			action:
 			^{
@@ -87,35 +95,35 @@ typedef enum
 			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\36B0"
+			terminalControlSequenceWithStart:@"\33B0"
 			action:^{	currentAttribute |= kCPMTerminalAttributeInverseVideoOn;		}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\36C0"
+			terminalControlSequenceWithStart:@"\33C0"
 			action:^{	currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;		}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\36B1"
+			terminalControlSequenceWithStart:@"\33B1"
 			action:^{	currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\36C1"
+			terminalControlSequenceWithStart:@"\33C1"
 			action:^{	currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\36B2"
+			terminalControlSequenceWithStart:@"\33B2"
 			action:^{	currentAttribute |= kCPMTerminalAttributeBlinkingOn;			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\36C2"
+			terminalControlSequenceWithStart:@"\33C2"
 			action:^{	currentAttribute &= ~kCPMTerminalAttributeBlinkingOn;			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\36B3"
+			terminalControlSequenceWithStart:@"\33B3"
 			action:^{	currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\36C3"
+			terminalControlSequenceWithStart:@"\33C3"
 			action:^{	currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;			}]];
 }
 
@@ -172,68 +180,51 @@ typedef enum
 	^{
 		// this enqueuing process has a quick safeguard against overflow
 		inputQueue[inputQueueWritePointer++] = character;
-		if(inputQueueWritePointer == 8)
+
+		// if we've gone beyond the length of things we can match without
+		// matching anything then just pop the first character
+		if(inputQueueWritePointer > longestSequence)
 		{
-			memmove(inputQueue, &inputQueue[1], 7);
 			inputQueueWritePointer--;
+			memmove(inputQueue, &inputQueue[1], inputQueueWritePointer);
 		}
 
-		switch(inputQueue[0])
+		// output anything that's safe ASCII
+		while(inputQueueWritePointer && inputQueue[0] != 27)//(inputQueue[0] >= 32) && (inputQueue[0] < 128))
 		{
-			default:
-				[self writeNormalCharacter:character];
-				memmove(inputQueue, &inputQueue[1], 7);
-				inputQueueWritePointer--;
-			break;
+			[self writeNormalCharacter:inputQueue[0]];
+			inputQueueWritePointer--;
+			memmove(inputQueue, &inputQueue[1], inputQueueWritePointer);
+		}
 
-			case 27:
-			switch(inputQueue[1])
+		// have a go at matching what's left, if there is anything
+		if(inputQueueWritePointer)
+		{
+			while(1)
 			{
-				case '=':
-					if(inputQueueWritePointer > 3)
-					{
-						cursorY = (inputQueue[2] - 32)%kCPMTerminalViewHeight;
-						cursorX = (inputQueue[3] - 32)%kCPMTerminalViewWidth;
-						inputQueueWritePointer -= 4;
-						memmove(inputQueue, &inputQueue[4], 4);
-					}
-				break;
+				NSString *attemptedString = [[NSString alloc] initWithBytes:inputQueue length:inputQueueWritePointer encoding:NSASCIIStringEncoding];
+				CPMTerminalControlSequence *foundMatch = nil;
 
-				case 'B':
-				case 'C':
-					if(inputQueueWritePointer > 2)
+				while(attemptedString.length)
+				{
+					CPMTerminalControlSequence *potentialMatch =
+						[sequencesToActions valueForKey:attemptedString];
+				
+					if(potentialMatch && potentialMatch.requiredLength <= inputQueueWritePointer)
 					{
-#define applyAttribute(attr)	\
-			if(inputQueue[1] == 'B')\
-				currentAttribute |= attr;\
-			else\
-				currentAttribute &= ~attr;
-
-						switch(inputQueue[2])
-						{
-							default:
-								NSLog(@"ignored control %c", character);
-							break;
-							case '0':
-								applyAttribute(kCPMTerminalAttributeInverseVideoOn);
-							break;
-							case '1':
-								applyAttribute(kCPMTerminalAttributeReducedIntensityOn);
-							break;
-							case '3':
-								applyAttribute(kCPMTerminalAttributeUnderlinedOn);
-							break;
-							case '4':
-								applyAttribute(kCPMTerminalAttributeBlinkingOn);
-							break;
-						}
-#undef applyAttribute
-						inputQueueWritePointer -= 3;
-						memmove(inputQueue, &inputQueue[4], 5);
+						foundMatch = potentialMatch;
+						break;
 					}
-				break;
+				
+					attemptedString = [attemptedString substringToIndex:attemptedString.length-1];
+				}
+				
+				if(!foundMatch) break;
+
+				foundMatch.action();
+				inputQueueWritePointer -= foundMatch.requiredLength;
+				memmove(inputQueue, &inputQueue[foundMatch.requiredLength], inputQueueWritePointer);
 			}
-			break;
 		}
 	});
 }
