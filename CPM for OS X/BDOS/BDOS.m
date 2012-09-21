@@ -151,7 +151,9 @@
 		case 16:	shouldBlock = [self closeFileWithParameter:parameter];			break;
 		case 17:	shouldBlock	= [self searchForFirstWithParameter:parameter];		break;
 		case 18:	shouldBlock	= [self searchForNextWithParameter:parameter];		break;
+		case 19:	shouldBlock = [self deleteFileWithParameter:parameter];			break;
 		case 20:	shouldBlock = [self readNextRecordWithParameter:parameter];		break;
+		case 21:	shouldBlock = [self writeNextRecordWithParameter:parameter];	break;
 		case 25:	shouldBlock = [self getCurrentDrive];							break;
 		case 26:	shouldBlock = [self setDMAAddressWithParameter:parameter];		break;
 		case 33:	shouldBlock = [self readRandomRecordWithParameter:parameter];	break;
@@ -320,6 +322,26 @@
 - (BOOL)setDMAAddressWithParameter:(uint16_t)parameter
 {
 	_dmaAddress = parameter;
+
+	return NO;
+}
+
+- (BOOL)deleteFileWithParameter:(uint16_t)parameter
+{
+	NSLog(@"!!UNIMPLEMENTED!! should delete %@", [self fileControlBlockWithParameter:parameter]);
+
+	// pretend we succeeded
+	_processor.afRegister &= 0xff;
+
+	return NO;
+}
+
+- (BOOL)writeNextRecordWithParameter:(uint16_t)parameter
+{
+	NSLog(@"!!UNIMPLEMENTED!! should write next record to %@", [self fileControlBlockWithParameter:parameter]);
+
+	// pretend we succeeded
+	_processor.afRegister &= 0xff;
 
 	return NO;
 }
