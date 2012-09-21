@@ -71,6 +71,9 @@ typedef enum
 
 	sequencesToActions = [[NSMutableDictionary alloc] init];
 
+	// install the ASCII control characters
+	[self installASCIIControlCharacters];
+
 	// install the ADM-3A control codes
 	[self installADM3AControlCodes];
 
@@ -80,6 +83,51 @@ typedef enum
 		if(controlSequence.requiredLength > longestSequence)
 			longestSequence = controlSequence.requiredLength;
 	}
+}
+
+- (void)installASCIIControlCharacters
+{
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\x08"
+			action:^{	if(cursorX > 0) cursorX--;							}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\x0c"
+			action:^{	if(cursorX < kCPMTerminalViewWidth-1) cursorX++;	}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\n"
+			action:^{	[self incrementY];									}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\r"
+			action:^{	cursorX = 0;										}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\x0b"
+			action:^{	if(cursorY > 0) cursorY--;							}]];
+
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\x17"
+			action:^{	[self clearFrom:cursorY*kCPMTerminalViewWidth + cursorX to:kCPMTerminalViewWidth*kCPMTerminalViewHeight];		}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\x18"
+			action:^{	[self clearFrom:cursorY*kCPMTerminalViewWidth + cursorX to:(cursorY+1)*kCPMTerminalViewWidth];					}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\x1a"
+			action:
+			^{
+				cursorX = cursorY = 0;
+				[self clearFrom:0 to:kCPMTerminalViewHeight*kCPMTerminalViewWidth];
+			}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\x1e"
+			action:^{	cursorX = cursorY = 0;					}]];
 }
 
 - (void)installADM3AControlCodes
@@ -190,7 +238,7 @@ typedef enum
 		}
 
 		// output anything that's safe ASCII
-		while(inputQueueWritePointer && inputQueue[0] != 27)//(inputQueue[0] >= 32) && (inputQueue[0] < 128))
+		while(inputQueueWritePointer && (inputQueue[0] >= 32) && (inputQueue[0] < 128))
 		{
 			[self writeNormalCharacter:inputQueue[0]];
 			inputQueueWritePointer--;
@@ -209,16 +257,16 @@ typedef enum
 				{
 					CPMTerminalControlSequence *potentialMatch =
 						[sequencesToActions valueForKey:attemptedString];
-				
+
 					if(potentialMatch && potentialMatch.requiredLength <= inputQueueWritePointer)
 					{
 						foundMatch = potentialMatch;
 						break;
 					}
-				
+
 					attemptedString = [attemptedString substringToIndex:attemptedString.length-1];
 				}
-				
+
 				if(!foundMatch) break;
 
 				foundMatch.action();
@@ -233,99 +281,31 @@ typedef enum
 {
 	memset(&srcBuffer[start], 32, end-start);
 	memset(&attributes[start], 0, end-start);
+	[self setNeedsDisplay:YES];
 //	currentAttribute = 0;
 }
 
 - (void)writeNormalCharacter:(char)character
 {
-	[self setNeedsDisplay:YES];
-	if(character < 32)
-	{
-//		NSLog(@"control code %02x", character);
-		switch(character)
-		{
-			default: break;
-
-			case 7:
-				if(cursorX > 0) cursorX--;
-			return;
-			case 8:
-				cursorX--;
-			return;
-			case 12:
-				if(cursorX < kCPMTerminalViewWidth-1) cursorX++;
-			return;
-			case 10:
-				[self incrementY];
-			return;
-			case 11:
-				if(cursorY > 0) cursorY--;
-			return;
-			case '\r':
-				cursorX = 0;
-			return;
-
-			case 23:	// erase from cursor to end of screen
-				[self clearFrom:cursorY*kCPMTerminalViewWidth + cursorX to:kCPMTerminalViewWidth*kCPMTerminalViewHeight];
-			return;
-
-			case 24:	// erase from cursor to end of line
-				[self clearFrom:cursorY*kCPMTerminalViewWidth + cursorX to:(cursorY+1)*kCPMTerminalViewWidth];
-			return;
-
-			case 26:	// clear screen
-				cursorX = cursorY = 0;
-				[self clearFrom:0 to:kCPMTerminalViewHeight*kCPMTerminalViewWidth];
-			return;
-
-			case 30:	// home cursor (?)
-				cursorX = cursorY = 0;
-//				NSLog(@"should home cursor (?)");
-			return;
-		}
-	}
-
 	if(cursorX == kCPMTerminalViewWidth)
 	{
 		cursorX = 0;
-		
 		[self incrementY];
 	}
-
-	if(character < 32) character = 32;
 
 	srcBuffer[(cursorY * kCPMTerminalViewWidth) + cursorX] = character;
 	attributes[(cursorY * kCPMTerminalViewWidth) + cursorX] = currentAttribute;
 	cursorX++;
-}
 
-- (void)dumpAttributes
-{
-	for(int y = 0; y < kCPMTerminalViewHeight; y++)
-	{
-		NSMutableString *attributesString = [NSMutableString string];
-		for(int x = 0; x < kCPMTerminalViewWidth; x++)
-		{
-			[attributesString appendFormat:@"%02x", attributes[y*kCPMTerminalViewWidth + x]];
-		}
-		NSLog(@"%@", attributesString);
-	}
+	[self setNeedsDisplay:YES];
 }
 
 - (void)viewWillDraw
 {
-//	NSLog(@"=====");
 	// create a string of the ASCII characters first
 	NSMutableString *asciiText = [NSMutableString stringWithCapacity:(kCPMTerminalViewWidth+1)*kCPMTerminalViewHeight];
 	for(int y = 0; y < kCPMTerminalViewHeight; y++)
 	{
-//		for(int x = 0; x < kCPMTerminalViewWidth; x++)
-//		{
-//			unichar character = srcBuffer[y*kCPMTerminalViewWidth + x];
-
-//			[asciiText appendFormat:@"%c", character];
-//		}
-
 		NSString *stringForLine = [[NSString alloc] initWithBytesNoCopy:&srcBuffer[y*kCPMTerminalViewWidth] length:kCPMTerminalViewWidth encoding:NSUTF8StringEncoding freeWhenDone:NO];
 		[asciiText appendString:stringForLine];
 		[stringForLine release];
@@ -373,8 +353,8 @@ typedef enum
 							textColour = [NSColor colorWithDeviceRed:0.0f green:0.66f blue:0.0f alpha:1.0f];
 						break;
 						case kCPMTerminalAttributeInverseVideoOn:
-//							textColour = [NSColor colorWithDeviceRed:1.0f green:0.0f blue:1.0f alpha:1.0f];
-//						break;
+							textColour = [NSColor colorWithDeviceRed:1.0f green:0.0f blue:1.0f alpha:1.0f];
+						break;
 						case kCPMTerminalAttributeInverseVideoOn | kCPMTerminalAttributeReducedIntensityOn:
 							textColour = [NSColor colorWithDeviceRed:0.0f green:0.0f blue:0.0f alpha:1.0f];
 						break;
