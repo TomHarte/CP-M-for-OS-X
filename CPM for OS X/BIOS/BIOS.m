@@ -43,6 +43,7 @@
 - (void)dealloc
 {
 	[_processor release], _processor = nil;
+	_terminalView.delegate = nil;
 	[_terminalView release], _terminalView = nil;
 	[super dealloc];
 }
