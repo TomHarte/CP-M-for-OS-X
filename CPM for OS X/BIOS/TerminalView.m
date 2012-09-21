@@ -103,37 +103,38 @@ typedef enum
 {
 	dispatch_async(dispatch_get_main_queue(),
 	^{
-		if(!inputQueueWritePointer)
+		// this enqueuing process has a quick safeguard against overflow
+		inputQueue[inputQueueWritePointer++] = character;
+		if(inputQueueWritePointer == 8)
 		{
-			// if this is the start of an escape sequence then get queueing;
-			// otherwise output the thing and move on with our lives
-			if(character == 27)
-			{
-				inputQueue[inputQueueWritePointer++] = character;
-			}
-			else
-			{
-				[self writeNormalCharacter:character];
-			}
+			memmove(inputQueue, &inputQueue[1], 7);
+			inputQueueWritePointer--;
 		}
-		else
-		{
-			inputQueue[inputQueueWritePointer++] = character;
 
+		switch(inputQueue[0])
+		{
+			default:
+				[self writeNormalCharacter:character];
+				memmove(inputQueue, &inputQueue[1], 7);
+				inputQueueWritePointer--;
+			break;
+
+			case 27:
 			switch(inputQueue[1])
 			{
 				case '=':
-					if(inputQueueWritePointer == 4)
+					if(inputQueueWritePointer > 3)
 					{
 						cursorY = (inputQueue[2] - 32)%kCPMTerminalViewHeight;
 						cursorX = (inputQueue[3] - 32)%kCPMTerminalViewWidth;
-						inputQueueWritePointer = 0;
+						inputQueueWritePointer -= 4;
+						memmove(inputQueue, &inputQueue[4], 4);
 					}
 				break;
-				
+
 				case 'B':
 				case 'C':
-					if(inputQueueWritePointer == 3)
+					if(inputQueueWritePointer > 2)
 					{
 #define applyAttribute(attr)	\
 			if(inputQueue[1] == 'B')\
@@ -160,10 +161,12 @@ typedef enum
 							break;
 						}
 #undef applyAttribute
-						inputQueueWritePointer = 0;
+						inputQueueWritePointer -= 3;
+						memmove(inputQueue, &inputQueue[4], 5);
 					}
 				break;
 			}
+			break;
 		}
 	});
 }
