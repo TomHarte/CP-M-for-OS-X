@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4B029E81160C18050014F528 /* TerminalControlSequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B029E80160C18050014F528 /* TerminalControlSequence.m */; };
 		4B582985160197E0009515A6 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B582984160197E0009515A6 /* Cocoa.framework */; };
 		4B58298F160197E0009515A6 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4B58298D160197E0009515A6 /* InfoPlist.strings */; };
 		4B582991160197E0009515A6 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B582990160197E0009515A6 /* main.m */; };
@@ -24,6 +25,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4B029E7F160C18040014F528 /* TerminalControlSequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalControlSequence.h; sourceTree = "<group>"; };
+		4B029E80160C18050014F528 /* TerminalControlSequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalControlSequence.m; sourceTree = "<group>"; };
 		4B582980160197E0009515A6 /* CPM for OS X.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CPM for OS X.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4B582984160197E0009515A6 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		4B582987160197E0009515A6 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -148,6 +151,8 @@
 				4B5829AB16019899009515A6 /* BIOS.m */,
 				4B5829AC16019899009515A6 /* TerminalView.h */,
 				4B5829AD16019899009515A6 /* TerminalView.m */,
+				4B029E7F160C18040014F528 /* TerminalControlSequence.h */,
+				4B029E80160C18050014F528 /* TerminalControlSequence.m */,
 			);
 			path = BIOS;
 			sourceTree = "<group>";
@@ -247,6 +252,7 @@
 				4B5829BA16019899009515A6 /* FuseTestRunner.m in Sources */,
 				4B5829BB16019899009515A6 /* Processor.m in Sources */,
 				4B5829BC16019899009515A6 /* RAMModule.m in Sources */,
+				4B029E81160C18050014F528 /* TerminalControlSequence.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

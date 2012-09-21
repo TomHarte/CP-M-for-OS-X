@@ -7,6 +7,7 @@
 //
 
 #import "TerminalView.h"
+#import "TerminalControlSequence.h"
 
 typedef enum
 {
@@ -68,6 +69,59 @@ typedef enum
 	[self clearFrom:0 to:kCPMTerminalViewHeight*kCPMTerminalViewWidth];
 
 	sequencesToActions = [[NSMutableDictionary alloc] init];
+
+	// install the ADM-3A control codes
+	[self installADM3AControlCodes];
+}
+
+- (void)installADM3AControlCodes
+{
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\36="
+			requiredLength:4
+			action:
+			^{
+				cursorY = (inputQueue[2] - 32)%kCPMTerminalViewHeight;
+				cursorX = (inputQueue[3] - 32)%kCPMTerminalViewWidth;
+			}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\36B0"
+			action:^{	currentAttribute |= kCPMTerminalAttributeInverseVideoOn;		}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\36C0"
+			action:^{	currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;		}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\36B1"
+			action:^{	currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\36C1"
+			action:^{	currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\36B2"
+			action:^{	currentAttribute |= kCPMTerminalAttributeBlinkingOn;			}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\36C2"
+			action:^{	currentAttribute &= ~kCPMTerminalAttributeBlinkingOn;			}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\36B3"
+			action:^{	currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\36C3"
+			action:^{	currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;			}]];
+}
+
+- (void)addControlSequence:(CPMTerminalControlSequence *)controlSequence
+{
+	[sequencesToActions setObject:controlSequence forKey:controlSequence.start];
 }
 
 - (id)initWithFrame:(NSRect)frameRect
@@ -300,9 +354,6 @@ typedef enum
 			(id)kCTForegroundColorAttributeName: (id)[[NSColor greenColor] CGColor]
 		}
 		range:NSMakeRange(0, attributedString.length)];
-
-	[inverseRegions removeAllObjects];
-	[halfIntensityInverseRegions removeAllObjects];
 
 	uint8_t lastAttribute = 0;
 	for(int y = 0; y < kCPMTerminalViewHeight; y++)
