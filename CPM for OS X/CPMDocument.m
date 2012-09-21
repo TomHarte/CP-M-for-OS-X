@@ -35,6 +35,7 @@
 	[_bdos release], _bdos = nil;
 	[_executionTimer invalidate], _executionTimer = nil;
 	[_sourceURL release], _sourceURL = nil;
+	[self.terminalView invalidate];
 	if(serialDispatchQueue)
 	{
 		dispatch_release(serialDispatchQueue), serialDispatchQueue = NULL;

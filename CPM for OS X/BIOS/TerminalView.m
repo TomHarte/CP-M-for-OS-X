@@ -33,8 +33,7 @@ typedef enum
 
 	NSMutableAttributedString *attributedString;
 	NSMutableString *incomingString;
-	NSMutableArray *inverseRegions, *halfIntensityInverseRegions;
-	
+
 	int selectionStartX, selectionStartY, selectionCurrentX, selectionCurrentY;
 
 	CGFloat lineHeight, characterWidth;
@@ -44,6 +43,8 @@ typedef enum
 
 	uint8_t inputQueue[8];
 	unsigned int inputQueueWritePointer;
+
+	NSMutableDictionary *sequencesToActions;
 }
 
 - (void)doCommonInit
@@ -56,9 +57,6 @@ typedef enum
 	characterWidth = [monaco advancementForGlyph:'M'].width;
 	_idealSize.width = characterWidth * kCPMTerminalViewWidth;
 	_idealSize.height = lineHeight * kCPMTerminalViewHeight;
-	
-	inverseRegions = [[NSMutableArray alloc] init];
-	halfIntensityInverseRegions = [[NSMutableArray alloc] init];
 
 	flashTimer = [NSTimer
 		scheduledTimerWithTimeInterval:1.0/2.5
@@ -68,6 +66,8 @@ typedef enum
 		repeats:YES];
 
 	[self clearFrom:0 to:kCPMTerminalViewHeight*kCPMTerminalViewWidth];
+
+	sequencesToActions = [[NSMutableDictionary alloc] init];
 }
 
 - (id)initWithFrame:(NSRect)frameRect
@@ -82,6 +82,19 @@ typedef enum
 	self = [super initWithCoder:aDecoder];
 	[self doCommonInit];
 	return self;
+}
+
+- (void)dealloc
+{
+	[sequencesToActions release], sequencesToActions = nil;
+	[incomingString release], incomingString = nil;
+	[attributedString release], attributedString = nil;
+	[super dealloc];
+}
+
+- (void)invalidate
+{
+	[flashTimer invalidate], flashTimer = nil;
 }
 
 - (void)incrementY

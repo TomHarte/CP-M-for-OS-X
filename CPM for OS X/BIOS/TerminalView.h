@@ -32,4 +32,6 @@
 @property (nonatomic, assign) id <CPMTerminaViewDelegate> delegate;
 @property (nonatomic, readonly) CGSize idealSize;
 
+- (void)invalidate;
+
 @end
