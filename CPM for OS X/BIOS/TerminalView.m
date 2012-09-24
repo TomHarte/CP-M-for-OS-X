@@ -9,47 +9,34 @@
 #import "TerminalView.h"
 #import "TerminalControlSequence.h"
 
-#define kCPMTerminalViewWidth	80
-#define kCPMTerminalViewHeight	24
-
-#define kCPMTerminalAttributeInverseVideoOn			0x01
-#define kCPMTerminalAttributeReducedIntensityOn		0x02
-#define kCPMTerminalAttributeBlinkingOn				0x04
-#define kCPMTerminalAttributeUnderlinedOn			0x08
-
 @implementation CPMTerminalView
 {
-	char srcBuffer[kCPMTerminalViewWidth * kCPMTerminalViewHeight];
-	char attributes[kCPMTerminalViewWidth * kCPMTerminalViewHeight];
-	int cursorX, cursorY, currentAttribute;
-
 	NSMutableAttributedString *attributedString;
 	NSMutableString *incomingString;
 
-	int selectionStartX, selectionStartY, selectionCurrentX, selectionCurrentY;
+//	int selectionStartX, selectionStartY, selectionCurrentX, selectionCurrentY;
 
 	CGFloat lineHeight, characterWidth;
 
 	int flashCount;
 	NSTimer *flashTimer;
 
-	uint8_t inputQueue[8];
-	NSUInteger inputQueueWritePointer;
-	NSUInteger longestSequence;
+	CPMTerminalControlSet *controlSet;
 
-	NSMutableDictionary *sequencesToActions;
 }
 
 - (void)doCommonInit
 {
 	incomingString = [[NSMutableString alloc] init];
+	controlSet = [[CPMTerminalControlSet ADM3AControlSet] retain];
+	controlSet.delegate = self;
 
 	NSFont *monaco = [NSFont fontWithName:@"Monaco" size:12.0f];
 
 	lineHeight = (monaco.ascender - monaco.descender + monaco.leading);
 	characterWidth = [monaco advancementForGlyph:'M'].width;
-	_idealSize.width = characterWidth * kCPMTerminalViewWidth;
-	_idealSize.height = lineHeight * kCPMTerminalViewHeight;
+	_idealSize.width = characterWidth * controlSet.width;
+	_idealSize.height = lineHeight * controlSet.height;
 
 	flashTimer = [NSTimer
 		scheduledTimerWithTimeInterval:1.0/2.5
@@ -57,118 +44,6 @@
 		selector:@selector(updateFlash:)
 		userInfo:nil
 		repeats:YES];
-
-	[self clearFrom:0 to:kCPMTerminalViewHeight*kCPMTerminalViewWidth];
-
-	sequencesToActions = [[NSMutableDictionary alloc] init];
-
-	// install the ASCII control characters
-	[self installASCIIControlCharacters];
-
-	// install the ADM-3A control codes
-	[self installADM3AControlCodes];
-
-	// hence determine the longest sequence we have
-	for(CPMTerminalControlSequence *controlSequence in [sequencesToActions allValues])
-	{
-		if(controlSequence.requiredLength > longestSequence)
-			longestSequence = controlSequence.requiredLength;
-	}
-}
-
-- (void)installASCIIControlCharacters
-{
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x08"
-			action:^{	if(cursorX > 0) cursorX--;							}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x0c"
-			action:^{	if(cursorX < kCPMTerminalViewWidth-1) cursorX++;	}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\n"
-			action:^{	[self incrementY];									}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\r"
-			action:^{	cursorX = 0;										}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x0b"
-			action:^{	if(cursorY > 0) cursorY--;							}]];
-
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x17"
-			action:^{	[self clearFrom:cursorY*kCPMTerminalViewWidth + cursorX to:kCPMTerminalViewWidth*kCPMTerminalViewHeight];		}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x18"
-			action:^{	[self clearFrom:cursorY*kCPMTerminalViewWidth + cursorX to:(cursorY+1)*kCPMTerminalViewWidth];					}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x1a"
-			action:
-			^{
-				cursorX = cursorY = 0;
-				[self clearFrom:0 to:kCPMTerminalViewHeight*kCPMTerminalViewWidth];
-			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x1e"
-			action:^{	cursorX = cursorY = 0;					}]];
-}
-
-- (void)installADM3AControlCodes
-{
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33="
-			requiredLength:4
-			action:
-			^{
-				cursorY = (inputQueue[2] - 32)%kCPMTerminalViewHeight;
-				cursorX = (inputQueue[3] - 32)%kCPMTerminalViewWidth;
-			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33B0"
-			action:^{	currentAttribute |= kCPMTerminalAttributeInverseVideoOn;		}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33C0"
-			action:^{	currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;		}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33B1"
-			action:^{	currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33C1"
-			action:^{	currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33B2"
-			action:^{	currentAttribute |= kCPMTerminalAttributeBlinkingOn;			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33C2"
-			action:^{	currentAttribute &= ~kCPMTerminalAttributeBlinkingOn;			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33B3"
-			action:^{	currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33C3"
-			action:^{	currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;			}]];
-}
-
-- (void)addControlSequence:(CPMTerminalControlSequence *)controlSequence
-{
-	[sequencesToActions setObject:controlSequence forKey:controlSequence.start];
 }
 
 - (id)initWithFrame:(NSRect)frameRect
@@ -187,9 +62,8 @@
 
 - (void)dealloc
 {
-	[sequencesToActions release], sequencesToActions = nil;
-	[incomingString release], incomingString = nil;
 	[attributedString release], attributedString = nil;
+	[controlSet release], controlSet = nil;
 	[super dealloc];
 }
 
@@ -198,113 +72,17 @@
 	[flashTimer invalidate], flashTimer = nil;
 }
 
-- (void)incrementY
-{
-	cursorY++;
-
-	if(cursorY == kCPMTerminalViewHeight)
-	{
-		memcpy(srcBuffer, &srcBuffer[kCPMTerminalViewWidth], (kCPMTerminalViewHeight-1)*kCPMTerminalViewWidth);
-		memset(&srcBuffer[kCPMTerminalViewWidth*(kCPMTerminalViewHeight-1)], 32, kCPMTerminalViewWidth);
-
-		memcpy(attributes, &attributes[kCPMTerminalViewWidth], (kCPMTerminalViewHeight-1)*kCPMTerminalViewWidth);
-		memset(&attributes[kCPMTerminalViewWidth*(kCPMTerminalViewHeight-1)], 0, kCPMTerminalViewWidth);
-		cursorY --;
-	}
-}
-
 - (void)writeCharacter:(char)character
 {
-	dispatch_async(dispatch_get_main_queue(),
-	^{
-		// this enqueuing process has a quick safeguard against overflow
-		inputQueue[inputQueueWritePointer++] = character;
-
-		// if we've gone beyond the length of things we can match without
-		// matching anything then just pop the first character
-		if(inputQueueWritePointer > longestSequence)
-		{
-			inputQueueWritePointer--;
-			memmove(inputQueue, &inputQueue[1], inputQueueWritePointer);
-		}
-
-		// output anything that's safe ASCII
-		while(inputQueueWritePointer && (inputQueue[0] >= 32) && (inputQueue[0] < 128))
-		{
-			[self writeNormalCharacter:inputQueue[0]];
-			inputQueueWritePointer--;
-			memmove(inputQueue, &inputQueue[1], inputQueueWritePointer);
-		}
-
-		// have a go at matching what's left, if there is anything
-		if(inputQueueWritePointer)
-		{
-			while(1)
-			{
-				NSString *attemptedString = [[NSString alloc] initWithBytes:inputQueue length:inputQueueWritePointer encoding:NSASCIIStringEncoding];
-				CPMTerminalControlSequence *foundMatch = nil;
-
-				while(attemptedString.length)
-				{
-					CPMTerminalControlSequence *potentialMatch =
-						[sequencesToActions valueForKey:attemptedString];
-
-					if(potentialMatch && potentialMatch.requiredLength <= inputQueueWritePointer)
-					{
-						foundMatch = potentialMatch;
-						break;
-					}
-
-					attemptedString = [attemptedString substringToIndex:attemptedString.length-1];
-				}
-
-				if(!foundMatch) break;
-
-				foundMatch.action();
-				inputQueueWritePointer -= foundMatch.requiredLength;
-				memmove(inputQueue, &inputQueue[foundMatch.requiredLength], inputQueueWritePointer);
-			}
-		}
-	});
-}
-
-- (void)clearFrom:(int)start to:(int)end
-{
-	memset(&srcBuffer[start], 32, end-start);
-	memset(&attributes[start], 0, end-start);
-	[self setNeedsDisplay:YES];
-//	currentAttribute = 0;
-}
-
-- (void)writeNormalCharacter:(char)character
-{
-	if(cursorX == kCPMTerminalViewWidth)
-	{
-		cursorX = 0;
-		[self incrementY];
-	}
-
-	srcBuffer[(cursorY * kCPMTerminalViewWidth) + cursorX] = character;
-	attributes[(cursorY * kCPMTerminalViewWidth) + cursorX] = currentAttribute;
-	cursorX++;
-
-	[self setNeedsDisplay:YES];
+	[controlSet writeCharacter:character];
 }
 
 - (void)viewWillDraw
 {
 	// create a string of the ASCII characters first
-	NSMutableString *asciiText = [NSMutableString stringWithCapacity:(kCPMTerminalViewWidth+1)*kCPMTerminalViewHeight];
-	for(int y = 0; y < kCPMTerminalViewHeight; y++)
-	{
-		NSString *stringForLine = [[NSString alloc] initWithBytesNoCopy:&srcBuffer[y*kCPMTerminalViewWidth] length:kCPMTerminalViewWidth encoding:NSUTF8StringEncoding freeWhenDone:NO];
-		[asciiText appendString:stringForLine];
-		[stringForLine release];
 
-		[asciiText appendFormat:@"\n"];
-	}
-
-	[attributedString release];
+	NSString *asciiText = [NSString stringWithCString:(const char *)controlSet.characterBuffer encoding:NSASCIIStringEncoding];
+	[attributedString release], attributedString = nil;
 	attributedString = [[NSMutableAttributedString alloc] initWithString:asciiText];
 
 	// establish the whole range as Monaco 12
@@ -318,11 +96,12 @@
 		range:NSMakeRange(0, attributedString.length)];
 
 	uint8_t lastAttribute = 0;
-	for(int y = 0; y < kCPMTerminalViewHeight; y++)
+	for(int y = 0; y < controlSet.height; y++)
 	{
-		for(int x = 0; x < kCPMTerminalViewWidth; x++)
+		uint16_t *attributes = [controlSet attributeBufferForY:y];
+		for(int x = 0; x < controlSet.width; x++)
 		{
-			uint8_t attribute = attributes[y*kCPMTerminalViewWidth + x];
+			uint8_t attribute = attributes[x];
 
 			if(attribute != lastAttribute)
 			{
@@ -362,7 +141,7 @@
 				}
 
 				NSRange rangeFromHereToEnd;
-				rangeFromHereToEnd.location = y*(kCPMTerminalViewWidth+1) + x;
+				rangeFromHereToEnd.location = y*(controlSet.width+1) + x;
 				rangeFromHereToEnd.length = attributedString.length - rangeFromHereToEnd.location;
 				[attributedString
 					addAttributes:newAttributes
@@ -413,16 +192,17 @@
 
 	// TODO: render any solid areas necessary for inverse video, or for graphics
 	CGContextSetAllowsAntialiasing(context, false);
-	CGFloat yPosition = (lineHeight * kCPMTerminalViewHeight) - lineHeight;
-	for(int y = 0; y < kCPMTerminalViewHeight; y++)
+	CGFloat yPosition = (lineHeight * controlSet.height) - lineHeight;
+	for(int y = 0; y < controlSet.height; y++)
 	{
 		uint8_t lastAttribute = 0;
 		int startingColumn = 0;
 		NSColor *colour = nil;
+		uint16_t *attributes = [controlSet attributeBufferForY:y];
 
-		for(int x = 0; x < kCPMTerminalViewWidth; x++)
+		for(int x = 0; x < controlSet.width; x++)
 		{
-			uint8_t attribute = attributes[y*kCPMTerminalViewWidth + x]&(kCPMTerminalAttributeReducedIntensityOn|kCPMTerminalAttributeInverseVideoOn);
+			uint8_t attribute = attributes[x]&(kCPMTerminalAttributeReducedIntensityOn|kCPMTerminalAttributeInverseVideoOn);
 
 			if(attribute != lastAttribute)
 			{
@@ -453,7 +233,7 @@
 		if(colour)
 		{
 			[colour set];
-			NSRectFill(NSMakeRect((CGFloat)startingColumn * characterWidth, yPosition, (CGFloat)(kCPMTerminalViewWidth - startingColumn) * characterWidth, lineHeight));
+			NSRectFill(NSMakeRect((CGFloat)startingColumn * characterWidth, yPosition, (CGFloat)(controlSet.width - startingColumn) * characterWidth, lineHeight));
 		}
 		yPosition -= lineHeight;
 	}
@@ -465,7 +245,7 @@
 	if(flashCount&1)
 	{
 		[[NSColor colorWithDeviceRed:0.0f green:0.5f blue:0.0f alpha:1.0f] set];
-		NSRectFill(NSMakeRect(cursorX * characterWidth, (kCPMTerminalViewHeight - 1 - cursorY) * lineHeight, characterWidth, lineHeight));
+		NSRectFill(NSMakeRect(controlSet.cursorX * characterWidth, (controlSet.height - 1 - controlSet.cursorY) * lineHeight, characterWidth, lineHeight));
 	}
 
 	// render the text
