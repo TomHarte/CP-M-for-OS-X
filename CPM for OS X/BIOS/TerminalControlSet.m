@@ -27,6 +27,7 @@
 }
 
 #define address(x, y) (((y)*(self.width+1))+(x))
+@synthesize cursorX, cursorY;
 
 - (void)setIsTrackingCodePoints:(BOOL)isTrackingCodePoints
 {
@@ -151,6 +152,10 @@
 
 - (void)setupForWidth:(int)width height:(int)height
 {
+	// store width and height
+	_width = width;
+	_height = height;
+
 	// allocate storage area for the display
 	characters = (uint8_t *)calloc((width+1)*height, sizeof(uint8_t));
 	attributes = (uint16_t *)calloc((width+1)*height, sizeof(uint16_t));
@@ -165,7 +170,7 @@
 	}
 
 	// write in NULL terminator
-	characters[address(self.width, self.height)] = '\0';
+	characters[address(self.width, self.height-1)] = '\0';
 }
 
 + (id)ADM3AControlSet
@@ -181,8 +186,10 @@
 	{
 		[self setupForWidth:80 height:24];
 
-		[self installASCIIControlCharacters];
-		[self installADM3AControlCodes];
+		[self beginControlCodes];
+
+			[self installASCIIControlCharacters];
+			[self installADM3AControlCodes];
 
 		[self finishControlCodes];
 	}
@@ -230,6 +237,9 @@
 		// blank out the new bottom line
 		memset(&characters[address(0, cursorY)], 32, sizeof(uint8_t)*self.width);
 		memset(&attributes[address(0, cursorY)], 0, sizeof(uint16_t)*self.width);
+
+		// remove the terminating NULL that just ascended a position
+		characters[address(self.width, self.height-2)] = '\n';
 	}
 }
 
@@ -246,7 +256,7 @@
 		characters[address(self.width, line)] = '\n';
 
 	// make sure we're still ending on a NULL
-	characters[address(self.width, self.height)] = '\0';
+	characters[address(self.width, self.height-1)] = '\0';
 
 	// notify the delgate that we've visibly changed
 	dispatch_async(dispatch_get_main_queue(),
@@ -258,6 +268,11 @@
 - (void)addControlSequence:(CPMTerminalControlSequence *)controlSequence
 {
 	[sequencesToActions setObject:controlSequence forKey:controlSequence.start];
+}
+
+- (void)beginControlCodes
+{
+	sequencesToActions = [[NSMutableDictionary alloc] init];
 }
 
 - (void)finishControlCodes
@@ -305,7 +320,7 @@
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x17"
-			action:^{	[self clearFrom:address(cursorX, cursorY) to:address(self.width, self.height)];		}]];
+			action:^{	[self clearFrom:address(cursorX, cursorY) to:address(self.width, self.height-1)];		}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x18"
@@ -316,7 +331,7 @@
 			action:
 			^{
 				[self setCursorX:0 y:0];
-				[self clearFrom:address(0, 0) to:address(self.width, self.height)];
+				[self clearFrom:address(0, 0) to:address(self.width, self.height-1)];
 			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
@@ -332,7 +347,7 @@
 			requiredLength:4
 			action:
 			^{
-				[self setCursorX:(inputQueue[2] - 32)%self.height y:(inputQueue[3] - 32)%self.width];
+				[self setCursorX:(inputQueue[3] - 32)%self.width y:(inputQueue[2] - 32)%self.height];
 			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence

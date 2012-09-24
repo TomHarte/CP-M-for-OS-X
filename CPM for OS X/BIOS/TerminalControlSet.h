@@ -65,6 +65,9 @@
 // is linear but they're not necessarily tightly packed
 - (uint16_t *)attributeBufferForY:(int)y;
 
+// the current cursor position, in character coordinates; (0, 0) is the top left
+@property (nonatomic, readonly) int cursorX, cursorY;
+
 @end
 
 /*
