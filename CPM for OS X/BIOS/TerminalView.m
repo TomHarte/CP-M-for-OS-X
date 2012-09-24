@@ -9,15 +9,6 @@
 #import "TerminalView.h"
 #import "TerminalControlSequence.h"
 
-typedef enum
-{
-	CPMTerminalViewEscapeStatusNone,
-	CPMTerminalViewEscapeStatusExpectingCharacter,
-	CPMTerminalViewEscapeStatusExpectingNumber,
-	CPMTerminalViewEscapeStatusExpectingXCoordinate,
-	CPMTerminalViewEscapeStatusExpectingYCoordinate,
-} CPMTerminalViewEscapeStatus;
-
 #define kCPMTerminalViewWidth	80
 #define kCPMTerminalViewHeight	24
 
