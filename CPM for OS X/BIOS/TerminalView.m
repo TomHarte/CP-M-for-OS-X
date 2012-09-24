@@ -600,4 +600,14 @@
 	}
 }
 
+- (void)terminalViewControlSetDidChangeOutput:(CPMTerminalControlSet *)controlSet
+{
+	[self setNeedsDisplay:YES];
+}
+
+- (void)terminalViewControlSet:(CPMTerminalControlSet *)controlSet addStringToInput:(NSString *)string
+{
+	[self addStringToInputQueue:string filterToASCII:NO];
+}
+
 @end

@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "TerminalControlSet.h"
 
 @class CPMTerminalView;
 
@@ -16,7 +17,7 @@
 
 @end
 
-@interface CPMTerminalView : NSView <NSDraggingDestination>
+@interface CPMTerminalView : NSView <NSDraggingDestination, CPMTerminalControlSetDelegate>
 
 /*
 	These three are thread safe.

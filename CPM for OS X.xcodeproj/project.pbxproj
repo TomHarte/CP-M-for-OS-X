@@ -22,7 +22,7 @@
 		4B5829BA16019899009515A6 /* FuseTestRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829B016019899009515A6 /* FuseTestRunner.m */; };
 		4B5829BB16019899009515A6 /* Processor.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829B216019899009515A6 /* Processor.m */; };
 		4B5829BC16019899009515A6 /* RAMModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829B516019899009515A6 /* RAMModule.m */; };
-		4B98BA03160E693D00685DAD /* TerminaViewControlSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B98BA02160E693D00685DAD /* TerminaViewControlSet.m */; };
+		4B98BA03160E693D00685DAD /* TerminalControlSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B98BA02160E693D00685DAD /* TerminalControlSet.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,8 +56,8 @@
 		4B5829B216019899009515A6 /* Processor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Processor.m; sourceTree = "<group>"; };
 		4B5829B416019899009515A6 /* RAMModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RAMModule.h; sourceTree = "<group>"; };
 		4B5829B516019899009515A6 /* RAMModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RAMModule.m; sourceTree = "<group>"; };
-		4B98BA01160E693D00685DAD /* TerminaViewControlSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminaViewControlSet.h; sourceTree = "<group>"; };
-		4B98BA02160E693D00685DAD /* TerminaViewControlSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminaViewControlSet.m; sourceTree = "<group>"; };
+		4B98BA01160E693D00685DAD /* TerminalControlSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalControlSet.h; sourceTree = "<group>"; };
+		4B98BA02160E693D00685DAD /* TerminalControlSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalControlSet.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -184,8 +184,8 @@
 				4B5829AD16019899009515A6 /* TerminalView.m */,
 				4B029E7F160C18040014F528 /* TerminalControlSequence.h */,
 				4B029E80160C18050014F528 /* TerminalControlSequence.m */,
-				4B98BA01160E693D00685DAD /* TerminaViewControlSet.h */,
-				4B98BA02160E693D00685DAD /* TerminaViewControlSet.m */,
+				4B98BA01160E693D00685DAD /* TerminalControlSet.h */,
+				4B98BA02160E693D00685DAD /* TerminalControlSet.m */,
 			);
 			name = "Terminal View";
 			sourceTree = "<group>";
@@ -266,7 +266,7 @@
 				4B5829BB16019899009515A6 /* Processor.m in Sources */,
 				4B5829BC16019899009515A6 /* RAMModule.m in Sources */,
 				4B029E81160C18050014F528 /* TerminalControlSequence.m in Sources */,
-				4B98BA03160E693D00685DAD /* TerminaViewControlSet.m in Sources */,
+				4B98BA03160E693D00685DAD /* TerminalControlSet.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

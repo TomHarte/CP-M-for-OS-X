@@ -6,10 +6,10 @@
 //  Copyright (c) 2012 Thomas Harte. All rights reserved.
 //
 
-#import "TerminaViewControlSet.h"
+#import "TerminalControlSet.h"
 #import "TerminalControlSequence.h"
 
-@implementation CPMTerminaViewControlSet
+@implementation CPMTerminalControlSet
 {
 	uint8_t *characters;
 	uint16_t *attributes, currentAttribute;

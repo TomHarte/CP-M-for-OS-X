@@ -8,22 +8,22 @@
 
 #import <Foundation/Foundation.h>
 
-@class CPMTerminaViewControlSet;
+@class CPMTerminalControlSet;
 
 /*
 
 	These delegate methods are guaranteed to be called on the main queue
 
 */
-@protocol CPMTerminaViewControlSetDelegate <NSObject>
+@protocol CPMTerminalControlSetDelegate <NSObject>
 
 // did change output is triggered upon any new characters being written to the screen or the cursor moving
 // (if enabled), i.e. anything that would be visible to a user
-- (void)terminalViewControlSetDidChangeOutput:(CPMTerminaViewControlSet *)controlSet;
+- (void)terminalViewControlSetDidChangeOutput:(CPMTerminalControlSet *)controlSet;
 
 // some terminals have call and return sequences where printing a certain sequence results in a response
 // as input; this delegate call will be used to post any such responses
-- (void)terminalViewControlSet:(CPMTerminaViewControlSet *)controlSet addStringToInput:(NSString *)string;
+- (void)terminalViewControlSet:(CPMTerminalControlSet *)controlSet addStringToInput:(NSString *)string;
 
 @end
 
@@ -34,7 +34,7 @@
 	or whatever control codes occurs.
 
 */
-@interface CPMTerminaViewControlSet : NSObject
+@interface CPMTerminalControlSet : NSObject
 
 + (id)ADM3AControlSet;
 
@@ -46,12 +46,13 @@
 // that were control codes but looked nothing like the sort this terminal understands.
 // They should provide some rough metrics for deciding which terminal emulation to proceed with though.
 @property (nonatomic, assign) BOOL isTrackingCodePoints;
+@property (nonatomic, assign) NSUInteger numberOfCharactersSoFar;
 @property (nonatomic, readonly) NSSet *recognisedControlPoints, *unrecognisedControlPoints;
 
 // the width and height are the dimensions of this terminal in characters
 @property (nonatomic, readonly) NSUInteger width, height;
 
-@property (nonatomic, assign) id <CPMTerminaViewControlSetDelegate> delegate;
+@property (nonatomic, assign) id <CPMTerminalControlSetDelegate> delegate;
 
 // write character is the single entry point for updating state; post all output characters here
 - (void)writeCharacter:(uint8_t)character;
