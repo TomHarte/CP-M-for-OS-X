@@ -49,17 +49,21 @@
 {
 	// this enqueuing process has a quick safeguard against overflow
 	inputQueue[inputQueueWritePointer++] = character;
+	_numberOfCharactersSoFar++;
 
 	// if we've gone beyond the length of things we can match without
 	// matching anything then just pop the first character
 	if(inputQueueWritePointer > longestSequence)
 	{
+		// this means we missed a code, probably
+		[_unrecognisedCodePoints addObject:[NSNumber numberWithInteger:_numberOfCharactersSoFar]];
+		
 		inputQueueWritePointer--;
 		memmove(inputQueue, &inputQueue[1], inputQueueWritePointer);
 	}
 
-	// output anything that's safe ASCII
-	while(inputQueueWritePointer && (inputQueue[0] >= 32) && (inputQueue[0] < 128))
+	// output anything that's not possibly part of a control sequence
+	while(inputQueueWritePointer && ![allSequenceStartCharacters containsObject:[NSNumber numberWithChar:inputQueue[0]]])
 	{
 		[self writeNormalCharacter:inputQueue[0]];
 		inputQueueWritePointer--;
@@ -90,6 +94,10 @@
 
 			if(!foundMatch) break;
 
+			// record that we recognised a control sequence
+			[_recognisedCodePoints addObject:[NSNumber numberWithInteger:_numberOfCharactersSoFar]];
+
+			// perform the sequence and remove the matched characters from the queue
 			foundMatch.action();
 			inputQueueWritePointer -= foundMatch.requiredLength;
 			memmove(inputQueue, &inputQueue[foundMatch.requiredLength], inputQueueWritePointer);
@@ -99,9 +107,15 @@
 
 - (void)writeNormalCharacter:(char)character
 {
+	// if it's not one of the ASCII printables then, for now, render it as a space
+	// (TODO: put these somewhere else so that we can do graphics output)
+	if(character < 0x20 || character > 0x7e) character = ' ';
+
+	// write the character, with the current attribute
 	characters[address(cursorX, cursorY)] = character;
 	attributes[address(cursorX, cursorY)] = currentAttribute;
 
+	// increment x and increment y if necessary
 	cursorX++;
 	if(cursorX == self.width)
 	{
@@ -109,6 +123,20 @@
 		[self incrementY];
 	}
 
+	// tell the delegate that the output has changed
+	dispatch_async(dispatch_get_main_queue(),
+	^{
+		[self.delegate terminalViewControlSetDidChangeOutput:self];
+	});
+}
+
+- (void)setCursorX:(int)newCursorX y:(int)newCursorY
+{
+	cursorX = newCursorX;
+	cursorY = newCursorY;
+
+	// tell the delegate that the output has changed; TODO: check
+	// that the cursor is currently enabled before doing this
 	dispatch_async(dispatch_get_main_queue(),
 	^{
 		[self.delegate terminalViewControlSetDidChangeOutput:self];
@@ -116,13 +144,28 @@
 }
 
 - (uint8_t *)characterBuffer				{	return characters;	}
-- (uint16_t *)attributeBuffer				{	return attributes;	}
+- (uint16_t *)attributeBufferForY:(int)y
+{
+	return &attributes[address(0, y)];
+}
 
 - (void)setupForWidth:(int)width height:(int)height
 {
 	// allocate storage area for the display
-	characters = (uint8_t *)calloc(width*(height+1), sizeof(uint8_t));
-	attributes = (uint16_t *)calloc(width*(height+1), sizeof(uint16_t));
+	characters = (uint8_t *)calloc((width+1)*height, sizeof(uint8_t));
+	attributes = (uint16_t *)calloc((width+1)*height, sizeof(uint16_t));
+
+	// set everything to spaces, initially
+	memset(characters, ' ', (width+1)*height);
+
+	// write in new lines
+	for(int y = 0; y < height; y++)
+	{
+		characters[address(self.width, y)] = '\n';
+	}
+
+	// write in NULL terminator
+	characters[address(self.width, self.height)] = '\0';
 }
 
 + (id)ADM3AControlSet
@@ -202,8 +245,14 @@
 	for(size_t line = startLine; line < endLine; line++)
 		characters[address(self.width, line)] = '\n';
 
+	// make sure we're still ending on a NULL
+	characters[address(self.width, self.height)] = '\0';
+
 	// notify the delgate that we've visibly changed
-	[self.delegate terminalViewControlSetDidChangeOutput:self];
+	dispatch_async(dispatch_get_main_queue(),
+	^{
+		[self.delegate terminalViewControlSetDidChangeOutput:self];
+	});
 }
 
 - (void)addControlSequence:(CPMTerminalControlSequence *)controlSequence
@@ -235,23 +284,23 @@
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x08"
-			action:^{	if(cursorX > 0) cursorX--;							}]];
+			action:^{	if(cursorX > 0)	[self setCursorX:cursorX-1 y:cursorY];				}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x0c"
-			action:^{	if(cursorX < self.width-1) cursorX++;				}]];
+			action:^{	if(cursorX < self.width-1)	[self setCursorX:cursorX-1 y:cursorY];	}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\n"
-			action:^{	[self incrementY];									}]];
+			action:^{	[self incrementY];													}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\r"
-			action:^{	cursorX = 0;										}]];
+			action:^{	[self setCursorX:0 y:cursorY];										}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x0b"
-			action:^{	if(cursorY > 0) cursorY--;							}]];
+			action:^{	if(cursorY > 0) [self setCursorX:cursorX y:cursorY-1];				}]];
 
 	[self addControlSequence:
 		[CPMTerminalControlSequence
@@ -266,13 +315,13 @@
 			terminalControlSequenceWithStart:@"\x1a"
 			action:
 			^{
-				cursorX = cursorY = 0;
+				[self setCursorX:0 y:0];
 				[self clearFrom:address(0, 0) to:address(self.width, self.height)];
 			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x1e"
-			action:^{	cursorX = cursorY = 0;					}]];
+			action:^{	[self setCursorX:0 y:0];			}]];
 }
 
 - (void)installADM3AControlCodes
@@ -283,8 +332,7 @@
 			requiredLength:4
 			action:
 			^{
-				cursorY = (inputQueue[2] - 32)%self.height;
-				cursorX = (inputQueue[3] - 32)%self.width;
+				[self setCursorX:(inputQueue[2] - 32)%self.height y:(inputQueue[3] - 32)%self.width];
 			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
