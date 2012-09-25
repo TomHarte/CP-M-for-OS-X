@@ -205,6 +205,7 @@
 
 		[self beginControlCodes];
 
+			[self installASCIIControlCharacters];
 			[self installHazeltine1500ControlCodes];
 
 		[self finishControlCodes];
@@ -340,20 +341,16 @@
 {
 	[self addControlSequence:
 		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x08"
-			action:^{	[self leftCursor];				}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x0c"
-			action:^{	[self rightCursor];	}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\n"
 			action:^{	[self incrementY];													}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\r"
 			action:^{	[self setCursorX:0 y:cursorY];										}]];
+}
+
+- (void)installADM3AControlCodes
+{
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x0b"
@@ -379,10 +376,15 @@
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x1e"
 			action:^{	[self setCursorX:0 y:0];			}]];
-}
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\x08"
+			action:^{	[self leftCursor];				}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\x0c"
+			action:^{	[self rightCursor];	}]];
 
-- (void)installADM3AControlCodes
-{
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33="
