@@ -16,7 +16,7 @@
 - (void)BIOSProgramDidExit:(CPMBIOS *)bios;
 @end
 
-@interface CPMBIOS : NSObject <CPMTerminaViewDelegate>
+@interface CPMBIOS : NSObject <CPMTerminalViewDelegate>
 
 + (id)BIOSWithTerminalView:(CPMTerminalView *)terminalView processor:(CPMProcessor *)processor;
 

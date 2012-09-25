@@ -31,7 +31,6 @@
 	{
 		// retain the terminal view and make this class the delegate
 		_terminalView = [terminalView retain];
-		_terminalView.delegate = self;
 
 		// also keep the processor
 		_processor = [processor retain];
