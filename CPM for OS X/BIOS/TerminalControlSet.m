@@ -59,8 +59,10 @@
 	{
 		// this means we missed a code, probably
 		[(NSMutableSet *)_unrecognisedControlPoints addObject:[NSNumber numberWithInteger:_numberOfCharactersSoFar]];
-//		NSLog(@"missed code %02x %02x %02x", inputQueue[0], inputQueue[1], inputQueue[2]);
 
+		// we'll attempt to output the first thing; some terminals (such as the Hazeltine 1500)
+		// use a printable character as the first thing in an escape code...
+		[self writeNormalCharacter:self.inputQueue[0]];
 		inputQueueWritePointer--;
 		memmove(self.inputQueue, &self.inputQueue[1], inputQueueWritePointer);
 	}
@@ -453,212 +455,104 @@ typedef struct
 {
 	__weak __block typeof(self) weakSelf = self;
 
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x0b"
-			action:^{	[weakSelf upCursor];				}]];
+	CPMTerminalControlSequenceStruct sequences[] =
+	{
+		{@"\x0b",	0,	^{	[weakSelf upCursor];					}},
+		{@"\x17",	0,	^{	[weakSelf clearToEndOfScreen];			}},
+		{@"\x18",	0,	^{	[weakSelf clearToEndOfLine];			}},
+		{@"\x1a",	0,	^{
+							[weakSelf homeCursor];
+							[weakSelf clearToEndOfScreen];
+						}},
+		{@"\x1e",	0,	^{	[weakSelf homeCursor];					}},
+		{@"\x08",	0,	^{	[weakSelf leftCursor];					}},
+		{@"\x0c",	0,	^{	[weakSelf rightCursor];					}},
+		{@"\33=",	4,	^{
+							[weakSelf
+									setCursorX:(weakSelf.inputQueue[3] - 32)%weakSelf.width
+									y:(weakSelf.inputQueue[2] - 32)%weakSelf.height];
+						}},
+		{@"\33B0",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;		}},
+		{@"\33C0",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;		}},
+		{@"\33B1",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}},
+		{@"\33C1",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}},
+		{@"\33B2",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeBlinkingOn;			}},
+		{@"\33C2",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeBlinkingOn;			}},
+		{@"\33B3",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}},
+		{@"\33C3",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;		}},
+		{@"\33R",	0,	^{	[weakSelf deleteLine];	}},
+		{@"\33E",	0,	^{	[weakSelf insertLine];	}},
+		{nil}
+	};
 
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x17"
-			action:^{	[weakSelf clearToEndOfScreen];		}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x18"
-			action:^{	[weakSelf clearToEndOfLine];				}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x1a"
-			action:
-			^{
-				[weakSelf setCursorX:0 y:0];
-				[weakSelf clearToEndOfScreen];
-			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x1e"
-			action:^{	[weakSelf setCursorX:0 y:0];			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x08"
-			action:^{	[weakSelf leftCursor];				}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x0c"
-			action:^{	[weakSelf rightCursor];	}]];
-
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33="
-			requiredLength:4
-			action:
-			^{
-				[weakSelf setCursorX:(weakSelf.inputQueue[3] - 32)%weakSelf.width y:(weakSelf.inputQueue[2] - 32)%weakSelf.height];
-			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33B0"
-			action:^{	weakSelf.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;		}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33C0"
-			action:^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;		}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33B1"
-			action:^{	weakSelf.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33C1"
-			action:^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33B2"
-			action:^{	weakSelf.currentAttribute |= kCPMTerminalAttributeBlinkingOn;			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33C2"
-			action:^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeBlinkingOn;			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33B3"
-			action:^{	weakSelf.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33C3"
-			action:^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33R"
-			action:^{	[weakSelf deleteLine];			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33E"
-			action:^{	[weakSelf insertLine];			}]];
+	[self installControlSequencesFromStructs:sequences];
 }
 
 - (void)installHazeltine1500ControlCodes
 {
 	__weak __block typeof(self) weakSelf = self;
 
-	// position cursor
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"~\21"
-			requiredLength:4
-			action:
-			^{
-				[weakSelf setCursorX:weakSelf.inputQueue[2]%weakSelf.width y:weakSelf.inputQueue[3]%weakSelf.height];
-			}]];
+	CPMTerminalControlSequenceStruct sequences[] =
+	{
+		{@"~\21",	4,	^{
+							[weakSelf
+								setCursorX:weakSelf.inputQueue[2]%weakSelf.width
+								y:weakSelf.inputQueue[3]%weakSelf.height];
+						}},
+		{@"~\5",	0,	^{
+							dispatch_sync(dispatch_get_main_queue(),
+							^{
+								[weakSelf.delegate
+									terminalViewControlSet:weakSelf
+									addStringToInput:
+										[NSString stringWithFormat:@"%c%c",
+												weakSelf.cursorX,
+												weakSelf.cursorY]];
+							});
+						}},
+		{@"~\22",	0,	^{	[weakSelf homeCursor];	}},
+		{@"~\14",	0,	^{	[weakSelf upCursor];	}},
+		{@"~\13",	0,	^{	[weakSelf downCursor];	}},
+		{@"~\34",	0,	^{
+							[weakSelf homeCursor];
+							[weakSelf clearToEndOfScreen];
+						}},
+		{@"~\17",	0,	^{	[weakSelf clearToEndOfLine];	}},
+		{@"~\30",	0,	^{	[weakSelf clearToEndOfScreen];	}},
+		{nil}
+	};
 
-	// read cursor address
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"~\5"
-			action:
-			^{
-				dispatch_sync(dispatch_get_main_queue(),
-				^{
-					[weakSelf.delegate terminalViewControlSet:weakSelf addStringToInput:[NSString stringWithFormat:@"%c%c", weakSelf.cursorX, weakSelf.cursorY]];
-				});
-			}]];
-
-	// home cursor
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"~\22"
-			action:^{	[weakSelf homeCursor];			}]];
-
-	// cursor up and down
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"~\14"
-			action:^{	[weakSelf upCursor];			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"~\13"
-			action:^{	[weakSelf downCursor];			}]];
-
-	// clear screen
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"~\34"
-			action:^{	[weakSelf setCursorX:0 y:0]; [weakSelf clearToEndOfScreen];		}]];
-
-	// clear to end of line
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"~\17"
-			action:^{	[weakSelf clearToEndOfLine];		}]];
-
-	// clear to end of screen
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"~\30"
-			action:^{	[weakSelf clearToEndOfScreen];		}]];
+	[self installControlSequencesFromStructs:sequences];
 }
 
 - (void)installOsborneControlCodes
 {
 	__weak __block typeof(self) weakSelf = self;
 
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x08"
-			action:^{	[weakSelf leftCursor];				}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x0c"
-			action:^{	[weakSelf rightCursor];				}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x0b"
-			action:^{	[weakSelf upCursor];				}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x1a"
-			action:
-			^{
-				[weakSelf setCursorX:0 y:0];
-				[weakSelf clearToEndOfScreen];
-			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\x1e"
-			action:^{	[weakSelf setCursorX:0 y:0];			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33="
-			requiredLength:4
-			action:
-			^{
-				[weakSelf setCursorX:(weakSelf.inputQueue[3] - 32)%weakSelf.width y:(weakSelf.inputQueue[2] - 32)%weakSelf.height];
-			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33T"
-			action:
-			^{	[weakSelf clearToEndOfLine];			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33)"
-			action:
-			^{	weakSelf.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33("
-			action:
-			^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33L"
-			action:
-			^{	weakSelf.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\33M"
-			action:
-			^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;			}]];
+	CPMTerminalControlSequenceStruct sequences[] =
+	{
+		{@"\x08",	0,	^{	[weakSelf leftCursor];	}},
+		{@"\x0c",	0,	^{	[weakSelf rightCursor];	}},
+		{@"\x0b",	0,	^{	[weakSelf upCursor];	}},
+		{@"\x1a",	0,	^{
+							[weakSelf homeCursor];
+							[weakSelf clearToEndOfScreen];
+						}},
+		{@"\x1e",	0,	^{	[weakSelf homeCursor];	}},
+		{@"\33=",	4,	^{
+							[weakSelf
+									setCursorX:(weakSelf.inputQueue[3] - 32)%weakSelf.width
+									y:(weakSelf.inputQueue[2] - 32)%weakSelf.height];
+						}},
+		{@"\33T",	0,	^{	[weakSelf clearToEndOfLine];	}},
+		{@"\33)",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}},
+		{@"\33(",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}},
+		{@"\33L",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}},
+		{@"\33M",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;		}},
+		{nil}
+	};
+
+	[self installControlSequencesFromStructs:sequences];
 }
 
 @end
