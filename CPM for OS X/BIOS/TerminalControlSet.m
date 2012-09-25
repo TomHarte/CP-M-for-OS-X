@@ -257,6 +257,7 @@
 	[_recognisedControlPoints release], _recognisedControlPoints = nil;
 	[_unrecognisedControlPoints release], _unrecognisedControlPoints = nil;
 	[sequencesToActions release], sequencesToActions = nil;
+	[allSequenceStartCharacters release], allSequenceStartCharacters = nil;
 
 	[super dealloc];
 }
