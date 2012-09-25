@@ -74,7 +74,7 @@
 	{
 		while(1)
 		{
-			NSString *attemptedString = [[NSString alloc] initWithBytes:inputQueue length:inputQueueWritePointer encoding:NSASCIIStringEncoding];
+			NSString *attemptedString = [[[NSString alloc] initWithBytes:inputQueue length:inputQueueWritePointer encoding:NSASCIIStringEncoding] autorelease];
 			CPMTerminalControlSequence *foundMatch = nil;
 
 			while(attemptedString.length)
