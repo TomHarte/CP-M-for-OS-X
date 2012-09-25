@@ -120,7 +120,8 @@
 
 		// if there's a suitably large margin between positions one and two, and
 		// quite a few control codes have occurred then kill the rest of the list
-		if([[[candidateControlSets objectAtIndex:0] recognisedControlPoints] count] > 10)
+		NSUInteger controlSetTotalRecognised = [[controlSet recognisedControlPoints] count];
+		if(controlSetTotalRecognised > 10)
 		{
 			// get all control points recognised to date
 			NSMutableSet *allControlPoints = [NSMutableSet set];
@@ -129,10 +130,15 @@
 
 			float totalPointsToDate = (float)[allControlPoints count];
 
-			float recognisedPercentage1 = (float)[[[candidateControlSets objectAtIndex:0] recognisedControlPoints] count] / totalPointsToDate;
+			float recognisedPercentage1 = (float)controlSetTotalRecognised / totalPointsToDate;
 			float recognisedPercentage2 = (float)[[[candidateControlSets objectAtIndex:1] recognisedControlPoints] count] / totalPointsToDate;
 
-			if(recognisedPercentage1 > recognisedPercentage2 + 0.2f)
+			// if the topmost one is at least 20% ahead, or we've had at least 150 control codes
+			// without establishing a clear winner then award victory and kill all the losers
+			if(
+				(recognisedPercentage1 > recognisedPercentage2 + 0.2f) ||
+				(controlSetTotalRecognised > 150)
+			)
 			{
 				[candidateControlSets release], candidateControlSets = nil;
 				controlSet.isTrackingCodePoints = NO;
