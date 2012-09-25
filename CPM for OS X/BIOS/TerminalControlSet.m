@@ -9,13 +9,17 @@
 #import "TerminalControlSet.h"
 #import "TerminalControlSequence.h"
 
+@interface CPMTerminalControlSet ()
+@property (nonatomic, assign) uint16_t currentAttribute;
+@property (nonatomic, assign) uint8_t *inputQueue;
+@end
+
 @implementation CPMTerminalControlSet
 {
 	uint8_t *characters;
-	uint16_t *attributes, currentAttribute;
+	uint16_t *attributes;
 	int cursorX, cursorY;
 
-	uint8_t *inputQueue;
 	NSUInteger inputQueueWritePointer;
 	NSUInteger longestSequence;
 
@@ -46,7 +50,7 @@
 - (void)writeCharacter:(uint8_t)character
 {
 	// this enqueuing process has a quick safeguard against overflow
-	inputQueue[inputQueueWritePointer++] = character;
+	self.inputQueue[inputQueueWritePointer++] = character;
 	_numberOfCharactersSoFar++;
 
 	// if we've gone beyond the length of things we can match without
@@ -58,15 +62,15 @@
 //		NSLog(@"missed code %02x %02x %02x", inputQueue[0], inputQueue[1], inputQueue[2]);
 
 		inputQueueWritePointer--;
-		memmove(inputQueue, &inputQueue[1], inputQueueWritePointer);
+		memmove(self.inputQueue, &self.inputQueue[1], inputQueueWritePointer);
 	}
 
 	// output anything that's not possibly part of a control sequence
-	while(inputQueueWritePointer && ![allSequenceStartCharacters containsObject:[NSNumber numberWithChar:inputQueue[0]]])
+	while(inputQueueWritePointer && ![allSequenceStartCharacters containsObject:[NSNumber numberWithChar:self.inputQueue[0]]])
 	{
-		[self writeNormalCharacter:inputQueue[0]];
+		[self writeNormalCharacter:self.inputQueue[0]];
 		inputQueueWritePointer--;
-		memmove(inputQueue, &inputQueue[1], inputQueueWritePointer);
+		memmove(self.inputQueue, &self.inputQueue[1], inputQueueWritePointer);
 	}
 
 	// have a go at matching what's left, if there is anything
@@ -74,7 +78,7 @@
 	{
 		while(1)
 		{
-			NSString *attemptedString = [[[NSString alloc] initWithBytes:inputQueue length:inputQueueWritePointer encoding:NSASCIIStringEncoding] autorelease];
+			NSString *attemptedString = [[[NSString alloc] initWithBytes:self.inputQueue length:inputQueueWritePointer encoding:NSASCIIStringEncoding] autorelease];
 			CPMTerminalControlSequence *foundMatch = nil;
 
 			while(attemptedString.length)
@@ -99,7 +103,7 @@
 			// perform the sequence and remove the matched characters from the queue
 			foundMatch.action();
 			inputQueueWritePointer -= foundMatch.requiredLength;
-			memmove(inputQueue, &inputQueue[foundMatch.requiredLength], inputQueueWritePointer);
+			memmove(self.inputQueue, &self.inputQueue[foundMatch.requiredLength], inputQueueWritePointer);
 		}
 	}
 }
@@ -112,7 +116,7 @@
 
 	// write the character, with the current attribute
 	characters[address(cursorX, cursorY)] = character;
-	attributes[address(cursorX, cursorY)] = currentAttribute;
+	attributes[address(cursorX, cursorY)] = self.currentAttribute;
 
 	// increment x and increment y if necessary
 	cursorX++;
@@ -245,10 +249,10 @@
 		free(attributes);
 		attributes = NULL;
 	}
-	if(inputQueue)
+	if(_inputQueue)
 	{
-		free(inputQueue);
-		inputQueue = NULL;
+		free(_inputQueue);
+		_inputQueue = NULL;
 	}
 	[_recognisedControlPoints release], _recognisedControlPoints = nil;
 	[_unrecognisedControlPoints release], _unrecognisedControlPoints = nil;
@@ -361,7 +365,7 @@
 	}
 
 	// hence allocate the input queue
-	inputQueue = (uint8_t *)malloc(sizeof(uint8_t) * longestSequence);
+	_inputQueue = (uint8_t *)malloc(sizeof(uint8_t) * longestSequence);
 }
 
 - (void)homeCursor
@@ -389,53 +393,67 @@
 	if(cursorX < self.width-1)	[self setCursorX:cursorX+1 y:cursorY];
 }
 
+- (void)clearToEndOfScreen
+{
+	[self clearFrom:address(self.cursorX, self.cursorY) to:address(self.width, self.height-1)];
+}
+
+- (void)clearToEndOfLine
+{
+	[self clearFrom:address(self.cursorX, self.cursorY) to:address(self.width, self.cursorY)];
+}
+
 - (void)installASCIIControlCharacters
 {
+	__weak __block typeof(self) weakSelf = self;
+
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\n"
-			action:^{	[self incrementY];													}]];
+			action:^{	[weakSelf incrementY];						}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\r"
-			action:^{	[self setCursorX:0 y:cursorY];										}]];
+			action:^{	[weakSelf setCursorX:0 y:weakSelf.cursorY];			}]];
 }
 
 - (void)installADM3AControlCodes
 {
+	__weak __block typeof(self) weakSelf = self;
+
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x0b"
-			action:^{	[self upCursor];				}]];
+			action:^{	[weakSelf upCursor];				}]];
 
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x17"
-			action:^{	[self clearFrom:address(cursorX, cursorY) to:address(self.width, self.height-1)];		}]];
+			action:^{	[weakSelf clearToEndOfScreen];		}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x18"
-			action:^{	[self clearFrom:address(cursorX, cursorY) to:address(0, cursorY+1)];				}]];
+			action:^{	[weakSelf clearToEndOfLine];				}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x1a"
 			action:
 			^{
-				[self setCursorX:0 y:0];
-				[self clearFrom:address(0, 0) to:address(self.width, self.height-1)];
+				[weakSelf setCursorX:0 y:0];
+				[weakSelf clearToEndOfScreen];
 			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x1e"
-			action:^{	[self setCursorX:0 y:0];			}]];
+			action:^{	[weakSelf setCursorX:0 y:0];			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x08"
-			action:^{	[self leftCursor];				}]];
+			action:^{	[weakSelf leftCursor];				}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x0c"
-			action:^{	[self rightCursor];	}]];
+			action:^{	[weakSelf rightCursor];	}]];
 
 	[self addControlSequence:
 		[CPMTerminalControlSequence
@@ -443,52 +461,54 @@
 			requiredLength:4
 			action:
 			^{
-				[self setCursorX:(inputQueue[3] - 32)%self.width y:(inputQueue[2] - 32)%self.height];
+				[weakSelf setCursorX:(weakSelf.inputQueue[3] - 32)%weakSelf.width y:(weakSelf.inputQueue[2] - 32)%weakSelf.height];
 			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33B0"
-			action:^{	currentAttribute |= kCPMTerminalAttributeInverseVideoOn;		}]];
+			action:^{	weakSelf.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;		}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33C0"
-			action:^{	currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;		}]];
+			action:^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;		}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33B1"
-			action:^{	currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}]];
+			action:^{	weakSelf.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33C1"
-			action:^{	currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}]];
+			action:^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33B2"
-			action:^{	currentAttribute |= kCPMTerminalAttributeBlinkingOn;			}]];
+			action:^{	weakSelf.currentAttribute |= kCPMTerminalAttributeBlinkingOn;			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33C2"
-			action:^{	currentAttribute &= ~kCPMTerminalAttributeBlinkingOn;			}]];
+			action:^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeBlinkingOn;			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33B3"
-			action:^{	currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}]];
+			action:^{	weakSelf.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33C3"
-			action:^{	currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;			}]];
+			action:^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33R"
-			action:^{	[self deleteLine];			}]];
+			action:^{	[weakSelf deleteLine];			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33E"
-			action:^{	[self insertLine];			}]];
+			action:^{	[weakSelf insertLine];			}]];
 }
 
 - (void)installHazeltine1500ControlCodes
 {
+	__weak __block typeof(self) weakSelf = self;
+
 	// position cursor
 	[self addControlSequence:
 		[CPMTerminalControlSequence
@@ -496,7 +516,7 @@
 			requiredLength:4
 			action:
 			^{
-				[self setCursorX:inputQueue[2]%self.width y:inputQueue[3]%self.height];
+				[weakSelf setCursorX:weakSelf.inputQueue[2]%weakSelf.width y:weakSelf.inputQueue[3]%weakSelf.height];
 			}]];
 
 	// read cursor address
@@ -507,7 +527,7 @@
 			^{
 				dispatch_sync(dispatch_get_main_queue(),
 				^{
-					[self.delegate terminalViewControlSet:self addStringToInput:[NSString stringWithFormat:@"%c%c", cursorX, cursorY]];
+					[weakSelf.delegate terminalViewControlSet:weakSelf addStringToInput:[NSString stringWithFormat:@"%c%c", weakSelf.cursorX, weakSelf.cursorY]];
 				});
 			}]];
 
@@ -515,96 +535,98 @@
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"~\22"
-			action:^{	[self homeCursor];			}]];
+			action:^{	[weakSelf homeCursor];			}]];
 
 	// cursor up and down
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"~\14"
-			action:^{	[self upCursor];			}]];
+			action:^{	[weakSelf upCursor];			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"~\13"
-			action:^{	[self downCursor];			}]];
+			action:^{	[weakSelf downCursor];			}]];
 
 	// clear screen
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"~\34"
-			action:^{	[self clearFrom:address(0, 0) to:address(self.width, self.height-1)];		}]];
+			action:^{	[weakSelf setCursorX:0 y:0]; [weakSelf clearToEndOfScreen];		}]];
 
 	// clear to end of line
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"~\17"
-			action:^{	[self clearFrom:address(cursorX, cursorY) to:address(self.width-1, cursorY)];		}]];
+			action:^{	[weakSelf clearToEndOfLine];		}]];
 
 	// clear to end of screen
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"~\30"
-			action:^{	[self clearFrom:address(cursorX, cursorY) to:address(self.width-1, self.height-1)];		}]];
+			action:^{	[weakSelf clearToEndOfScreen];		}]];
 }
 
 - (void)installOsborneControlCodes
 {
+	__weak __block typeof(self) weakSelf = self;
+
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x08"
-			action:^{	[self leftCursor];				}]];
+			action:^{	[weakSelf leftCursor];				}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x0c"
-			action:^{	[self rightCursor];				}]];
+			action:^{	[weakSelf rightCursor];				}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x0b"
-			action:^{	[self upCursor];				}]];
+			action:^{	[weakSelf upCursor];				}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x1a"
 			action:
 			^{
-				[self setCursorX:0 y:0];
-				[self clearFrom:address(0, 0) to:address(self.width, self.height-1)];
+				[weakSelf setCursorX:0 y:0];
+				[weakSelf clearToEndOfScreen];
 			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x1e"
-			action:^{	[self setCursorX:0 y:0];			}]];
+			action:^{	[weakSelf setCursorX:0 y:0];			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33="
 			requiredLength:4
 			action:
 			^{
-				[self setCursorX:(inputQueue[3] - 32)%self.width y:(inputQueue[2] - 32)%self.height];
+				[weakSelf setCursorX:(weakSelf.inputQueue[3] - 32)%weakSelf.width y:(weakSelf.inputQueue[2] - 32)%weakSelf.height];
 			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33T"
 			action:
-			^{	[self clearFrom:address(cursorX, cursorY) to:address(self.width-1, cursorY)];			}]];
+			^{	[weakSelf clearToEndOfLine];			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33)"
 			action:
-			^{	currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;			}]];
+			^{	weakSelf.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33("
 			action:
-			^{	currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;			}]];
+			^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33L"
 			action:
-			^{	currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}]];
+			^{	weakSelf.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33M"
 			action:
-			^{	currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;			}]];
+			^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;			}]];
 }
 
 @end
