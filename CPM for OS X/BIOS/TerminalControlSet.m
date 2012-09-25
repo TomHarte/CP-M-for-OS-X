@@ -176,6 +176,7 @@
 
 + (id)ADM3AControlSet			{	return [[[self alloc] initWithADM3AControlSet] autorelease];			}
 + (id)hazeltine1500ControlSet	{	return [[[self alloc] initWithHazeltine1500ControlSet] autorelease];	}
++ (id)osborneControlSet			{	return [[[self alloc] initWithOsborneControlSet] autorelease];			}
 
 - (id)initWithADM3AControlSet
 {
@@ -208,6 +209,25 @@
 
 			[self installASCIIControlCharacters];
 			[self installHazeltine1500ControlCodes];
+
+		[self finishControlCodes];
+	}
+
+	return self;
+}
+
+- (id)initWithOsborneControlSet
+{
+	self = [super init];
+
+	if(self)
+	{
+		[self setupForWidth:80 height:24];
+
+		[self beginControlCodes];
+
+			[self installASCIIControlCharacters];
+			[self installOsborneControlCodes];
 
 		[self finishControlCodes];
 	}
@@ -485,6 +505,67 @@
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"~\30"
 			action:^{	[self clearFrom:address(cursorX, cursorY) to:address(self.width-1, self.height-1)];		}]];
+}
+
+- (void)installOsborneControlCodes
+{
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\x08"
+			action:^{	[self leftCursor];				}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\x0c"
+			action:^{	[self rightCursor];				}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\x0b"
+			action:^{	[self upCursor];				}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\x1a"
+			action:
+			^{
+				[self setCursorX:0 y:0];
+				[self clearFrom:address(0, 0) to:address(self.width, self.height-1)];
+			}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\x1e"
+			action:^{	[self setCursorX:0 y:0];			}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\33="
+			requiredLength:4
+			action:
+			^{
+				[self setCursorX:(inputQueue[3] - 32)%self.width y:(inputQueue[2] - 32)%self.height];
+			}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\33T"
+			action:
+			^{	[self clearFrom:address(cursorX, cursorY) to:address(self.width-1, cursorY)];			}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\33)"
+			action:
+			^{	currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;			}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\33("
+			action:
+			^{	currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;			}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\33L"
+			action:
+			^{	currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\33M"
+			action:
+			^{	currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;			}]];
 }
 
 @end
