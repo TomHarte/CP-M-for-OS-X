@@ -8,10 +8,11 @@
 
 #import <Foundation/Foundation.h>
 #import "Processor.h"
+#import "TerminalView.h"
 
 @class CPMTerminalView;
 
-@interface CPMBDOS : NSObject <CPMProcessorDelegate>
+@interface CPMBDOS : NSObject <CPMProcessorDelegate, CPMTerminalViewDelegate>
 
 + (id)BDOSWithContentsOfURL:(NSURL *)URL terminalView:(CPMTerminalView *)terminalView;
 + (id)BDOSWithData:(NSData *)data terminalView:(CPMTerminalView *)terminalView;

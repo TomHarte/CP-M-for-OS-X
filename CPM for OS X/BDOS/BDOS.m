@@ -434,4 +434,9 @@
 	return NO;
 }
 
+- (void)terminalViewDidAddCharactersToBuffer:(CPMTerminalView *)terminalView
+{
+	[_bios terminalViewDidAddCharactersToBuffer:terminalView];
+}
+
 @end

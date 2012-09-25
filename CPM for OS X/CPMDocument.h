@@ -7,7 +7,8 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "TerminalView.h"
 
-@interface CPMDocument : NSDocument
+@interface CPMDocument : NSDocument <CPMTerminalViewDelegate>
 
 @end

@@ -52,17 +52,21 @@
 - (void)windowControllerDidLoadNib:(NSWindowController *)aController
 {
 	[super windowControllerDidLoadNib:aController];
-	// Add any code here that needs to be executed once the windowController has loaded the document's window.
 
+	// create our BDOS instance and pipe the terminal view's delegate messages to here
 	_bdos = [[CPMBDOS BDOSWithContentsOfURL:_sourceURL terminalView:self.terminalView] retain];
+	self.terminalView.delegate = self;
 
 	// get base path...
 	_bdos.basePath = [[_sourceURL path] stringByDeletingLastPathComponent];
 
-	// call our execution timer 50 times a second, as a nod towards PAL
-	serialDispatchQueue = dispatch_queue_create("CPM dispatch queue", DISPATCH_QUEUE_SERIAL);
+	// we'll call our execution timer 50 times a second, as a nod towards PAL
 	_executionTimer = [NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(doMoreProcessing:) userInfo:nil repeats:YES];
 
+	// a serial dispatch queue will keep actual machine execution off the main queue
+	serialDispatchQueue = dispatch_queue_create("CPM dispatch queue", DISPATCH_QUEUE_SERIAL);
+
+	// restrict our window's aspect ratio appropriately
 	[aController.window setContentAspectRatio:[self.terminalView idealSize]];
 //	[aController.window setTitle:[[[_sourceURL path] stringByDeletingPathExtension] lastPathComponent]];
 
@@ -132,5 +136,12 @@
 	});
 }
 
+- (void)terminalViewDidAddCharactersToBuffer:(CPMTerminalView *)terminalView
+{
+	dispatch_async(serialDispatchQueue,
+	^{
+		[_bdos terminalViewDidAddCharactersToBuffer:terminalView];
+	});
+}
 
 @end
