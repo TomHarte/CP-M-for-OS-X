@@ -30,14 +30,13 @@
 
 - (void)trimTailSpacesIn:(char *)buffer
 {
-	size_t c = strlen(buffer)-1;
-	while(c > 0)
+	size_t c = strlen(buffer);
+	while(c--)
 	{
 		if(buffer[c] == ' ')
 			buffer[c] = '\0';
 		else
 			return;
-		c--;
 	}
 }
 
