@@ -279,6 +279,40 @@
 	}
 }
 
+- (void)deleteLine
+{
+	if(cursorY < self.height-1)
+	{
+		// scroll all contents up a line
+		memmove(&characters[address(0, cursorY)], &characters[address(0, cursorY+1)], (self.height-1-cursorY)*(self.width+1));
+		memmove(&attributes[address(0, cursorY)], &attributes[address(0, cursorY+1)], (self.height-1-cursorY)*(self.width+1));
+
+		// fix the terminating NULL that just ascended a position
+		characters[address(self.width, self.height-2)] = '\n';
+	}
+
+	// blank out the new bottom line
+	memset(&characters[address(0, self.height-1)], 32, sizeof(uint8_t)*self.width);
+	memset(&attributes[address(0, self.height-1)], 0, sizeof(uint16_t)*self.width);
+}
+
+- (void)insertLine
+{
+	if(cursorY < self.height-1)
+	{
+		// scroll all contents down a line
+		memmove(&characters[address(0, cursorY+1)], &characters[address(0, cursorY)], (self.height-1-cursorY)*(self.width+1));
+		memmove(&attributes[address(0, cursorY+1)], &attributes[address(0, cursorY)], (self.height-1-cursorY)*(self.width+1));
+
+		// fix the newline just descended a position
+		characters[address(self.width, self.height-1)] = '\0';
+	}
+
+	// blank out this line
+	memset(&characters[address(0, cursorY)], 32, sizeof(uint8_t)*self.width);
+	memset(&attributes[address(0, cursorY)], 0, sizeof(uint16_t)*self.width);
+}
+
 - (void)clearFrom:(size_t)start to:(size_t)end
 {
 	// write out spaces and zero attributes
@@ -342,7 +376,7 @@
 
 - (void)downCursor
 {
-	if(cursorX < self.height-1)	[self setCursorX:cursorX y:cursorY+1];
+	if(cursorY < self.height-1)	[self setCursorX:cursorX y:cursorY+1];
 }
 
 - (void)leftCursor
@@ -443,6 +477,14 @@
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33C3"
 			action:^{	currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;			}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\33R"
+			action:^{	[self deleteLine];			}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"\33E"
+			action:^{	[self insertLine];			}]];
 }
 
 - (void)installHazeltine1500ControlCodes
