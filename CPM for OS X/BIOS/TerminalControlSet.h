@@ -37,6 +37,7 @@
 @interface CPMTerminalControlSet : NSObject
 
 + (id)ADM3AControlSet;
++ (id)hazeltine1500ControlSet;
 
 // The following three are accounting; every time the control set recognises a control
 // code it'll add the index at which it was recognised to recognisedControlPoints. Every time

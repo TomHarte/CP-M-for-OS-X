@@ -173,10 +173,8 @@
 	characters[address(self.width, self.height-1)] = '\0';
 }
 
-+ (id)ADM3AControlSet
-{
-	return [[[[self class] alloc] initWithADM3AControlSet] autorelease];
-}
++ (id)ADM3AControlSet			{	return [[[self alloc] initWithADM3AControlSet] autorelease];			}
++ (id)hazeltine1500ControlSet	{	return [[[self alloc] initWithHazeltine1500ControlSet] autorelease];	}
 
 - (id)initWithADM3AControlSet
 {
@@ -196,6 +194,25 @@
 
 	return self;
 }
+
+- (id)initWithHazeltine1500ControlSet
+{
+	self = [super init];
+
+	if(self)
+	{
+		[self setupForWidth:80 height:24];
+
+		[self beginControlCodes];
+
+			[self installHazeltine1500ControlCodes];
+
+		[self finishControlCodes];
+	}
+
+	return self;
+}
+
 
 - (void)dealloc
 {
@@ -294,16 +311,41 @@
 	inputQueue = (uint8_t *)malloc(sizeof(uint8_t) * longestSequence);
 }
 
+- (void)homeCursor
+{
+	[self setCursorX:0 y:0];
+}
+
+- (void)upCursor
+{
+	if(cursorY > 0) [self setCursorX:cursorX y:cursorY-1];
+}
+
+- (void)downCursor
+{
+	if(cursorX < self.height-1)	[self setCursorX:cursorX y:cursorY+1];
+}
+
+- (void)leftCursor
+{
+	if(cursorX > 0)	[self setCursorX:cursorX-1 y:cursorY];
+}
+
+- (void)rightCursor
+{
+	if(cursorX < self.width-1)	[self setCursorX:cursorX+1 y:cursorY];
+}
+
 - (void)installASCIIControlCharacters
 {
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x08"
-			action:^{	if(cursorX > 0)	[self setCursorX:cursorX-1 y:cursorY];				}]];
+			action:^{	[self leftCursor];				}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x0c"
-			action:^{	if(cursorX < self.width-1)	[self setCursorX:cursorX-1 y:cursorY];	}]];
+			action:^{	[self rightCursor];	}]];
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\n"
@@ -315,7 +357,7 @@
 	[self addControlSequence:
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\x0b"
-			action:^{	if(cursorY > 0) [self setCursorX:cursorX y:cursorY-1];				}]];
+			action:^{	[self upCursor];				}]];
 
 	[self addControlSequence:
 		[CPMTerminalControlSequence
@@ -381,6 +423,65 @@
 		[CPMTerminalControlSequence
 			terminalControlSequenceWithStart:@"\33C3"
 			action:^{	currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;			}]];
+}
+
+- (void)installHazeltine1500ControlCodes
+{
+	// position cursor
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"~\21"
+			requiredLength:4
+			action:
+			^{
+				[self setCursorX:inputQueue[2]%self.width y:inputQueue[3]%self.height];
+			}]];
+
+	// read cursor address
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"~\5"
+			action:
+			^{
+				dispatch_sync(dispatch_get_main_queue(),
+				^{
+					[self.delegate terminalViewControlSet:self addStringToInput:[NSString stringWithFormat:@"%c%c", cursorX, cursorY]];
+				});
+			}]];
+
+	// home cursor
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"~\22"
+			action:^{	[self homeCursor];			}]];
+
+	// cursor up and down
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"~\14"
+			action:^{	[self upCursor];			}]];
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"~\13"
+			action:^{	[self downCursor];			}]];
+
+	// clear screen
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"~\34"
+			action:^{	[self clearFrom:address(0, 0) to:address(self.width, self.height-1)];		}]];
+
+	// clear to end of line
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"~\17"
+			action:^{	[self clearFrom:address(cursorX, cursorY) to:address(self.width-1, cursorY)];		}]];
+
+	// clear to end of screen
+	[self addControlSequence:
+		[CPMTerminalControlSequence
+			terminalControlSequenceWithStart:@"~\30"
+			action:^{	[self clearFrom:address(cursorX, cursorY) to:address(self.width-1, self.height-1)];		}]];
 }
 
 @end
