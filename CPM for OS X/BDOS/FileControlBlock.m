@@ -180,6 +180,10 @@
 
 - (BOOL)wildcardComparePattern:(NSString *)pattern string:(NSString *)string
 {
+	// we'll remove case from the equation
+	pattern = [pattern lowercaseString];
+	string = [string lowercaseString];
+
 	for(NSUInteger index = 0; index < [pattern length]; index++)
 	{
 		unichar patternCharacter = [pattern characterAtIndex:index];
