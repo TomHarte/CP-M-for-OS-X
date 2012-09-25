@@ -22,13 +22,24 @@
 	NSTimer *flashTimer;
 
 	CPMTerminalControlSet *controlSet;
-
+	NSMutableArray *candidateControlSets;
 }
 
 - (void)doCommonInit
 {
 	incomingString = [[NSMutableString alloc] init];
-	controlSet = [[CPMTerminalControlSet ADM3AControlSet] retain];
+
+	candidateControlSets = [[NSMutableArray alloc] init];
+	[candidateControlSets addObject:[CPMTerminalControlSet ADM3AControlSet]];
+	[candidateControlSets addObject:[CPMTerminalControlSet osborneControlSet]];
+	[candidateControlSets addObject:[CPMTerminalControlSet hazeltine1500ControlSet]];
+
+	for(CPMTerminalControlSet *set in candidateControlSets)
+	{
+		set.isTrackingCodePoints = YES;
+	}
+
+	controlSet = [[candidateControlSets objectAtIndex:0] retain];
 	controlSet.delegate = self;
 
 	NSFont *monaco = [NSFont fontWithName:@"Monaco" size:12.0f];
@@ -63,6 +74,8 @@
 - (void)dealloc
 {
 	[attributedString release], attributedString = nil;
+	[candidateControlSets release], candidateControlSets = nil;
+
 	controlSet.delegate = nil;
 	[controlSet release], controlSet = nil;
 	[super dealloc];
@@ -75,7 +88,61 @@
 
 - (void)writeCharacter:(char)character
 {
-	[controlSet writeCharacter:character];
+	// perform accounting to decide who's ahead
+	if([candidateControlSets count])
+	{
+		// send the character to all control sets
+		for(CPMTerminalControlSet *set in candidateControlSets)
+			[set writeCharacter:character];
+
+		// sort by recognised percentage
+		[candidateControlSets sortUsingComparator:
+			^NSComparisonResult(CPMTerminalControlSet *obj1, CPMTerminalControlSet *obj2)
+			{
+				NSUInteger recognisedQuantity1 = [[obj1 recognisedControlPoints] count];
+				NSUInteger recognisedQuantity2 = [[obj2 recognisedControlPoints] count];
+
+				if(recognisedQuantity1 < recognisedQuantity2) return NSOrderedDescending;
+				if(recognisedQuantity1 > recognisedQuantity2) return NSOrderedAscending;
+				return NSOrderedSame;
+			}];
+
+		// switch to the current best recogniser
+		CPMTerminalControlSet *topSet = [candidateControlSets objectAtIndex:0];
+		if(topSet != controlSet)
+		{
+			controlSet.delegate = nil;
+			[controlSet release];
+			controlSet = [topSet retain];
+			controlSet.delegate = self;
+			[self setNeedsDisplay:YES];
+		}
+
+		// if there's a suitably large margin between positions one and two, and
+		// quite a few control codes have occurred then kill the rest of the list
+		if([[[candidateControlSets objectAtIndex:0] recognisedControlPoints] count] > 10)
+		{
+			// get all control points recognised to date
+			NSMutableSet *allControlPoints = [NSMutableSet set];
+			for(CPMTerminalControlSet *set in candidateControlSets)
+				[allControlPoints unionSet:[set recognisedControlPoints]];
+
+			float totalPointsToDate = (float)[allControlPoints count];
+
+			float recognisedPercentage1 = (float)[[[candidateControlSets objectAtIndex:0] recognisedControlPoints] count] / totalPointsToDate;
+			float recognisedPercentage2 = (float)[[[candidateControlSets objectAtIndex:1] recognisedControlPoints] count] / totalPointsToDate;
+
+			if(recognisedPercentage1 > recognisedPercentage2 + 0.2f)
+			{
+				[candidateControlSets release], candidateControlSets = nil;
+				controlSet.isTrackingCodePoints = NO;
+			}
+		}
+	}
+	else
+	{
+		[controlSet writeCharacter:character];
+	}
 }
 
 - (void)viewWillDraw
