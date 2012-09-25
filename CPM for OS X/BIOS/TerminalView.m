@@ -374,11 +374,12 @@
 	@synchronized(self)
 	{
 		[incomingString appendString:filteredString];
-
-		// TODO: is it safe to contact the delegate on this queue? Probably the delegate's
-		// concern but at the minute this isn't being handled properly
-		[self.delegate terminalViewDidAddCharactersToBuffer:self];
 	}
+
+	dispatch_async(dispatch_get_main_queue(),
+	^{
+		[self.delegate terminalViewDidAddCharactersToBuffer:self];
+	});
 }
 
 - (void)terminalViewControlSetDidChangeOutput:(CPMTerminalControlSet *)controlSet

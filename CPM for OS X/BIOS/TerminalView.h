@@ -11,10 +11,11 @@
 
 @class CPMTerminalView;
 
-@protocol CPMTerminaViewDelegate <NSObject>
-
+/*
+	This delegate protocol is guaranteed to be called on the main queue
+*/
+@protocol CPMTerminalViewDelegate <NSObject>
 - (void)terminalViewDidAddCharactersToBuffer:(CPMTerminalView *)terminalView;
-
 @end
 
 @interface CPMTerminalView : NSView <NSDraggingDestination, CPMTerminalControlSetDelegate>
@@ -30,7 +31,7 @@
 /*
 	The following two are intended for use on the main queue only.
 */
-@property (nonatomic, assign) id <CPMTerminaViewDelegate> delegate;
+@property (nonatomic, assign) id <CPMTerminalViewDelegate> delegate;
 @property (nonatomic, readonly) CGSize idealSize;
 
 - (void)invalidate;
