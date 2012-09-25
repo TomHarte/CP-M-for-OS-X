@@ -58,7 +58,8 @@
 	{
 		// this means we missed a code, probably
 		[_unrecognisedCodePoints addObject:[NSNumber numberWithInteger:_numberOfCharactersSoFar]];
-		
+//		NSLog(@"missed code %02x %02x %02x", inputQueue[0], inputQueue[1], inputQueue[2]);
+
 		inputQueueWritePointer--;
 		memmove(inputQueue, &inputQueue[1], inputQueueWritePointer);
 	}
