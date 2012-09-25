@@ -168,6 +168,7 @@
 			(id)kCTForegroundColorAttributeName: (id)[[NSColor greenColor] CGColor]
 		}
 		range:NSMakeRange(0, attributedString.length)];
+	CFRelease(monaco);
 
 	uint8_t lastAttribute = 0;
 	for(int y = 0; y < controlSet.height; y++)
