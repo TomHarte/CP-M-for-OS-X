@@ -15,9 +15,6 @@
 	uint16_t *attributes, currentAttribute;
 	int cursorX, cursorY;
 
-	NSMutableSet *_recognisedCodePoints, *_unrecognisedCodePoints;
-	NSUInteger _numberOfCharactersSoFar;
-
 	uint8_t *inputQueue;
 	NSUInteger inputQueueWritePointer;
 	NSUInteger longestSequence;
@@ -31,19 +28,19 @@
 
 - (void)setIsTrackingCodePoints:(BOOL)isTrackingCodePoints
 {
-	[_recognisedCodePoints release], _recognisedCodePoints = nil;
-	[_unrecognisedCodePoints release], _unrecognisedCodePoints = nil;
+	[_recognisedControlPoints release], _recognisedControlPoints = nil;
+	[_unrecognisedControlPoints release], _unrecognisedControlPoints = nil;
 
 	if(isTrackingCodePoints)
 	{
-		_recognisedCodePoints = [[NSMutableSet alloc] init];
-		_unrecognisedCodePoints = [[NSMutableSet alloc] init];
+		_recognisedControlPoints = [[NSMutableSet alloc] init];
+		_unrecognisedControlPoints = [[NSMutableSet alloc] init];
 	}
 }
 
 - (BOOL)isTrackingCodePoints
 {
-	return _recognisedCodePoints ? YES : NO;
+	return _recognisedControlPoints ? YES : NO;
 }
 
 - (void)writeCharacter:(uint8_t)character
@@ -57,7 +54,7 @@
 	if(inputQueueWritePointer > longestSequence)
 	{
 		// this means we missed a code, probably
-		[_unrecognisedCodePoints addObject:[NSNumber numberWithInteger:_numberOfCharactersSoFar]];
+		[(NSMutableSet *)_unrecognisedControlPoints addObject:[NSNumber numberWithInteger:_numberOfCharactersSoFar]];
 //		NSLog(@"missed code %02x %02x %02x", inputQueue[0], inputQueue[1], inputQueue[2]);
 
 		inputQueueWritePointer--;
@@ -97,7 +94,7 @@
 			if(!foundMatch) break;
 
 			// record that we recognised a control sequence
-			[_recognisedCodePoints addObject:[NSNumber numberWithInteger:_numberOfCharactersSoFar]];
+			[(NSMutableSet *)_recognisedControlPoints addObject:[NSNumber numberWithInteger:_numberOfCharactersSoFar]];
 
 			// perform the sequence and remove the matched characters from the queue
 			foundMatch.action();
@@ -253,8 +250,8 @@
 		free(inputQueue);
 		inputQueue = NULL;
 	}
-	[_recognisedCodePoints release], _recognisedCodePoints = nil;
-	[_unrecognisedCodePoints release], _unrecognisedCodePoints = nil;
+	[_recognisedControlPoints release], _recognisedControlPoints = nil;
+	[_unrecognisedControlPoints release], _unrecognisedControlPoints = nil;
 	[sequencesToActions release], sequencesToActions = nil;
 
 	[super dealloc];
