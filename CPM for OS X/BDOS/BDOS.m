@@ -271,6 +271,7 @@
 	{
 		_processor.afRegister |= 0xff00;
 		[_searchEnumerator release], _searchEnumerator = nil;
+		return NO;
 	}
 
 	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:_dmaAddress];
