@@ -404,18 +404,49 @@
 	[self clearFrom:address(self.cursorX, self.cursorY) to:address(self.width, self.cursorY)];
 }
 
+typedef struct
+{
+	__unsafe_unretained NSString *start;
+	NSUInteger requiredLength;
+	dispatch_block_t action;
+} CPMTerminalControlSequenceStruct;
+
+- (void)installControlSequencesFromStructs:(CPMTerminalControlSequenceStruct *)structs
+{
+	while(structs->start)
+	{
+		if(structs->requiredLength)
+		{
+			[self addControlSequence:
+				[CPMTerminalControlSequence
+					terminalControlSequenceWithStart:structs->start
+					requiredLength:structs->requiredLength
+					action:structs->action]];
+		}
+		else
+		{
+			[self addControlSequence:
+				[CPMTerminalControlSequence
+					terminalControlSequenceWithStart:structs->start
+					action:structs->action]];
+		}
+
+		structs++;
+	}
+}
+
 - (void)installASCIIControlCharacters
 {
 	__weak __block typeof(self) weakSelf = self;
 
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\n"
-			action:^{	[weakSelf incrementY];						}]];
-	[self addControlSequence:
-		[CPMTerminalControlSequence
-			terminalControlSequenceWithStart:@"\r"
-			action:^{	[weakSelf setCursorX:0 y:weakSelf.cursorY];			}]];
+	CPMTerminalControlSequenceStruct sequences[] =
+	{
+		{@"\n",	0,	^{	[weakSelf incrementY];						}},
+		{@"\r",	0,	^{	[weakSelf setCursorX:0 y:weakSelf.cursorY];	}},
+		{nil}
+	};
+
+	[self installControlSequencesFromStructs:sequences];
 }
 
 - (void)installADM3AControlCodes
