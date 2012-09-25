@@ -53,7 +53,7 @@
 // the width and height are the dimensions of this terminal in characters
 @property (nonatomic, readonly) NSUInteger width, height;
 
-@property (nonatomic, assign) id <CPMTerminalControlSetDelegate> delegate;
+@property (atomic, assign) id <CPMTerminalControlSetDelegate> delegate;
 
 // write character is the single entry point for updating state; post all output characters here
 - (void)writeCharacter:(uint8_t)character;

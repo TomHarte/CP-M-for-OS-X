@@ -63,6 +63,7 @@
 - (void)dealloc
 {
 	[attributedString release], attributedString = nil;
+	controlSet.delegate = nil;
 	[controlSet release], controlSet = nil;
 	[super dealloc];
 }
