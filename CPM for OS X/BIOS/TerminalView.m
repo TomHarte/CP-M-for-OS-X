@@ -40,15 +40,12 @@
 		set.isTrackingCodePoints = YES;
 	}
 
-	controlSet = [[candidateControlSets objectAtIndex:0] retain];
-	controlSet.delegate = self;
-
 	NSFont *monaco = [NSFont fontWithName:@"Monaco" size:12.0f];
 
 	lineHeight = (monaco.ascender - monaco.descender + monaco.leading);
 	characterWidth = [monaco advancementForGlyph:'M'].width;
-	_idealSize.width = characterWidth * controlSet.width;
-	_idealSize.height = lineHeight * controlSet.height;
+
+	[self setControlSet:[candidateControlSets objectAtIndex:0]];
 
 	flashTimer = [NSTimer
 		scheduledTimerWithTimeInterval:1.0/2.5
@@ -56,6 +53,29 @@
 		selector:@selector(updateFlash:)
 		userInfo:nil
 		repeats:YES];
+}
+
+- (void)setControlSet:(CPMTerminalControlSet *)newControlSet
+{
+	NSUInteger oldWidth = controlSet.width;
+	NSUInteger oldHeight = controlSet.height;
+	controlSet.delegate = nil;
+	[controlSet release];
+
+	controlSet = [newControlSet	retain];
+	controlSet.delegate = self;
+
+	if(oldWidth != controlSet.width || oldHeight != controlSet.height)
+	{
+		_idealSize.width = characterWidth * controlSet.width;
+		_idealSize.height = lineHeight * controlSet.height;
+
+		if([self.delegate respondsToSelector:@selector(terminalViewDidChangeIdealRect:)])
+			dispatch_async(dispatch_get_main_queue(),
+			^{
+				[self.delegate terminalViewDidChangeIdealRect:self];
+			});
+	}
 }
 
 - (id)initWithFrame:(NSRect)frameRect
@@ -112,10 +132,7 @@
 		CPMTerminalControlSet *topSet = [candidateControlSets objectAtIndex:0];
 		if(topSet != controlSet)
 		{
-			controlSet.delegate = nil;
-			[controlSet release];
-			controlSet = [topSet retain];
-			controlSet.delegate = self;
+			[self setControlSet:topSet];
 			[self setNeedsDisplay:YES];
 		}
 
@@ -249,13 +266,17 @@
 	// get context
 	CGContextRef context = [[NSGraphicsContext currentContext] graphicsPort];
 
-	// work out scaler
+	// work out scaler; get x and y scales separately then pick the smallest —
+	// in effect this is an aspect fit
 	CGFloat scalerX = bounds.size.width / _idealSize.width;
 	CGFloat scalerY = bounds.size.height / _idealSize.height;
+	CGFloat scaler = (scalerX > scalerY) ? scalerY : scalerX;
+	CGContextScaleCTM(context, scaler, scaler);
+
+	// create a rect describing our entire frame in idealised coordinates
 	CGRect idealRect;
 	idealRect.origin = CGPointMake(0.0f, 0.0f);
 	idealRect.size = _idealSize;
-	CGContextScaleCTM(context, scalerX, scalerY);
 
 	// make sure the text matrix is the identity
 	CGContextSetTextMatrix(context, CGAffineTransformIdentity);

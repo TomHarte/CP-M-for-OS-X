@@ -15,7 +15,12 @@
 	This delegate protocol is guaranteed to be called on the main queue
 */
 @protocol CPMTerminalViewDelegate <NSObject>
+
 - (void)terminalViewDidAddCharactersToBuffer:(CPMTerminalView *)terminalView;
+
+@optional
+- (void)terminalViewDidChangeIdealRect:(CPMTerminalView *)terminalView;
+
 @end
 
 @interface CPMTerminalView : NSView <NSDraggingDestination, CPMTerminalControlSetDelegate>
