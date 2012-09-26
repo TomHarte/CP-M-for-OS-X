@@ -66,10 +66,6 @@
 	// a serial dispatch queue will keep actual machine execution off the main queue
 	serialDispatchQueue = dispatch_queue_create("CPM dispatch queue", DISPATCH_QUEUE_SERIAL);
 
-	// restrict our window's aspect ratio appropriately
-	[aController.window setContentAspectRatio:[self.terminalView idealSize]];
-//	[aController.window setTitle:[[[_sourceURL path] stringByDeletingPathExtension] lastPathComponent]];
-
 //	CPMFuseTestRunner *testRunner = [[CPMFuseTestRunner alloc] init];
 //	[testRunner go];
 //	[testRunner release];
@@ -146,6 +142,28 @@
 
 - (void)terminalViewDidChangeIdealRect:(CPMTerminalView *)terminalView
 {
+	// we have only one window, so...
+	NSWindow *window = [[[self windowControllers] objectAtIndex:0] window];
+
+	// restrict our window's aspect ratio appropriately
+	NSSize idealSize = [self.terminalView idealSize];
+	[window setContentAspectRatio:idealSize];
+
+	// adjust the frame to enforce the correct aspect ratio now, not just
+	// whenever the user next resizes
+	NSRect frame = window.frame;
+	NSSize contentSize = ((NSView *)window.contentView).frame.size;
+
+	// we'll adjust whichever of x or y makes the least difference
+	CGFloat xDifference = (contentSize.height * idealSize.width / idealSize.height) - contentSize.width;
+	CGFloat yDifference = (contentSize.width * idealSize.height / idealSize.width) - contentSize.height;
+
+	if(fabsf(xDifference) < fabsf(yDifference))
+		frame.size.width += xDifference;
+	else
+		frame.size.height += yDifference;
+
+	[window setFrame:frame display:YES animate:YES];
 }
 
 @end
