@@ -144,4 +144,8 @@
 	});
 }
 
+- (void)terminalViewDidChangeIdealRect:(CPMTerminalView *)terminalView
+{
+}
+
 @end
