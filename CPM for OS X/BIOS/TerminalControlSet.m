@@ -177,11 +177,12 @@
 	characters[address(self.width, self.height-1)] = '\0';
 }
 
-+ (id)ADM3AControlSet			{	return [[[self alloc] initWithADM3AControlSet] autorelease];			}
-+ (id)hazeltine1500ControlSet	{	return [[[self alloc] initWithHazeltine1500ControlSet] autorelease];	}
-+ (id)osborneControlSet			{	return [[[self alloc] initWithOsborneControlSet] autorelease];			}
++ (id)ADM3AControlSet			{	return [[[self alloc] initWithControlSet:@selector(installADM3AControlCodes)] autorelease];			}
++ (id)hazeltine1500ControlSet	{	return [[[self alloc] initWithControlSet:@selector(installHazeltine1500ControlCodes)] autorelease];	}
++ (id)osborneControlSet			{	return [[[self alloc] initWithControlSet:@selector(installOsborneControlCodes)] autorelease];		}
++ (id)VT52ControlSet			{	return [[[self alloc] initWithControlSet:@selector(installVT52ControlCodes)] autorelease];			}
 
-- (id)initWithADM3AControlSet
+- (id)initWithControlSet:(SEL)selectorForControlSet
 {
 	self = [super init];
 
@@ -192,52 +193,13 @@
 		[self beginControlCodes];
 
 			[self installASCIIControlCharacters];
-			[self installADM3AControlCodes];
+			[self performSelector:selectorForControlSet];
 
 		[self finishControlCodes];
 	}
 
 	return self;
 }
-
-- (id)initWithHazeltine1500ControlSet
-{
-	self = [super init];
-
-	if(self)
-	{
-		[self setupForWidth:80 height:24];
-
-		[self beginControlCodes];
-
-			[self installASCIIControlCharacters];
-			[self installHazeltine1500ControlCodes];
-
-		[self finishControlCodes];
-	}
-
-	return self;
-}
-
-- (id)initWithOsborneControlSet
-{
-	self = [super init];
-
-	if(self)
-	{
-		[self setupForWidth:80 height:24];
-
-		[self beginControlCodes];
-
-			[self installASCIIControlCharacters];
-			[self installOsborneControlCodes];
-
-		[self finishControlCodes];
-	}
-
-	return self;
-}
-
 
 - (void)dealloc
 {
@@ -406,6 +368,11 @@
 	[self clearFrom:address(self.cursorX, self.cursorY) to:address(self.width, self.cursorY)];
 }
 
+- (void)clearFromStartOfLine
+{
+	[self clearFrom:address(0, self.cursorY) to:address(self.cursorX, self.cursorY)];
+}
+
 typedef struct
 {
 	__unsafe_unretained NSString *start;
@@ -453,6 +420,10 @@ typedef struct
 
 - (void)installADM3AControlCodes
 {
+	/*
+		This is actually the pure ADM3A with some Kaypro extensions thrown
+		in, I believe...
+	*/
 	__weak __block typeof(self) weakSelf = self;
 
 	CPMTerminalControlSequenceStruct sequences[] =
@@ -484,6 +455,26 @@ typedef struct
 		{@"\33E",	0,	^{	[weakSelf insertLine];	}},
 		{nil}
 	};
+
+	/*
+		Unimplemented at present:
+
+			(the graphics characters, 128–255)
+
+			Cursor visible/invisible           B4/C4
+			Video mode on/off                  B5/C5   
+			Remember/recover cursor position   B6/C6
+			Status line preservation on/off    B7/C7
+
+			Print pixel            *, row + 31, col + 31
+			Erase pixel            #32 (space), row + 31, col + 31
+			Print line             L, row1 + 31, col1 + 31, row2 + 31, col2 + 31
+			Erase line             D, row1 + 31, col1 + 31, row2 + 31, col2 + 31
+
+			Stop cursor blinking     OUT 28, 10: OUT 29, 0
+			Turn cursor to underline OUT 28, 10: OUT 29, 15* 
+	*/
+
 
 	[self installControlSequencesFromStructs:sequences];
 }
@@ -569,6 +560,47 @@ typedef struct
 			1b 47	ESC G	end graphics display
 			1b 5b	ESC [	homes screen
 	*/
+
+	[self installControlSequencesFromStructs:sequences];
+}
+
+- (void)installVT52ControlCodes
+{
+	__weak __block typeof(self) weakSelf = self;
+
+	// unimplemented codes are noted in the table
+
+	CPMTerminalControlSequenceStruct sequences[] =
+	{
+		{@"\33A",	0,	^{	[weakSelf upCursor];	}},
+		{@"\33B",	0,	^{	[weakSelf downCursor];	}},
+		{@"\33C",	0,	^{	[weakSelf rightCursor];	}},
+		{@"\33D",	0,	^{	[weakSelf leftCursor];	}},
+		{@"\33E",	0,	^{
+							[weakSelf homeCursor];
+							[weakSelf clearToEndOfScreen];
+						}},
+		{@"\33H",	0,	^{	[weakSelf homeCursor];	}},
+		/*\33I upCursor, with potential scroll */
+		{@"\33J",	0,	^{	[weakSelf clearToEndOfScreen];	}},
+		{@"\33K",	0,	^{	[weakSelf clearToEndOfLine];	}},
+		{@"\33Y",	4,	^{
+							[weakSelf
+									setCursorX:(weakSelf.inputQueue[3] - 32)%weakSelf.width
+									y:(weakSelf.inputQueue[2] - 32)%weakSelf.height];
+						}},
+		/*\33d clear up to cursor position */
+		/*\33e cursor on */
+		/*\33d cursor off */
+		/*\33j save cursor position */
+		/*\33k restore cursor position */
+		{@"\33l",	0,	^{
+							[weakSelf setCursorX:0 y:weakSelf.cursorY];
+							[weakSelf clearToEndOfLine];
+						}},
+		{@"\33o",	0,	^{	[weakSelf clearFromStartOfLine];	}},
+		{nil}
+	};
 
 	[self installControlSequencesFromStructs:sequences];
 }
