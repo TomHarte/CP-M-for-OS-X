@@ -177,18 +177,18 @@
 	characters[address(self.width, self.height-1)] = '\0';
 }
 
-+ (id)ADM3AControlSet			{	return [[[self alloc] initWithControlSet:@selector(installADM3AControlCodes)] autorelease];			}
-+ (id)hazeltine1500ControlSet	{	return [[[self alloc] initWithControlSet:@selector(installHazeltine1500ControlCodes)] autorelease];	}
-+ (id)osborneControlSet			{	return [[[self alloc] initWithControlSet:@selector(installOsborneControlCodes)] autorelease];		}
-+ (id)VT52ControlSet			{	return [[[self alloc] initWithControlSet:@selector(installVT52ControlCodes)] autorelease];			}
++ (id)ADM3AControlSet			{	return [[[self alloc] initWithControlSet:@selector(installADM3AControlCodes) width:80 height:24] autorelease];			}
++ (id)hazeltine1500ControlSet	{	return [[[self alloc] initWithControlSet:@selector(installHazeltine1500ControlCodes) width:80 height:24] autorelease];	}
++ (id)osborneControlSet			{	return [[[self alloc] initWithControlSet:@selector(installOsborneControlCodes) width:80 height:24] autorelease];		}
++ (id)VT52ControlSet			{	return [[[self alloc] initWithControlSet:@selector(installVT52ControlCodes) width:80 height:25] autorelease];			}
 
-- (id)initWithControlSet:(SEL)selectorForControlSet
+- (id)initWithControlSet:(SEL)selectorForControlSet width:(int)width height:(int)height
 {
 	self = [super init];
 
 	if(self)
 	{
-		[self setupForWidth:80 height:24];
+		[self setupForWidth:width height:height];
 
 		[self beginControlCodes];
 
