@@ -552,11 +552,6 @@ typedef struct
 
 	CPMTerminalControlSequenceStruct sequences[] =
 	{
-		{@"~\21",	4,	^{
-							[weakSelf
-								setCursorX:weakSelf.inputQueue[2]%weakSelf.width
-								y:weakSelf.inputQueue[3]%weakSelf.height];
-						}},
 		{@"~\5",	0,	^{
 							dispatch_sync(dispatch_get_main_queue(),
 							^{
@@ -568,15 +563,24 @@ typedef struct
 												weakSelf.cursorY]];
 							});
 						}},
-		{@"~\22",	0,	^{	[weakSelf homeCursor];	}},
-		{@"~\14",	0,	^{	[weakSelf upCursor];	}},
 		{@"~\13",	0,	^{	[weakSelf downCursor];	}},
+		{@"~\14",	0,	^{	[weakSelf upCursor];	}},
+		{@"~\17",	0,	^{	[weakSelf clearToEndOfLine];	}},
+		{@"~\21",	4,	^{
+							[weakSelf
+								setCursorX:weakSelf.inputQueue[2]%weakSelf.width
+								y:weakSelf.inputQueue[3]%weakSelf.height];
+						}},
+		{@"~\22",	0,	^{	[weakSelf homeCursor];	}},
+		{@"~\23",	0,	^{	[weakSelf deleteLine];			}},
+		{@"~\30",	0,	^{	[weakSelf clearToEndOfScreen];	}},
+		{@"~\31",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeBackground;	}},
+		{@"~\32",	0,	^{	[weakSelf insertLine];			}},
 		{@"~\34",	0,	^{
 							[weakSelf homeCursor];
 							[weakSelf clearToEndOfScreen];
 						}},
-		{@"~\17",	0,	^{	[weakSelf clearToEndOfLine];	}},
-		{@"~\30",	0,	^{	[weakSelf clearToEndOfScreen];	}},
+		{@"~\37",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeBackground;	}},
 		{nil}
 	};
 
@@ -586,13 +590,9 @@ typedef struct
 			right cursor		dec 16
 			clear foreground	~ dec 29
 			clear to end-of-screen - background spaces	~ dec 23
-			background follows	~ dec 25
-			foreground follows	~ dec 31
-			delete line			~ dec 19
-			insert line			~ dec 26
 			keyboard lock		~ dec 21
 			keyboard unlock		~ dec 6
-			alarm, tab
+			(alarm and tab)
 
 	*/
 

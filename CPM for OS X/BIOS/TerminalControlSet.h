@@ -87,3 +87,5 @@
 #define kCPMTerminalAttributeReducedIntensityOn		0x02
 #define kCPMTerminalAttributeBlinkingOn				0x04
 #define kCPMTerminalAttributeUnderlinedOn			0x08
+
+#define kCPMTerminalAttributeBackground				0x10
