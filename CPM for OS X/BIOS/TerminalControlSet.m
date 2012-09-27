@@ -665,11 +665,15 @@ typedef struct
 		{@"\33I",	0,	^{	[weakSelf decrementY];	}},
 		{@"\33J",	0,	^{	[weakSelf clearToEndOfScreen];	}},
 		{@"\33K",	0,	^{	[weakSelf clearToEndOfLine];	}},
+		{@"\33L",	0,	^{	[weakSelf insertLine];	}},
+		{@"\33M",	0,	^{	[weakSelf deleteLine];	}},
 		{@"\33Y",	4,	^{
 							[weakSelf
 									setCursorX:(weakSelf.inputQueue[3] - 32)%weakSelf.width
 									y:(weakSelf.inputQueue[2] - 32)%weakSelf.height];
 						}},
+		// ESC b — select font colour
+		// ESC c — select background colour
 		{@"\33d",	0,	^{	[weakSelf clearFromStartOfScreen];	}},
 		{@"\33e",	0,	^{	weakSelf.cursorIsDisabled = NO;		}},
 		{@"\33f",	0,	^{	weakSelf.cursorIsDisabled = YES;	}},
@@ -680,6 +684,10 @@ typedef struct
 							[weakSelf clearToEndOfLine];
 						}},
 		{@"\33o",	0,	^{	[weakSelf clearFromStartOfLine];	}},
+		{@"\33p",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;	}},
+		{@"\33q",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;	}},
+		// ESC v - automatic overflow on
+		// ESC w - automatic overflow off
 		{nil}
 	};
 
