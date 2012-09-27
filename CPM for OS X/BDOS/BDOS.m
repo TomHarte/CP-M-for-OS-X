@@ -124,8 +124,17 @@
 {
 	[_processor runForTimeInterval:interval];
 	
-	// didBlock should return whether the processor blocked at any
-	// time, but for now we'll just report whether it's blocked now
+	// didBlock should return whether the processor called anything
+	// that could block at any time, but for now we'll just report
+	// whether it's blocked now
+	_didBlock = _processor.isBlocked;
+}
+
+- (void)runForNumberOfInstructions:(NSUInteger)numberOfInstructions
+{
+	[_processor runForNumberOfInstructions:numberOfInstructions];
+
+	// <comment as above>
 	_didBlock = _processor.isBlocked;
 }
 
