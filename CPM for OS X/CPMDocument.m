@@ -94,9 +94,9 @@
 
 			- ordinarily (ie, when fast execution isn't disallowed) allow up to 90%
 			utilisation; but
-			- if that full amount is used for a second then cut avaiable CPU time
-			down to just 50%; and
-			- restore full speed execution only if the alotted 50% isn't used for
+			- if that full amount is used for five calls in a row then cut avaiable CPU time
+			down to just 14000 instructions/second; and
+			- restore full speed execution only if the CPU starts blocking again for
 			at least a second.
 
 		So the motivation is not to penalise apps that occasionally do a lot of
@@ -104,12 +104,16 @@
 		run a busy loop from wasting your modern multi-tasking computer's
 		processing time.
 
+		As for the 14000? 4Mhz/(50 calls * 6 cycles), rounded up a little. Is the average
+		z80 instruction length really 6 cycles? Bearing in mind that all the more expensive
+		instructions are ones that are absent on the 8080, it's probably something short.
+
 	*/
 	dispatch_async(serialDispatchQueue,
 	^{
 		if(_disallowFastExecution)
 		{
-			[_bdos runForTimeInterval:0.01];
+			[_bdos runForNumberOfInstructions:14000];
 			if(_bdos.didBlock)
 			{
 				_blockedCount++;
@@ -124,7 +128,7 @@
 			if(!_bdos.didBlock)
 			{
 				_blockedCount++;
-				if(_blockedCount == 56) _disallowFastExecution = YES;
+				if(_blockedCount == 5) _disallowFastExecution = YES;
 			}
 			else
 				_blockedCount = 0;
