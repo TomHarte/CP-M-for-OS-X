@@ -26,6 +26,7 @@ typedef BOOL CPMProcessorShouldBlock;
 + (id)processorWithRAM:(CPMRAMModule *)RAM;
 
 - (void)runForTimeInterval:(NSTimeInterval)timeInterval;
+- (void)runForNumberOfInstructions:(NSUInteger)numberOfInstructions;
 - (void)runUntilPC:(uint16_t)targetPC;
 
 - (void)unblock;

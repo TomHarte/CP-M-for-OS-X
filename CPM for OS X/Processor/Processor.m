@@ -1350,27 +1350,28 @@
 {
 	NSTimeInterval timeAtStart = [NSDate timeIntervalSinceReferenceDate];
 
+	while(!isBlocked && [NSDate timeIntervalSinceReferenceDate] - timeAtStart < timeInterval)
+	{
+		[self runForNumberOfInstructions:1000];
+	}
+}
+
+- (void)runForNumberOfInstructions:(NSUInteger)numberOfInstructions
+{
 	// we're going to call this thing millions of times a second, probably, so caching the IMP
 	// is a pragmatic performance optimisation
 	IMP executeFromStandardPage = [self methodForSelector:@selector(executeFromStandardPage)];
 
-	while(!isBlocked && [NSDate timeIntervalSinceReferenceDate] - timeAtStart < timeInterval)
+	while(!isBlocked && numberOfInstructions--)
 	{
-		// we'll do 1000 instructions in between each check of the current time;
-		// there's no reason to make that call millions of times a second
-		int internalCount = 1000;
-
-		while(!isBlocked && internalCount--)
+		if(programCounter >= _biosAddress)
 		{
-			if(programCounter >= _biosAddress)
-			{
-				isBlocked = [self.delegate processor:self isMakingBIOSCall:(programCounter - _biosAddress) / 3];
-				programCounter = [self pop];
-			}
-			else
-			{			
-				executeFromStandardPage(self, @selector(executeFromStandardPage));
-			}
+			isBlocked = [self.delegate processor:self isMakingBIOSCall:(programCounter - _biosAddress) / 3];
+			programCounter = [self pop];
+		}
+		else
+		{			
+			executeFromStandardPage(self, @selector(executeFromStandardPage));
 		}
 	}
 }
