@@ -66,6 +66,8 @@
 	// a serial dispatch queue will keep actual machine execution off the main queue
 	serialDispatchQueue = dispatch_queue_create("CPM dispatch queue", DISPATCH_QUEUE_SERIAL);
 
+	// this isn't entirely honest, but it'll force us to lock the aspect ratio now
+	[self terminalViewDidChangeIdealRect:self.terminalView];
 //	CPMFuseTestRunner *testRunner = [[CPMFuseTestRunner alloc] init];
 //	[testRunner go];
 //	[testRunner release];
