@@ -339,7 +339,7 @@
 	// TODO: draw any graphics characters here
 
 	// draw cursor?
-	if(flashCount&1)
+	if(flashCount&1 && !controlSet.cursorIsDisabled)
 	{
 		[[NSColor colorWithDeviceRed:0.0f green:0.5f blue:0.0f alpha:1.0f] set];
 		NSRectFill(NSMakeRect(controlSet.cursorX * characterWidth, (controlSet.height - 1 - controlSet.cursorY) * lineHeight, characterWidth, lineHeight));
