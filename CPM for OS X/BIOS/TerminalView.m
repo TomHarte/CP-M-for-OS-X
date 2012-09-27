@@ -216,7 +216,7 @@
 							textColour = [NSColor colorWithDeviceRed:0.0f green:0.66f blue:0.0f alpha:1.0f];
 						break;
 						case kCPMTerminalAttributeInverseVideoOn:
-							textColour = [NSColor colorWithDeviceRed:1.0f green:0.0f blue:1.0f alpha:1.0f];
+							textColour = [NSColor colorWithDeviceRed:0.0f green:0.0f blue:0.0f alpha:1.0f];
 						break;
 						case kCPMTerminalAttributeInverseVideoOn | kCPMTerminalAttributeReducedIntensityOn:
 							textColour = [NSColor colorWithDeviceRed:0.0f green:0.0f blue:0.0f alpha:1.0f];
