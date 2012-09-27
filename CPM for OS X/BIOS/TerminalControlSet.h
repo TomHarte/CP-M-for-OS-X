@@ -70,6 +70,7 @@
 
 // the current cursor position, in character coordinates; (0, 0) is the top left
 @property (nonatomic, readonly) int cursorX, cursorY;
+@property (nonatomic, readonly) BOOL cursorIsDisabled;
 
 @end
 

@@ -12,6 +12,8 @@
 @interface CPMTerminalControlSet ()
 @property (nonatomic, assign) uint16_t currentAttribute;
 @property (nonatomic, assign) uint8_t *inputQueue;
+@property (nonatomic, assign) BOOL cursorIsDisabled;
+@property (nonatomic, assign) int backupCursorX, backupCursorY;
 @end
 
 @implementation CPMTerminalControlSet
@@ -248,6 +250,28 @@
 	}
 }
 
+- (void)decrementY
+{
+	cursorY--;
+
+	if(cursorY < 0)
+	{
+		// scroll all contents down a line
+		memmove(&characters[self.width+1], characters, (self.height-1)*(self.width+1));
+		memmove(&attributes[self.width+1], attributes, (self.height-1)*(self.width+1));
+
+		// move the cursor back onto the screen
+		cursorY ++;
+
+		// blank out the new top line
+		memset(&characters[address(0, 0)], 32, sizeof(uint8_t)*self.width);
+		memset(&attributes[address(0, 0)], 0, sizeof(uint16_t)*self.width);
+
+		// add a terminating NULL at the end
+		characters[address(self.width, self.height-2)] = '\n';
+	}
+}
+
 - (void)deleteLine
 {
 	if(cursorY < self.height-1)
@@ -363,6 +387,11 @@
 	[self clearFrom:address(self.cursorX, self.cursorY) to:address(self.width, self.height-1)];
 }
 
+- (void)clearFromStartOfScreen
+{
+	[self clearFrom:address(0, 0) to:address(self.cursorX, self.cursorY)];
+}
+
 - (void)clearToEndOfLine
 {
 	[self clearFrom:address(self.cursorX, self.cursorY) to:address(self.width, self.cursorY)];
@@ -371,6 +400,36 @@
 - (void)clearFromStartOfLine
 {
 	[self clearFrom:address(0, self.cursorY) to:address(self.cursorX, self.cursorY)];
+}
+
+- (void)saveCursorPosition
+{
+	_backupCursorX = cursorX;
+	_backupCursorY = cursorY;
+}
+
+- (void)restoreCursorPosition
+{
+	cursorX = _backupCursorX;
+	cursorY = _backupCursorY;
+
+	// notify the delgate that we've visibly changed
+	dispatch_async(dispatch_get_main_queue(),
+	^{
+		[self.delegate terminalViewControlSetDidChangeOutput:self];
+	});
+}
+
+- (void)setCursorIsDisabled:(BOOL)cursorIsDisabled
+{
+	if(_cursorIsDisabled == cursorIsDisabled) return;
+	_cursorIsDisabled = cursorIsDisabled;
+
+	// notify the delgate that we've visibly changed
+	dispatch_async(dispatch_get_main_queue(),
+	^{
+		[self.delegate terminalViewControlSetDidChangeOutput:self];
+	});
 }
 
 typedef struct
@@ -568,8 +627,6 @@ typedef struct
 {
 	__weak __block typeof(self) weakSelf = self;
 
-	// unimplemented codes are noted in the table
-
 	CPMTerminalControlSequenceStruct sequences[] =
 	{
 		{@"\33A",	0,	^{	[weakSelf upCursor];	}},
@@ -581,7 +638,7 @@ typedef struct
 							[weakSelf clearToEndOfScreen];
 						}},
 		{@"\33H",	0,	^{	[weakSelf homeCursor];	}},
-		/*\33I upCursor, with potential scroll */
+		{@"\33I",	0,	^{	[weakSelf decrementY];	}},
 		{@"\33J",	0,	^{	[weakSelf clearToEndOfScreen];	}},
 		{@"\33K",	0,	^{	[weakSelf clearToEndOfLine];	}},
 		{@"\33Y",	4,	^{
@@ -589,11 +646,11 @@ typedef struct
 									setCursorX:(weakSelf.inputQueue[3] - 32)%weakSelf.width
 									y:(weakSelf.inputQueue[2] - 32)%weakSelf.height];
 						}},
-		/*\33d clear up to cursor position */
-		/*\33e cursor on */
-		/*\33d cursor off */
-		/*\33j save cursor position */
-		/*\33k restore cursor position */
+		{@"\33d",	0,	^{	[weakSelf clearFromStartOfScreen];	}},
+		{@"\33e",	0,	^{	weakSelf.cursorIsDisabled = NO;		}},
+		{@"\33f",	0,	^{	weakSelf.cursorIsDisabled = YES;	}},
+		{@"\33j",	0,	^{	[weakSelf saveCursorPosition];		}},
+		{@"\33k",	0,	^{	[weakSelf restoreCursorPosition];	}},
 		{@"\33l",	0,	^{
 							[weakSelf setCursorX:0 y:weakSelf.cursorY];
 							[weakSelf clearToEndOfLine];
