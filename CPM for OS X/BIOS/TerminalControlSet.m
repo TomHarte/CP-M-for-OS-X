@@ -580,6 +580,22 @@ typedef struct
 		{nil}
 	};
 
+	/*
+		Unimplemented:
+
+			right cursor		dec 16
+			clear foreground	~ dec 29
+			clear to end-of-screen - background spaces	~ dec 23
+			background follows	~ dec 25
+			foreground follows	~ dec 31
+			delete line			~ dec 19
+			insert line			~ dec 26
+			keyboard lock		~ dec 21
+			keyboard unlock		~ dec 6
+			alarm, tab
+
+	*/
+
 	[self installControlSequencesFromStructs:sequences];
 }
 
