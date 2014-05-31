@@ -202,7 +202,7 @@
 - (BOOL)getVersionNumber
 {
 	// load version number into A
-	_processor.afRegister = 0x2000 | (_processor.afRegister&0xff);
+	_processor.afRegister = 0x2200 | (_processor.afRegister&0xff);
 
 	// load system type into B
 	_processor.bcRegister = 0x0000 | (_processor.bcRegister&0xff);
