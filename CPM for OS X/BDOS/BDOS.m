@@ -222,12 +222,6 @@
 	return YES;
 }
 
-- (BOOL)liftHead
-{
-	_processor.hlRegister = 0;
-	return NO;
-}
-
 - (BOOL)resetAllDisks
 {
 	_dmaAddress = 0x80;
