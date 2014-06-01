@@ -58,7 +58,7 @@
 			clear to end-of-screen - background spaces	~ dec 23
 			keyboard lock		~ dec 21
 			keyboard unlock		~ dec 6
-			(alarm and tab)
+			(...and tab)
 
 	*/
 

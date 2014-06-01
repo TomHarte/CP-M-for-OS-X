@@ -18,6 +18,8 @@
 
 	CPMTerminalControlSequenceStruct sequences[] =
 	{
+		{@"\x07",	0,	^{	NSBeep();				}}, // i.e. ^G
+
 		{@"\x08",	0,	^{	[weakSelf leftCursor];	}},	// i.e. ^H
 		{@"\x0c",	0,	^{	[weakSelf rightCursor];	}},	// i.e. ^L
 		{@"\x0b",	0,	^{	[weakSelf upCursor];	}},	// i.e. ^K
@@ -40,13 +42,13 @@
 
 		{@"\33E",	0,	^{	[weakSelf insertLine];			}},
 		{@"\33R",	0,	^{	[weakSelf deleteLine];			}},
+
 		{nil}
 	};
 
 	/*
 		Unimplemented at present:
 		
-			07		^G		rings the bell
 			1b 23	ESC #	locks keyboard
 			1b 22	ESC "	unlocks keyboard
 			1b 53	ESC S	screen XY positioning

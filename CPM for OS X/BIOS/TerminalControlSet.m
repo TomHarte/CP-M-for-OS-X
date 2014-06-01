@@ -454,6 +454,7 @@
 	{
 		{@"\n",	0,	^{	[weakSelf incrementY];						}},
 		{@"\r",	0,	^{	[weakSelf setCursorX:0 y:weakSelf.cursorY];	}},
+		{@"\a",	0,	^{	NSBeep();									}},
 		{nil}
 	};
 
