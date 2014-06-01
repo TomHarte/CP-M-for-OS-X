@@ -45,7 +45,7 @@
 	_lineHeight = (monaco.ascender - monaco.descender + monaco.leading);
 	_characterWidth = [monaco advancementForGlyph:'M'].width;
 
-	[self setControlSet:[_candidateControlSets objectAtIndex:0]];
+	[self setControlSet:_candidateControlSets[0]];
 
 	_flashTimer = [NSTimer
 		scheduledTimerWithTimeInterval:1.0/2.5
@@ -118,7 +118,7 @@
 			}];
 
 		// switch to the current best recogniser
-		CPMTerminalControlSet *topSet = [_candidateControlSets objectAtIndex:0];
+		CPMTerminalControlSet *topSet = _candidateControlSets[0];
 		if(topSet != _controlSet)
 		{
 			[self setControlSet:topSet];
@@ -138,7 +138,7 @@
 			float totalPointsToDate = (float)[allControlPoints count];
 
 			float recognisedPercentage1 = (float)controlSetTotalRecognised / totalPointsToDate;
-			float recognisedPercentage2 = (float)[[[_candidateControlSets objectAtIndex:1] recognisedControlPoints] count] / totalPointsToDate;
+			float recognisedPercentage2 = (float)[[_candidateControlSets[1] recognisedControlPoints] count] / totalPointsToDate;
 
 			// if the topmost one is at least 20% ahead, or we've had at least 150 control codes
 			// without establishing a clear winner then award victory and kill all the losers
@@ -162,7 +162,7 @@
 {
 	// create a string of the ASCII characters first
 
-	NSString *asciiText = [NSString stringWithCString:(const char *)_controlSet.characterBuffer encoding:NSASCIIStringEncoding];
+	NSString *asciiText = @((const char *)_controlSet.characterBuffer);
 	_attributedString = nil;
 	_attributedString = [[NSMutableAttributedString alloc] initWithString:asciiText];
 

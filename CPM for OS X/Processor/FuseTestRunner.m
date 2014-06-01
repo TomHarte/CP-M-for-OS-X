@@ -123,18 +123,18 @@
 		// set registers
 		NSArray *registers = [[mainRegisters componentsSeparatedByCharactersInSet:whitespaceCharacterset] filteredArrayUsingPredicate:noEmptyStringPredicate];
 
-		testProcessor.afRegister =		[[registers objectAtIndex:0] hexValue];
-		testProcessor.bcRegister =		[[registers objectAtIndex:1] hexValue];
-		testProcessor.deRegister =		[[registers objectAtIndex:2] hexValue];
-		testProcessor.hlRegister =		[[registers objectAtIndex:3] hexValue];
-		testProcessor.afDashRegister =	[[registers objectAtIndex:4] hexValue];
-		testProcessor.bcDashRegister =	[[registers objectAtIndex:5] hexValue];
-		testProcessor.deDashRegister =	[[registers objectAtIndex:6] hexValue];
-		testProcessor.hlDashRegister =	[[registers objectAtIndex:7] hexValue];
-		testProcessor.ixRegister =		[[registers objectAtIndex:8] hexValue];
-		testProcessor.iyRegister =		[[registers objectAtIndex:9] hexValue];
-		testProcessor.spRegister =		[[registers objectAtIndex:10] hexValue];
-		testProcessor.programCounter =	[[registers objectAtIndex:11] hexValue];
+		testProcessor.afRegister =		[registers[0] hexValue];
+		testProcessor.bcRegister =		[registers[1] hexValue];
+		testProcessor.deRegister =		[registers[2] hexValue];
+		testProcessor.hlRegister =		[registers[3] hexValue];
+		testProcessor.afDashRegister =	[registers[4] hexValue];
+		testProcessor.bcDashRegister =	[registers[5] hexValue];
+		testProcessor.deDashRegister =	[registers[6] hexValue];
+		testProcessor.hlDashRegister =	[registers[7] hexValue];
+		testProcessor.ixRegister =		[registers[8] hexValue];
+		testProcessor.iyRegister =		[registers[9] hexValue];
+		testProcessor.spRegister =		[registers[10] hexValue];
+		testProcessor.programCounter =	[registers[11] hexValue];
 
 		// ignore the other registers for now, because I don't care
 
@@ -165,18 +165,18 @@
 			NSArray *possibleNextResults = [[expectedOutputEnumerator nextObject] componentsSeparatedByCharactersInSet:whitespaceCharacterset];
 			if([possibleNextResults count] == 12 && [[possibleNextResults componentsJoinedByString:@""] length] == 48)
 			{
-				expectedAF =		[[possibleNextResults objectAtIndex:0] hexValue];
-				expectedBC =		[[possibleNextResults objectAtIndex:1] hexValue];
-				expectedDE =		[[possibleNextResults objectAtIndex:2] hexValue];
-				expectedHL =		[[possibleNextResults objectAtIndex:3] hexValue];
-				expectedAFDash =	[[possibleNextResults objectAtIndex:4] hexValue];
-				expectedBCDash =	[[possibleNextResults objectAtIndex:5] hexValue];
-				expectedDEDash =	[[possibleNextResults objectAtIndex:6] hexValue];
-				expectedHLDash =	[[possibleNextResults objectAtIndex:7] hexValue];
-				expectedIX =		[[possibleNextResults objectAtIndex:8] hexValue];
-				expectedIY =		[[possibleNextResults objectAtIndex:9] hexValue];
-				expectedSP =		[[possibleNextResults objectAtIndex:10] hexValue];
-				expectedPC =		[[possibleNextResults objectAtIndex:11] hexValue];
+				expectedAF =		[possibleNextResults[0] hexValue];
+				expectedBC =		[possibleNextResults[1] hexValue];
+				expectedDE =		[possibleNextResults[2] hexValue];
+				expectedHL =		[possibleNextResults[3] hexValue];
+				expectedAFDash =	[possibleNextResults[4] hexValue];
+				expectedBCDash =	[possibleNextResults[5] hexValue];
+				expectedDEDash =	[possibleNextResults[6] hexValue];
+				expectedHLDash =	[possibleNextResults[7] hexValue];
+				expectedIX =		[possibleNextResults[8] hexValue];
+				expectedIY =		[possibleNextResults[9] hexValue];
+				expectedSP =		[possibleNextResults[10] hexValue];
+				expectedPC =		[possibleNextResults[11] hexValue];
 				break;
 			}
 		}

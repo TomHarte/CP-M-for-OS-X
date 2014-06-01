@@ -314,7 +314,7 @@
 
 - (void)addControlSequence:(CPMTerminalControlSequence *)controlSequence
 {
-	[_sequencesToActions setObject:controlSequence forKey:controlSequence.start];
+	_sequencesToActions[controlSequence.start] = controlSequence;
 }
 
 - (void)beginControlCodes

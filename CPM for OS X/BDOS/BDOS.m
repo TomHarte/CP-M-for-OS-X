@@ -303,7 +303,7 @@
 		NSLog(@"Opened %@ for record %04x", fileControlBlock, parameter);
 
 		[_processor set8bitCPMResult:0];
-		[_fileHandlesByControlBlock setObject:handle forKey:fileControlBlock];
+		_fileHandlesByControlBlock[fileControlBlock] = handle;
 	}
 	else
 	{
@@ -354,7 +354,7 @@
 - (BOOL)readNextRecordWithParameter:(uint16_t)parameter
 {
 	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
-	NSFileHandle *fileHandle = [_fileHandlesByControlBlock objectForKey:fileControlBlock];
+	NSFileHandle *fileHandle = _fileHandlesByControlBlock[fileControlBlock];
 
 	[fileHandle seekToFileOffset:fileControlBlock.linearFileOffset];
 	NSData *nextRecord = [fileHandle readDataOfLength:128];
@@ -382,7 +382,7 @@
 - (BOOL)readRandomRecordWithParameter:(uint16_t)parameter
 {
 	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
-	NSFileHandle *fileHandle = [_fileHandlesByControlBlock objectForKey:fileControlBlock];
+	NSFileHandle *fileHandle = _fileHandlesByControlBlock[fileControlBlock];
 	
 	[fileHandle seekToFileOffset:fileControlBlock.randomFileOffset];
 	NSData *nextRecord = [fileHandle readDataOfLength:128];

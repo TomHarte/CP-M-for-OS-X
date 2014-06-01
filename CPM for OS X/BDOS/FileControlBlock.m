@@ -138,8 +138,8 @@
 	{
 		// there's a dot in it, so at least two components
 		NSArray *components = [evaluatedObject componentsSeparatedByString:@"."];
-		*comparisonName = [components objectAtIndex:0];
-		*comparisonType = [components objectAtIndex:1];
+		*comparisonName = components[0];
+		*comparisonType = components[1];
 	}
 
 	// trim appropriately (TODO: maybe some Win95-style mangling?)
