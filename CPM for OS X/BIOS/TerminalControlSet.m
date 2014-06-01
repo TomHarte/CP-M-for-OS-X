@@ -24,7 +24,6 @@
 }
 
 #define address(x, y) (((y)*(self.width+1))+(x))
-@synthesize cursorX, cursorY;
 
 - (void)setIsTrackingCodePoints:(BOOL)isTrackingCodePoints
 {
@@ -113,14 +112,14 @@
 	if(character < 0x20 || character > 0x7e) character = ' ';
 
 	// write the character, with the current attribute
-	_characters[address(cursorX, cursorY)] = character;
-	_attributes[address(cursorX, cursorY)] = self.currentAttribute;
+	_characters[address(_cursorX, _cursorY)] = character;
+	_attributes[address(_cursorX, _cursorY)] = self.currentAttribute;
 
 	// increment x and increment y if necessary
-	cursorX++;
-	if(cursorX == self.width)
+	_cursorX++;
+	if(_cursorX == self.width)
 	{
-		cursorX = 0;
+		_cursorX = 0;
 		[self incrementY];
 	}
 
@@ -133,8 +132,8 @@
 
 - (void)setCursorX:(int)newCursorX y:(int)newCursorY
 {
-	cursorX = newCursorX;
-	cursorY = newCursorY;
+	_cursorX = newCursorX;
+	_cursorY = newCursorY;
 
 	// tell the delegate that the output has changed; TODO: check
 	// that the cursor is currently enabled before doing this
@@ -214,20 +213,20 @@
 
 - (void)incrementY
 {
-	cursorY++;
+	_cursorY++;
 
-	if(cursorY == self.height)
+	if(_cursorY == self.height)
 	{
 		// scroll all contents up a line
 		memmove(_characters, &_characters[self.width+1], (self.height-1)*(self.width+1));
 		memmove(_attributes, &_attributes[self.width+1], (self.height-1)*(self.width+1));
 
 		// move the cursor back onto the screen
-		cursorY --;
+		_cursorY --;
 
 		// blank out the new bottom line
-		memset(&_characters[address(0, cursorY)], 32, sizeof(uint8_t)*self.width);
-		memset(&_attributes[address(0, cursorY)], 0, sizeof(uint16_t)*self.width);
+		memset(&_characters[address(0, _cursorY)], 32, sizeof(uint8_t)*self.width);
+		memset(&_attributes[address(0, _cursorY)], 0, sizeof(uint16_t)*self.width);
 
 		// remove the terminating NULL that just ascended a position
 		_characters[address(self.width, self.height-2)] = '\n';
@@ -236,16 +235,16 @@
 
 - (void)decrementY
 {
-	cursorY--;
+	_cursorY--;
 
-	if(cursorY < 0)
+	if(_cursorY < 0)
 	{
 		// scroll all contents down a line
 		memmove(&_characters[self.width+1], _characters, (self.height-1)*(self.width+1));
 		memmove(&_attributes[self.width+1], _attributes, (self.height-1)*(self.width+1));
 
 		// move the cursor back onto the screen
-		cursorY ++;
+		_cursorY ++;
 
 		// blank out the new top line
 		memset(&_characters[address(0, 0)], 32, sizeof(uint8_t)*self.width);
@@ -258,11 +257,11 @@
 
 - (void)deleteLine
 {
-	if(cursorY < self.height-1)
+	if(_cursorY < self.height-1)
 	{
 		// scroll all contents up a line
-		memmove(&_characters[address(0, cursorY)], &_characters[address(0, cursorY+1)], (self.height-1-cursorY)*(self.width+1));
-		memmove(&_attributes[address(0, cursorY)], &_attributes[address(0, cursorY+1)], (self.height-1-cursorY)*(self.width+1));
+		memmove(&_characters[address(0, _cursorY)], &_characters[address(0, _cursorY+1)], (self.height-1-_cursorY)*(self.width+1));
+		memmove(&_attributes[address(0, _cursorY)], &_attributes[address(0, _cursorY+1)], (self.height-1-_cursorY)*(self.width+1));
 
 		// fix the terminating NULL that just ascended a position
 		_characters[address(self.width, self.height-2)] = '\n';
@@ -275,19 +274,19 @@
 
 - (void)insertLine
 {
-	if(cursorY < self.height-1)
+	if(_cursorY < self.height-1)
 	{
 		// scroll all contents down a line
-		memmove(&_characters[address(0, cursorY+1)], &_characters[address(0, cursorY)], (self.height-1-cursorY)*(self.width+1));
-		memmove(&_attributes[address(0, cursorY+1)], &_attributes[address(0, cursorY)], (self.height-1-cursorY)*(self.width+1));
+		memmove(&_characters[address(0, _cursorY+1)], &_characters[address(0, _cursorY)], (self.height-1-_cursorY)*(self.width+1));
+		memmove(&_attributes[address(0, _cursorY+1)], &_attributes[address(0, _cursorY)], (self.height-1-_cursorY)*(self.width+1));
 
 		// fix the newline just descended a position
 		_characters[address(self.width, self.height-1)] = '\0';
 	}
 
 	// blank out this line
-	memset(&_characters[address(0, cursorY)], 32, sizeof(uint8_t)*self.width);
-	memset(&_attributes[address(0, cursorY)], 0, sizeof(uint16_t)*self.width);
+	memset(&_characters[address(0, _cursorY)], 32, sizeof(uint8_t)*self.width);
+	memset(&_attributes[address(0, _cursorY)], 0, sizeof(uint16_t)*self.width);
 }
 
 - (void)clearFrom:(size_t)start to:(size_t)end
@@ -348,22 +347,22 @@
 
 - (void)upCursor
 {
-	if(cursorY > 0) [self setCursorX:cursorX y:cursorY-1];
+	if(_cursorY > 0) [self setCursorX:_cursorX y:_cursorY-1];
 }
 
 - (void)downCursor
 {
-	if(cursorY < self.height-1)	[self setCursorX:cursorX y:cursorY+1];
+	if(_cursorY < self.height-1)	[self setCursorX:_cursorX y:_cursorY+1];
 }
 
 - (void)leftCursor
 {
-	if(cursorX > 0)	[self setCursorX:cursorX-1 y:cursorY];
+	if(_cursorX > 0)	[self setCursorX:_cursorX-1 y:_cursorY];
 }
 
 - (void)rightCursor
 {
-	if(cursorX < self.width-1)	[self setCursorX:cursorX+1 y:cursorY];
+	if(_cursorX < self.width-1)	[self setCursorX:_cursorX+1 y:_cursorY];
 }
 
 - (void)clearToEndOfScreen
@@ -388,14 +387,14 @@
 
 - (void)saveCursorPosition
 {
-	_backupCursorX = cursorX;
-	_backupCursorY = cursorY;
+	_backupCursorX = _cursorX;
+	_backupCursorY = _cursorY;
 }
 
 - (void)restoreCursorPosition
 {
-	cursorX = _backupCursorX;
-	cursorY = _backupCursorY;
+	_cursorX = _backupCursorX;
+	_cursorY = _backupCursorY;
 
 	// notify the delgate that we've visibly changed
 	dispatch_async(dispatch_get_main_queue(),
