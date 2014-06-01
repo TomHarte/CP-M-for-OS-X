@@ -1260,7 +1260,12 @@
 						break;
 						case 1: [self executeFromCBPage];										break;
 						case 2: NSLog(@"OUT ($%02x), A [%02x]", readByteFromPC(), _aRegister);	break;
-						case 3: NSLog(@"IN A, ($%02x)", readByteFromPC());						break;
+						case 3:
+						{
+							uint8_t portNumber = readByteFromPC();
+							_aRegister = [self.delegate processor:self valueForPort:portNumber];
+						}
+						break;
 						case 4:
 						{
 							uint16_t temporaryValue = [self pop];

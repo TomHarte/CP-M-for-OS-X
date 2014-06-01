@@ -16,6 +16,7 @@ typedef BOOL CPMProcessorShouldBlock;
 - (CPMProcessorShouldBlock)processor:(CPMProcessor *)processor isMakingBDOSCall:(uint8_t)call parameter:(uint16_t)parameter;
 - (CPMProcessorShouldBlock)processor:(CPMProcessor *)processor isMakingBIOSCall:(uint8_t)call;
 - (void)processorDidHalt:(CPMProcessor *)processor;
+- (uint8_t)processor:(CPMProcessor *)processor valueForPort:(uint8_t)port;
 
 @end
 

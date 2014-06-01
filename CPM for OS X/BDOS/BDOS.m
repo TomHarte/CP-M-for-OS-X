@@ -196,6 +196,29 @@
 	NSLog(@"!!Processor did halt!!");
 }
 
+- (uint8_t)bcdFromValue:(NSInteger)value
+{
+	return (uint8_t)((value%10) + ((value / 10) << 4));
+}
+
+- (uint8_t)processor:(CPMProcessor *)processor valueForPort:(uint8_t)port
+{
+	NSLog(@"IN A, ($%02x)", port);
+
+	// the only ports currently implemented are those for the Kenmore real-time clock
+	switch(port)
+	{
+		default: return 0xff;
+
+		case 0xe2: return [self bcdFromValue:[[NSCalendar currentCalendar] components:NSCalendarUnitSecond fromDate:[NSDate date]].second];
+		case 0xe3: return [self bcdFromValue:[[NSCalendar currentCalendar] components:NSCalendarUnitMinute fromDate:[NSDate date]].minute];
+		case 0xe4: return [self bcdFromValue:[[NSCalendar currentCalendar] components:NSCalendarUnitHour fromDate:[NSDate date]].hour];
+		case 0xe5: return [self bcdFromValue:[[NSCalendar currentCalendar] components:NSCalendarUnitWeekday fromDate:[NSDate date]].weekday];
+		case 0xe6: return [self bcdFromValue:[[NSCalendar currentCalendar] components:NSCalendarUnitDay fromDate:[NSDate date]].day];
+		case 0xe7: return [self bcdFromValue:[[NSCalendar currentCalendar] components:NSCalendarUnitMonth fromDate:[NSDate date]].month];
+	}
+}
+
 #pragma mark -
 #pragma mark Environment Management
 
