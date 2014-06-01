@@ -12,19 +12,19 @@
 
 @interface NSString (hexValue)
 
-- (unsigned int)hexValue;
+- (uint16_t)hexValue;
 
 @end
 
 @implementation NSString (hexValue)
 
-- (unsigned int)hexValue
+- (uint16_t)hexValue
 {
 	unsigned int result;
 	NSScanner *scanner = [[NSScanner alloc] initWithString:self];
 	[scanner scanHexInt:&result];
 
-	return result;
+	return (uint16_t)result;
 }
 
 @end
@@ -151,7 +151,7 @@
 			{
 				NSString *nextByte = [valueEnumerator nextObject];
 				if(!nextByte || [nextByte isEqualToString:@"-1"]) break;
-				[memory setValue:[nextByte hexValue] atAddress:address];
+				[memory setValue:(uint8_t)[nextByte hexValue] atAddress:address];
 				address++;
 			}
 		}

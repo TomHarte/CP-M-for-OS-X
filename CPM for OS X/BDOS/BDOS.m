@@ -85,11 +85,11 @@
 		// to actual program code; some CP/M programs read the addresses and
 		// use other means to get into the BIOS. So we need to set up appropriate
 		// jump statments
-		for(int c = biosAddress; c < 65536; c+= 3)
+		for(int c = biosAddress; c < 65536; c += 3)
 		{
-			[_memory setValue:0xc3 atAddress:c];
-			[_memory setValue:c&0xff atAddress:c+1];
-			[_memory setValue:(c >> 8) atAddress:c+2];
+			[_memory setValue:0xc3 atAddress:(uint16_t)c];
+			[_memory setValue:(uint8_t)(c&0xff) atAddress:(uint16_t)(c+1)];
+			[_memory setValue:(uint8_t)(c >> 8) atAddress:(uint16_t)(c+2)];
 		}
 
 		// also set the default DMA address

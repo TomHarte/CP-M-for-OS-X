@@ -64,29 +64,29 @@ typedef struct
 @property (atomic, weak) id <CPMTerminalControlSetDelegate> delegate;
 
 // write character is the single entry point for updating state; post all output characters here
-- (void)writeCharacter:(uint8_t)character;
+- (void)writeCharacter:(char)character;
 
 // character buffer will in effect return a C string of the current character output, with
 // newlines and a terminating NULL
-- (uint8_t *)characterBuffer;
+- (char *)characterBuffer;
 
 // attributeBufferForY: returns the C array of attributes for the given scanline; each scanline
 // is linear but they're not necessarily tightly packed
-- (uint16_t *)attributeBufferForY:(int)y;
+- (uint16_t *)attributeBufferForY:(NSUInteger)y;
 
 // the current cursor position, in character coordinates; (0, 0) is the top left
-@property (nonatomic, readonly) int cursorX, cursorY;
+@property (nonatomic, readonly) NSUInteger cursorX, cursorY;
 @property (nonatomic, readonly) BOOL cursorIsDisabled;
 
 /*
 	STRICTLY FOR CATEGORIES. Leave alone.
 */
-- (id)initWithControlSet:(SEL)selectorForControlSet width:(int)width height:(int)height;
+- (id)initWithControlSet:(SEL)selectorForControlSet width:(NSUInteger)width height:(NSUInteger)height;
 - (void)installControlSequencesFromStructs:(CPMTerminalControlSequenceStruct *)structs;
 - (void)setCursorIsDisabled:(BOOL)cursorIsDisabled;
 
 @property (nonatomic, assign) uint16_t currentAttribute;
-@property (nonatomic, assign) uint8_t *inputQueue;
+@property (nonatomic, assign) char *inputQueue;
 
 - (void)homeCursor;
 
@@ -102,7 +102,7 @@ typedef struct
 
 - (void)saveCursorPosition;
 - (void)restoreCursorPosition;
-- (void)setCursorX:(int)newCursorX y:(int)newCursorY;
+- (void)setCursorX:(NSUInteger)newCursorX y:(NSUInteger)newCursorY;
 
 - (void)deleteLine;
 - (void)insertLine;

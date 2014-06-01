@@ -11,7 +11,7 @@
 
 @implementation CPMTerminalControlSet
 {
-	uint8_t *_characters;
+	char *_characters;
 	uint16_t *_attributes;
 
 	NSUInteger _inputQueueWritePointer;
@@ -20,10 +20,10 @@
 	NSMutableDictionary *_sequencesToActions;
 	NSMutableSet *_allSequenceStartCharacters;
 
-	int _backupCursorX, _backupCursorY;
+	NSUInteger _backupCursorX, _backupCursorY;
 }
 
-#define address(x, y) (((y)*(self.width+1))+(x))
+#define address(x, y) (size_t)(((y)*(self.width+1))+(x))
 
 - (void)setIsTrackingCodePoints:(BOOL)isTrackingCodePoints
 {
@@ -42,7 +42,7 @@
 	return _recognisedControlPoints ? YES : NO;
 }
 
-- (void)writeCharacter:(uint8_t)character
+- (void)writeCharacter:(char)character
 {
 	// this enqueuing process has a quick safeguard against overflow
 	self.inputQueue[_inputQueueWritePointer++] = character;
@@ -53,7 +53,7 @@
 	if(_inputQueueWritePointer > _longestSequence)
 	{
 		// this means we missed a code, probably
-		[(NSMutableSet *)_unrecognisedControlPoints addObject:[NSNumber numberWithInteger:_numberOfCharactersSoFar]];
+		[(NSMutableSet *)_unrecognisedControlPoints addObject:@(_numberOfCharactersSoFar)];
 
 		// we'll attempt to output the first thing; some terminals (such as the Hazeltine 1500)
 		// use a printable character as the first thing in an escape code...
@@ -63,7 +63,7 @@
 	}
 
 	// output anything that's not possibly part of a control sequence
-	while(_inputQueueWritePointer && ![_allSequenceStartCharacters containsObject:[NSNumber numberWithChar:self.inputQueue[0]]])
+	while(_inputQueueWritePointer && ![_allSequenceStartCharacters containsObject:@(self.inputQueue[0])])
 	{
 		[self writeNormalCharacter:self.inputQueue[0]];
 		_inputQueueWritePointer--;
@@ -95,7 +95,7 @@
 			if(!foundMatch) break;
 
 			// record that we recognised a control sequence
-			[(NSMutableSet *)_recognisedControlPoints addObject:[NSNumber numberWithInteger:_numberOfCharactersSoFar]];
+			[(NSMutableSet *)_recognisedControlPoints addObject:@(_numberOfCharactersSoFar)];
 
 			// perform the sequence and remove the matched characters from the queue
 			foundMatch.action();
@@ -130,7 +130,7 @@
 	});
 }
 
-- (void)setCursorX:(int)newCursorX y:(int)newCursorY
+- (void)setCursorX:(NSUInteger)newCursorX y:(NSUInteger)newCursorY
 {
 	_cursorX = newCursorX;
 	_cursorY = newCursorY;
@@ -143,27 +143,27 @@
 	});
 }
 
-- (uint8_t *)characterBuffer				{	return _characters;	}
-- (uint16_t *)attributeBufferForY:(int)y
+- (char *)characterBuffer				{	return _characters;	}
+- (uint16_t *)attributeBufferForY:(NSUInteger)y
 {
 	return &_attributes[address(0, y)];
 }
 
-- (void)setupForWidth:(int)width height:(int)height
+- (void)setupForWidth:(NSUInteger)width height:(NSUInteger)height
 {
 	// store width and height
 	_width = width;
 	_height = height;
 
 	// allocate storage area for the display
-	_characters = (uint8_t *)calloc((width+1)*height, sizeof(uint8_t));
+	_characters = (char *)calloc((width+1)*height, sizeof(char));
 	_attributes = (uint16_t *)calloc((width+1)*height, sizeof(uint16_t));
 
 	// set everything to spaces, initially
 	memset(_characters, ' ', (width+1)*height);
 
 	// write in new lines
-	for(int y = 0; y < height; y++)
+	for(NSUInteger y = 0; y < height; y++)
 	{
 		_characters[address(self.width, y)] = '\n';
 	}
@@ -173,7 +173,7 @@
 }
 
 
-- (id)initWithControlSet:(SEL)selectorForControlSet width:(int)width height:(int)height
+- (id)initWithControlSet:(SEL)selectorForControlSet width:(NSUInteger)width height:(NSUInteger)height
 {
 	self = [super init];
 
@@ -239,16 +239,13 @@
 
 - (void)decrementY
 {
-	_cursorY--;
-
-	if(_cursorY < 0)
+	if(_cursorY)
+		_cursorY--;
+	else
 	{
 		// scroll all contents down a line
 		memmove(&_characters[self.width+1], _characters, (self.height-1)*(self.width+1));
 		memmove(&_attributes[self.width+1], _attributes, (self.height-1)*(self.width+1));
-
-		// move the cursor back onto the screen
-		_cursorY ++;
 
 		// blank out the new top line
 		memset(&_characters[address(0, 0)], 32, sizeof(uint8_t)*self.width);
@@ -334,14 +331,14 @@
 	// of all control sequence start characters
 	for(CPMTerminalControlSequence *controlSequence in [_sequencesToActions allValues])
 	{
-		[_allSequenceStartCharacters addObject:[NSNumber numberWithChar:[controlSequence.start characterAtIndex:0]]];
+		[_allSequenceStartCharacters addObject:@([controlSequence.start characterAtIndex:0])];
 
 		if(controlSequence.requiredLength > _longestSequence)
 			_longestSequence = controlSequence.requiredLength;
 	}
 
 	// hence allocate the input queue
-	_inputQueue = (uint8_t *)malloc(sizeof(uint8_t) * _longestSequence);
+	_inputQueue = (char *)malloc(sizeof(char) * _longestSequence);
 }
 
 - (void)homeCursor

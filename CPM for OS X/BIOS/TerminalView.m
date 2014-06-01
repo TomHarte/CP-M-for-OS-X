@@ -177,18 +177,18 @@
 		range:NSMakeRange(0, _attributedString.length)];
 	CFRelease(monaco);
 
-	uint8_t lastAttribute = 0;
-	for(int y = 0; y < _controlSet.height; y++)
+	uint16_t lastAttribute = 0;
+	for(NSUInteger y = 0; y < _controlSet.height; y++)
 	{
 		uint16_t *attributes = [_controlSet attributeBufferForY:y];
-		for(int x = 0; x < _controlSet.width; x++)
+		for(NSUInteger x = 0; x < _controlSet.width; x++)
 		{
-			uint8_t attribute = attributes[x];
+			uint16_t attribute = attributes[x];
 
 			if(attribute != lastAttribute)
 			{
 				NSMutableDictionary *newAttributes = [NSMutableDictionary dictionary];
-				uint8_t attributeChanges = attribute^lastAttribute;
+				uint16_t attributeChanges = attribute^lastAttribute;
 				lastAttribute = attribute;
 
 				if(
@@ -274,19 +274,19 @@
 	CGContextSetShouldSmoothFonts(context, true);
 	CGPathRef path = CGPathCreateWithRect(idealRect, NULL);
 	CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)_attributedString);
-	CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, _attributedString.length), path, NULL);
+	CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, (CFIndex)_attributedString.length), path, NULL);
 
 	// TODO: render any solid areas necessary for inverse video, or for graphics
 	CGContextSetAllowsAntialiasing(context, false);
 	CGFloat yPosition = (_lineHeight * _controlSet.height) - _lineHeight;
-	for(int y = 0; y < _controlSet.height; y++)
+	for(NSUInteger y = 0; y < _controlSet.height; y++)
 	{
 		uint8_t lastAttribute = 0;
-		int startingColumn = 0;
+		NSUInteger startingColumn = 0;
 		NSColor *colour = nil;
 		uint16_t *attributes = [_controlSet attributeBufferForY:y];
 
-		for(int x = 0; x < _controlSet.width; x++)
+		for(NSUInteger x = 0; x < _controlSet.width; x++)
 		{
 			uint8_t attribute = attributes[x]&(kCPMTerminalAttributeReducedIntensityOn|kCPMTerminalAttributeInverseVideoOn);
 
@@ -419,7 +419,7 @@
 {
 	@synchronized(self)
 	{
-		return _incomingString.length;
+		return !!_incomingString.length;
 	}
 }
 

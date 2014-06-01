@@ -59,7 +59,7 @@
 			unichar nextInput = [_terminalView dequeueBufferedCharacter];
 			if(nextInput)
 			{
-				[_processor set8bitCPMResult:nextInput];
+				[_processor set8bitCPMResult:(uint8_t)nextInput];
 				return NO;
 			}
 			else
@@ -76,7 +76,7 @@
 
 - (uint8_t)dequeueCharacterIfAvailable
 {
-	return [_terminalView dequeueBufferedCharacter];
+	return (uint8_t)[_terminalView dequeueBufferedCharacter];
 }
 
 - (uint8_t)consoleStatus
@@ -101,7 +101,7 @@
 
 - (void)writeConsoleOutput:(uint8_t)characer
 {
-	[_terminalView writeCharacter:characer];
+	[_terminalView writeCharacter:(char)characer];
 }
 
 - (void)terminalViewDidAddCharactersToBuffer:(CPMTerminalView *)terminalView
@@ -109,11 +109,11 @@
 	if(_isWaitingOnConsoleInput)
 	{
 		unichar nextInput = [terminalView dequeueBufferedCharacter];
-		[_processor set8bitCPMResult:nextInput];
+		[_processor set8bitCPMResult:(uint8_t)nextInput];
 
 		if(_shouldEcho)
 		{
-			[self writeConsoleOutput:nextInput];
+			[self writeConsoleOutput:(uint8_t)nextInput];
 		}
 
 		[_processor unblock];

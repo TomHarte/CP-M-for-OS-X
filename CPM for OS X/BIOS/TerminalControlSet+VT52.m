@@ -34,8 +34,8 @@
 		{@"\33M",	0,	^{	[weakSelf deleteLine];	}},
 		{@"\33Y",	4,	^{
 							[weakSelf
-									setCursorX:(weakSelf.inputQueue[3] - 32)%weakSelf.width
-									y:(weakSelf.inputQueue[2] - 32)%weakSelf.height];
+									setCursorX:(NSUInteger)(weakSelf.inputQueue[3] - 32)%weakSelf.width
+									y:(NSUInteger)(weakSelf.inputQueue[2] - 32)%weakSelf.height];
 						}},
 		// ESC b — select font colour
 		// ESC c — select background colour

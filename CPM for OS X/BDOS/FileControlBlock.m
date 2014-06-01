@@ -66,9 +66,9 @@
 		uint8_t extent = bytes[0x0c]&31;
 		uint8_t moduleNumber = bytes[0x0e];
 
-		_linearFileOffset = (record | (extent << 7) | (moduleNumber << 12)) << 7;
+		_linearFileOffset = (size_t)((record | (extent << 7) | (moduleNumber << 12)) << 7);
 
-		_randomFileOffset = (bytes[0x21] | (bytes[0x22] << 8) | ((bytes[0x23]&3) << 16)) << 7;
+		_randomFileOffset = (size_t)((bytes[0x21] | (bytes[0x22] << 8) | ((bytes[0x23]&3) << 16)) << 7);
 	}
 
 	return self;
@@ -78,9 +78,9 @@
 {
 	_linearFileOffset = newLinearFileOffset;
 
-	[memory setValue:(self.linearFileOffset >> 7)&127 atAddress:baseAddress+0x20];
-	[memory setValue:(self.linearFileOffset >> 14)&31 atAddress:baseAddress+0x0c];
-	[memory setValue:self.linearFileOffset >> 19 atAddress:baseAddress+0x0e];
+	[memory setValue:(uint8_t)((self.linearFileOffset >> 7)&127)	atAddress:baseAddress+0x20];
+	[memory setValue:(uint8_t)((self.linearFileOffset >> 14)&31)	atAddress:baseAddress+0x0c];
+	[memory setValue:(uint8_t)(self.linearFileOffset >> 19)			atAddress:baseAddress+0x0e];
 }
 
 - (id)copyWithZone:(NSZone *)zone
@@ -203,12 +203,12 @@
 	self.fileType = type;
 
 	// write out to memory
-	for(int index = 0; index < 8; index++)
+	for(uint16_t index = 0; index < 8; index++)
 	{
 		unichar character = (index < name.length) ? [name characterAtIndex:index] : ' ';
 		[memory setValue:character&0xff atAddress:baseAddress+1+index];
 	}
-	for(int index = 0; index < 3; index++)
+	for(uint16_t index = 0; index < 3; index++)
 	{
 		unichar character = (index < type.length) ? [type characterAtIndex:index] : ' ';
 		[memory setValue:character&0xff atAddress:baseAddress+9+index];

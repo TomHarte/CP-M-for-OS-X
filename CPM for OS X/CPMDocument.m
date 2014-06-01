@@ -111,29 +111,33 @@
 		instructions are ones that are absent on the 8080, it's probably something short.
 
 	*/
+	__weak typeof(self) weakSelf = self;
 	dispatch_async(_serialDispatchQueue,
 	^{
-		if(_disallowFastExecution)
+		typeof(self) strongSelf = weakSelf;
+		if(!strongSelf) return;
+
+		if(strongSelf->_disallowFastExecution)
 		{
-			[_bdos runForNumberOfInstructions:14000];
-			if(_bdos.didBlock)
+			[strongSelf->_bdos runForNumberOfInstructions:14000];
+			if(strongSelf->_bdos.didBlock)
 			{
-				_blockedCount++;
-				if(_blockedCount == 100) _disallowFastExecution = NO;
+				strongSelf->_blockedCount++;
+				if(strongSelf->_blockedCount == 100) strongSelf->_disallowFastExecution = NO;
 			}
 			else
-				_blockedCount = 0;
+				strongSelf->_blockedCount = 0;
 		}
 		else
 		{
-			[_bdos runForTimeInterval:0.018];
-			if(!_bdos.didBlock)
+			[strongSelf->_bdos runForTimeInterval:0.018];
+			if(!strongSelf->_bdos.didBlock)
 			{
-				_blockedCount++;
-				if(_blockedCount == 5) _disallowFastExecution = YES;
+				strongSelf->_blockedCount++;
+				if(strongSelf->_blockedCount == 5) strongSelf->_disallowFastExecution = YES;
 			}
 			else
-				_blockedCount = 0;
+				strongSelf->_blockedCount = 0;
 		}
 	});
 }
@@ -157,16 +161,19 @@
 - (void)terminalViewDidAddCharactersToBuffer:(CPMTerminalView *)terminalView
 {
 	// channel the news onto our serial dispatch queue
+	__weak typeof(self) weakSelf = self;
 	dispatch_async(_serialDispatchQueue,
 	^{
-		[_bdos terminalViewDidAddCharactersToBuffer:terminalView];
+		typeof(self) strongSelf = weakSelf;
+		if(!strongSelf) return;
+		[strongSelf->_bdos terminalViewDidAddCharactersToBuffer:terminalView];
 	});
 }
 
 - (void)terminalViewDidChangeIdealRect:(CPMTerminalView *)terminalView
 {
 	// we have only one window, so...
-	NSWindow *window = [[[self windowControllers] objectAtIndex:0] window];
+	NSWindow *window = [(NSWindowController *)[self windowControllers][0] window];
 
 	// restrict our window's aspect ratio appropriately
 	NSSize idealSize = [self.terminalView idealSize];
@@ -181,7 +188,7 @@
 	CGFloat xDifference = (contentSize.height * idealSize.width / idealSize.height) - contentSize.width;
 	CGFloat yDifference = (contentSize.width * idealSize.height / idealSize.width) - contentSize.height;
 
-	if(fabsf(xDifference) < fabsf(yDifference))
+	if(fabs(xDifference) < fabs(yDifference))
 		frame.size.width += xDifference;
 	else
 		frame.size.height += yDifference;

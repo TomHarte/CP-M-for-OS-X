@@ -83,7 +83,7 @@
 */
 - (uint16_t)getOffset
 {
-	return (int8_t)readByteFromPC() + _programCounter;
+	return (uint16_t)((int8_t)readByteFromPC() + _programCounter);
 }
 
 - (uint16_t)getAddress
@@ -93,7 +93,7 @@
 
 - (uint8_t *)indexPlusOffset:(int8_t)offset
 {
-	return [_memory pointerToAddress:*_indexRegister + offset];
+	return [_memory pointerToAddress:(uint16_t)(*_indexRegister + offset)];
 }
 
 #pragma mark -
@@ -119,14 +119,14 @@
 	{
 		default: return NO;
 		
-		case 0: return _lastZeroResult;							//NZ
+		case 0: return !!_lastZeroResult;							//NZ
 		case 1: return !_lastZeroResult;							//Z
-		case 2: return !(_generalFlags&LLZ80FlagCarry);			//NC
-		case 3: return (_generalFlags&LLZ80FlagCarry);			//C
+		case 2: return !(_generalFlags&LLZ80FlagCarry);				//NC
+		case 3: return (_generalFlags&LLZ80FlagCarry);				//C
 		case 4: return !(_generalFlags&LLZ80FlagParityOverflow);	//PO
-		case 5: return (_generalFlags&LLZ80FlagParityOverflow);	//PE
-		case 6: return !(_lastSignResult&0x80);					//P
-		case 7: return _lastSignResult&0x80;						//M
+		case 5: return (_generalFlags&LLZ80FlagParityOverflow);		//PE
+		case 6: return !(_lastSignResult&0x80);						//P
+		case 7: return !!(_lastSignResult&0x80);					//M
 	}
 }
 
@@ -874,9 +874,9 @@
 
 	_rRegister = (_rRegister+1)&127;	// for the sake of incrementing this somewhere; we don't really care for accuracy
 	uint8_t opcode = readByteFromPC();
-	int x = opcode >> 6;
-	int y = (opcode >> 3)&7;
-	int z = opcode&7;
+	uint8_t x = opcode >> 6;
+	uint8_t y = (opcode >> 3)&7;
+	uint8_t z = opcode&7;
 
 	switch(x)
 	{
@@ -1332,7 +1332,7 @@
 					// alu[y] nn
 				break;
 				case 7:
-					[self call:y << 3];
+					[self call:(uint16_t)(y << 3)];	// recall: y doesn't use the top-three bits
 					// RST n
 				break;
 			}
@@ -1372,7 +1372,7 @@
 	{
 		if(_programCounter >= _biosAddress)
 		{
-			_isBlocked = [self.delegate processor:self isMakingBIOSCall:(_programCounter - _biosAddress) / 3];
+			_isBlocked = [self.delegate processor:self isMakingBIOSCall:(uint8_t)((_programCounter - _biosAddress) / 3)];
 			_programCounter = [self pop];
 		}
 		else
@@ -1409,7 +1409,7 @@
 		(_bit5And3Flags & (LLZ80FlagBit5 | LLZ80FlagBit3)) |
 		(_generalFlags & (LLZ80FlagCarry | LLZ80FlagHalfCarry | LLZ80FlagParityOverflow | LLZ80FlagSubtraction));
 
-	return (_aRegister << 8) | fRegister;
+	return (uint16_t)((_aRegister << 8) | fRegister);
 }
 
 - (void)set8bitCPMResult:(uint8_t)result

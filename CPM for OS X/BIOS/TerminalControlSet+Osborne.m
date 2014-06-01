@@ -30,8 +30,8 @@
 		{@"\x1e",	0,	^{	[weakSelf homeCursor];	}},
 		{@"\33=",	4,	^{
 							[weakSelf
-									setCursorX:(weakSelf.inputQueue[3] - 32)%weakSelf.width
-									y:(weakSelf.inputQueue[2] - 32)%weakSelf.height];
+									setCursorX:(NSUInteger)(weakSelf.inputQueue[3] - 32)%weakSelf.width
+									y:(NSUInteger)(weakSelf.inputQueue[2] - 32)%weakSelf.height];
 						}},
 		{@"\33T",	0,	^{	[weakSelf clearToEndOfLine];	}},
 

@@ -25,8 +25,8 @@
 									terminalViewControlSet:weakSelf
 									addStringToInput:
 										[NSString stringWithFormat:@"%c%c",
-												weakSelf.cursorX,
-												weakSelf.cursorY]];
+												(uint8_t)weakSelf.cursorX,
+												(uint8_t)weakSelf.cursorY]];
 							});
 						}},
 		{@"~\13",	0,	^{	[weakSelf downCursor];	}},
@@ -34,8 +34,8 @@
 		{@"~\17",	0,	^{	[weakSelf clearToEndOfLine];	}},
 		{@"~\21",	4,	^{
 							[weakSelf
-								setCursorX:weakSelf.inputQueue[2]%weakSelf.width
-								y:weakSelf.inputQueue[3]%weakSelf.height];
+								setCursorX:(NSUInteger)weakSelf.inputQueue[2]%weakSelf.width
+								y:(NSUInteger)weakSelf.inputQueue[3]%weakSelf.height];
 						}},
 		{@"~\22",	0,	^{	[weakSelf homeCursor];	}},
 		{@"~\23",	0,	^{	[weakSelf deleteLine];			}},
