@@ -60,7 +60,7 @@
 
 		case 2:	// CONST
 			// a = 0 means no character ready, 0xff means character ready
-			_processor.afRegister = (_processor.afRegister&0xff) | ([self consoleStatus] << 8);
+			[_processor set8bitCPMResult:[self consoleStatus]];
 		return NO;
 
 		case 4:	// CONOUT
@@ -72,7 +72,7 @@
 			unichar nextInput = [_terminalView dequeueBufferedCharacter];
 			if(nextInput)
 			{
-				_processor.afRegister = (_processor.afRegister&0xff) | (nextInput << 8);
+				[_processor set8bitCPMResult:nextInput];
 				return NO;
 			}
 			else
@@ -103,7 +103,7 @@
 	if(character)
 	{
 		[self writeConsoleOutput:character];
-		_processor.afRegister = (_processor.afRegister&0xff) | (character << 8);
+		[_processor set8bitCPMResult:character];
 		return NO;
 	}
 
@@ -122,7 +122,7 @@
 	if(_isWaitingOnConsoleInput)
 	{
 		unichar nextInput = [terminalView dequeueBufferedCharacter];
-		_processor.afRegister = (_processor.afRegister&0xff) | (nextInput << 8);
+		[_processor set8bitCPMResult:nextInput];
 
 		if(_shouldEcho)
 		{

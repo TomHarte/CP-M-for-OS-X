@@ -1417,4 +1417,19 @@
 @synthesize programCounter;
 @synthesize iRegister, rRegister;
 
+- (void)set8bitCPMResult:(uint8_t)result
+{
+	// an 8-bit result goes to A and L
+	hlRegister = (hlRegister & 0xff00) | result;
+	aRegister = result;
+}
+
+- (void)set16bitCPMResult:(uint16_t)result
+{
+	// an 16-bit result goes to BA and HL
+	hlRegister = result;
+	aRegister = (uint8_t)(result&0xff);
+	bcRegister = (bcRegister & 0xff) | (result & 0xff00);
+}
+
 @end

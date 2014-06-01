@@ -168,16 +168,13 @@
 		case 33:	shouldBlock = [self readRandomRecordWithParameter:parameter];	break;
 
 		case 14:	// select disk
-			processor.afRegister = (processor.afRegister&0x00ff);
+			[_processor set8bitCPMResult:0];
 		break;
 
 		default:
 			NSLog(@"!!UNIMPLEMENTED!! BDOS call %d with parameter %04x", call, parameter);
 		break;
 	}
-
-	// "For reasons of compatibility, register A = L and register B = H upon return in all cases."
-	processor.hlRegister = (processor.afRegister >> 8) | (processor.bcRegister & 0xff00);
 
 	return shouldBlock;
 }
@@ -201,11 +198,8 @@
 
 - (BOOL)getVersionNumber
 {
-	// load version number into A
-	_processor.afRegister = 0x2200 | (_processor.afRegister&0xff);
-
-	// load system type into B
-	_processor.bcRegister = 0x0000 | (_processor.bcRegister&0xff);
+	// the high part is OS type (CP/M) and the low part is the BCD version number (2.2)
+	[_processor set16bitCPMResult:0x0022];
 
 	return NO;
 }
@@ -232,7 +226,7 @@
 {
 	// return current drive in a; a = 0, b = 1, etc
 	NSLog(@"Returned current drive as 0");
-	_processor.afRegister &= 0xff;
+	[_processor set8bitCPMResult:0];
 
 	return NO;
 }
@@ -248,7 +242,7 @@
 
 	if(!self.basePath)
 	{
-		_processor.afRegister |= 0xff00;
+		[_processor set8bitCPMResult:0xff];
 	}
 	else
 	{
@@ -272,14 +266,14 @@
 	NSString *nextFileName = [_searchEnumerator nextObject];
 	if(!nextFileName)
 	{
-		_processor.afRegister |= 0xff00;
+		[_processor set8bitCPMResult:0xff];
 		[_searchEnumerator release], _searchEnumerator = nil;
 		return NO;
 	}
 
 	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:_dmaAddress];
 	fileControlBlock.nameWithExtension = nextFileName;
-	_processor.afRegister &= 0xff;
+	[_processor set8bitCPMResult:0];
 	return NO;
 }
 
@@ -300,13 +294,13 @@
 	{
 		NSLog(@"Opened %@ for record %04x", fileControlBlock, parameter);
 
-		_processor.afRegister &= 0xff;
+		[_processor set8bitCPMResult:0];
 		[_fileHandlesByControlBlock setObject:handle forKey:fileControlBlock];
 	}
 	else
 	{
 		NSLog(@"Failed to open %@", fileControlBlock);
-		_processor.afRegister |= 0xff00;
+		[_processor set8bitCPMResult:0xff];
 	}
 
 	return NO;
@@ -318,7 +312,7 @@
 
 	NSLog(@"Closing %@", fileControlBlock);
 	[_fileHandlesByControlBlock removeObjectForKey:fileControlBlock];
-	_processor.afRegister &= 0xff;
+	[_processor set8bitCPMResult:0];
 
 	return NO;
 }
@@ -335,7 +329,7 @@
 	NSLog(@"!!UNIMPLEMENTED!! should delete %@", [self fileControlBlockWithParameter:parameter]);
 
 	// pretend we succeeded
-	_processor.afRegister &= 0xff;
+	[_processor set8bitCPMResult:0];
 
 	return NO;
 }
@@ -345,7 +339,7 @@
 	NSLog(@"!!UNIMPLEMENTED!! should write next record to %@", [self fileControlBlockWithParameter:parameter]);
 
 	// pretend we succeeded
-	_processor.afRegister &= 0xff;
+	[_processor set8bitCPMResult:0];
 
 	return NO;
 }
@@ -365,12 +359,12 @@
 		fileControlBlock.linearFileOffset += 128;
 
 		// report success
-		_processor.afRegister = (_processor.afRegister&0x00ff);
+		[_processor set8bitCPMResult:0];
 	}
 	else
 	{
 		// set 0xff - end of file
-		_processor.afRegister = 0xff00 | (_processor.afRegister&0x00ff);
+		[_processor set8bitCPMResult:0xff];
 	}
 
 //	NSLog(@"did read sequential record for %@, offset %zd, DMA address %04x", fileControlBlock, fileControlBlock.linearFileOffset, _dmaAddress);
@@ -391,12 +385,12 @@
 		[_memory setData:nextRecord atAddress:_dmaAddress];
 
 		// report success
-		_processor.afRegister = (_processor.afRegister&0x00ff);
+		[_processor set8bitCPMResult:0];
 	}
 	else
 	{
 		// set error 6 - record number out of range
-		_processor.afRegister = 0x0600 | (_processor.afRegister&0x00ff);
+		[_processor set8bitCPMResult:0x06];
 	}
 
 //	NSLog(@"did read random record for %@, offset %zd, DMA address %04x", fileControlBlock, fileControlBlock.randomFileOffset, _dmaAddress);
@@ -409,7 +403,7 @@
 	switch(parameter&0xff)
 	{
 		case 0xff:
-			_processor.afRegister = (_processor.afRegister&0x00ff) | ([_bios dequeueCharacterIfAvailable] << 8);
+			[_processor set8bitCPMResult:[_bios dequeueCharacterIfAvailable]];
 		break;
 		case 0xfe: return [self getConsoleStatus];
 		default:
@@ -422,7 +416,7 @@
 
 - (BOOL)getConsoleStatus
 {
-	_processor.afRegister = (_processor.afRegister&0x00ff) | ([_bios consoleStatus] << 8);
+	[_processor set8bitCPMResult:[_bios consoleStatus]];
 	return NO;
 }
 
