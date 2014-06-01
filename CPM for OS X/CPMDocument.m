@@ -24,7 +24,7 @@
 	NSURL *_sourceURL;
 	CPMBDOS *_bdos;
 	NSTimer *_executionTimer;
-	dispatch_queue_t serialDispatchQueue;
+	dispatch_queue_t _serialDispatchQueue;
 
 	NSUInteger _blockedCount;
 	BOOL _disallowFastExecution;
@@ -36,9 +36,9 @@
 	[_executionTimer invalidate], _executionTimer = nil;
 	_sourceURL = nil;
 	[self.terminalView invalidate];
-	if(serialDispatchQueue)
+	if(_serialDispatchQueue)
 	{
-		dispatch_release(serialDispatchQueue), serialDispatchQueue = NULL;
+		dispatch_release(_serialDispatchQueue), _serialDispatchQueue = NULL;
 	}
 
 	[super close];
@@ -66,7 +66,7 @@
 	_executionTimer = [NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(doMoreProcessing:) userInfo:nil repeats:YES];
 
 	// a serial dispatch queue will keep actual machine execution off the main queue
-	serialDispatchQueue = dispatch_queue_create("CPM dispatch queue", DISPATCH_QUEUE_SERIAL);
+	_serialDispatchQueue = dispatch_queue_create("CPM dispatch queue", DISPATCH_QUEUE_SERIAL);
 
 	// this isn't entirely honest, but it'll force us to lock the aspect ratio now
 	[self terminalViewDidChangeIdealRect:self.terminalView];
@@ -113,7 +113,7 @@
 		instructions are ones that are absent on the 8080, it's probably something short.
 
 	*/
-	dispatch_async(serialDispatchQueue,
+	dispatch_async(_serialDispatchQueue,
 	^{
 		if(_disallowFastExecution)
 		{
@@ -142,7 +142,7 @@
 
 - (void)terminalViewDidAddCharactersToBuffer:(CPMTerminalView *)terminalView
 {
-	dispatch_async(serialDispatchQueue,
+	dispatch_async(_serialDispatchQueue,
 	^{
 		[_bdos terminalViewDidAddCharactersToBuffer:terminalView];
 	});
