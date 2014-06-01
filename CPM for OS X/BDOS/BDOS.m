@@ -27,6 +27,9 @@
 	NSEnumerator *_searchEnumerator;
 }
 
+#pragma mark -
+#pragma mark Init
+
 - (id)initWithContentsOfURL:(NSURL *)URL terminalView:(CPMTerminalView *)terminalView
 {
 	return [self initWithData:[NSData dataWithContentsOfURL:URL] terminalView:terminalView];
@@ -102,6 +105,9 @@
 	return self;
 }
 
+#pragma mark -
+#pragma mark Temporal Call-ins
+
 - (void)runForTimeInterval:(NSTimeInterval)interval;
 {
 	[_processor runForTimeInterval:interval];
@@ -119,6 +125,9 @@
 	// <comment as above>
 	_didBlock = _processor.isBlocked;
 }
+
+#pragma mark -
+#pragma mark CPMProcessorDelegate
 
 - (CPMProcessorShouldBlock)processor:(CPMProcessor *)processor isMakingBDOSCall:(uint8_t)call parameter:(uint16_t)parameter
 {
@@ -175,8 +184,12 @@
 
 - (void)processorDidHalt:(CPMProcessor *)processor
 {
+	// this should prompt the user, probably, but for now it just lets me know
 	NSLog(@"!!Processor did halt!!");
 }
+
+#pragma mark -
+#pragma mark Environment Management
 
 - (BOOL)getVersionNumber
 {
@@ -186,17 +199,14 @@
 	return NO;
 }
 
-- (BOOL)writeConsoleOutput:(uint16_t)character
-{
-	[_bios writeConsoleOutput:character&0xff];
-	return NO;
-}
-
 - (BOOL)exitProgram
 {
 	NSLog(@"Program did exit");
 	return YES;
 }
+
+#pragma mark -
+#pragma mark Basic File IO setters and getters
 
 - (BOOL)resetAllDisks
 {
@@ -213,10 +223,23 @@
 	return NO;
 }
 
+- (BOOL)setDMAAddressWithParameter:(uint16_t)parameter
+{
+	_dmaAddress = parameter;
+
+	return NO;
+}
+
+#pragma mark -
+#pragma mark File Helpers
+
 - (CPMFileControlBlock *)fileControlBlockWithParameter:(uint16_t)parameter
 {
 	return [[CPMFileControlBlock alloc] initWithAddress:parameter inMemory:_memory];
 }
+
+#pragma mark -
+#pragma mark File Search
 
 - (BOOL)searchForFirstWithParameter:(uint16_t)parameter
 {
@@ -259,6 +282,9 @@
 	return NO;
 }
 
+#pragma mark -
+#pragma mark File Open and Close
+
 - (BOOL)openFileWithParameter:(uint16_t)parameter
 {
 	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
@@ -299,12 +325,8 @@
 	return NO;
 }
 
-- (BOOL)setDMAAddressWithParameter:(uint16_t)parameter
-{
-	_dmaAddress = parameter;
-
-	return NO;
-}
+#pragma mark -
+#pragma mark File Delete
 
 - (BOOL)deleteFileWithParameter:(uint16_t)parameter
 {
@@ -315,6 +337,9 @@
 
 	return NO;
 }
+
+#pragma mark -
+#pragma mark File Read and Write
 
 - (BOOL)writeNextRecordWithParameter:(uint16_t)parameter
 {
@@ -380,6 +405,9 @@
 	return NO;
 }
 
+#pragma mark -
+#pragma mark Console IO
+
 - (BOOL)directConsoleIOWithParameter:(uint16_t)parameter
 {
 	switch(parameter&0xff)
@@ -413,6 +441,15 @@
 	}
 	return NO;
 }
+
+- (BOOL)writeConsoleOutput:(uint16_t)character
+{
+	[_bios writeConsoleOutput:character&0xff];
+	return NO;
+}
+
+#pragma mark -
+#pragma mark CPMTerminalViewDelegate
 
 - (void)terminalViewDidAddCharactersToBuffer:(CPMTerminalView *)terminalView
 {
