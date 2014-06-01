@@ -131,4 +131,4 @@ typedef struct
 #import "TerminalControlSet+ADM3A.h"
 #import "TerminalControlSet+Hazeltine1500.h"
 #import "TerminalControlSet+VT52.h"
-#import "CPMTerminalControlSet+Osborne.h"
+#import "TerminalControlSet+Osborne.h"
