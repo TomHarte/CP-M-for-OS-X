@@ -40,6 +40,8 @@
 	{
 		dispatch_release(serialDispatchQueue), serialDispatchQueue = NULL;
 	}
+
+	[super close];
 }
 
 - (NSString *)windowNibName
