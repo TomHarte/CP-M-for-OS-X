@@ -28,15 +28,13 @@
 
 @implementation CPMProcessor
 {
-	BOOL addOffset;
+	BOOL _shouldAddOffset;
 
-	uint16_t *indexRegister;
-
+	uint16_t *_indexRegister;
 	uint8_t _aRegister;
+	uint8_t _lastSignResult, _lastZeroResult, _bit5And3Flags, _generalFlags;
 
-	uint8_t lastSignResult, lastZeroResult, bit5And3Flags, generalFlags;
-
-	CPMRAMModule *memory;
+	CPMRAMModule *_memory;
 }
 
 /*
@@ -56,9 +54,9 @@
 
 	if(self)
 	{
-		memory = RAM;
-		indexRegister = &_hlRegister;
-		addOffset = NO;
+		_memory = RAM;
+		_indexRegister = &_hlRegister;
+		_shouldAddOffset = NO;
 	}
 
 	return self;
@@ -70,7 +68,7 @@
 	incrementing it as we go
 
 */
-#define readByteFromPC() [memory valueAtAddress:_programCounter++]
+#define readByteFromPC() [_memory valueAtAddress:_programCounter++]
 //- (uint8_t)readByteFromPC
 //{
 //	return [memory valueAtAddress:_programCounter++];
@@ -101,7 +99,7 @@
 
 - (uint8_t *)indexPlusOffset:(int8_t)offset
 {
-	return [memory pointerToAddress:*indexRegister + offset];
+	return [_memory pointerToAddress:*_indexRegister + offset];
 }
 
 /*
@@ -124,14 +122,14 @@
 	{
 		default: return NO;
 		
-		case 0: return lastZeroResult;							//NZ
-		case 1: return !lastZeroResult;							//Z
-		case 2: return !(generalFlags&LLZ80FlagCarry);			//NC
-		case 3: return (generalFlags&LLZ80FlagCarry);			//C
-		case 4: return !(generalFlags&LLZ80FlagParityOverflow);	//PO
-		case 5: return (generalFlags&LLZ80FlagParityOverflow);	//PE
-		case 6: return !(lastSignResult&0x80);					//P
-		case 7: return lastSignResult&0x80;						//M
+		case 0: return _lastZeroResult;							//NZ
+		case 1: return !_lastZeroResult;							//Z
+		case 2: return !(_generalFlags&LLZ80FlagCarry);			//NC
+		case 3: return (_generalFlags&LLZ80FlagCarry);			//C
+		case 4: return !(_generalFlags&LLZ80FlagParityOverflow);	//PO
+		case 5: return (_generalFlags&LLZ80FlagParityOverflow);	//PE
+		case 6: return !(_lastSignResult&0x80);					//P
+		case 7: return _lastSignResult&0x80;						//M
 	}
 }
 
@@ -140,7 +138,7 @@
 - (uint16_t *)rpTable:(int)index
 {
 	uint16_t *rpTable[] = {&_bcRegister, &_deRegister, nil, &_spRegister};
-	return rpTable[index] ? rpTable[index] : indexRegister;
+	return rpTable[index] ? rpTable[index] : _indexRegister;
 }
 
 - (uint16_t *)rp2Table:(int)index
@@ -149,7 +147,7 @@
 	{
 		case 0: return &_bcRegister;
 		case 1: return &_deRegister;
-		case 2: return indexRegister;
+		case 2: return _indexRegister;
 		default: return nil;
 	}
 }
@@ -170,18 +168,18 @@
 		case 1:	return (uint8_t *)&_bcRegister + kOffsetToLowByte;
 		case 2:	return (uint8_t *)&_deRegister + kOffsetToHighByte;
 		case 3:	return (uint8_t *)&_deRegister + kOffsetToLowByte;
-		case 4:	return (uint8_t *)indexRegister + kOffsetToHighByte;
-		case 5:	return (uint8_t *)indexRegister + kOffsetToLowByte;
+		case 4:	return (uint8_t *)_indexRegister + kOffsetToHighByte;
+		case 5:	return (uint8_t *)_indexRegister + kOffsetToLowByte;
 
 		case 6:
-			if(addOffset)
+			if(_shouldAddOffset)
 			{
-				uint16_t address = *indexRegister;
+				uint16_t address = *_indexRegister;
 				address += (int8_t)readByteFromPC();
-				return [memory pointerToAddress:address];
+				return [_memory pointerToAddress:address];
 			}
 			else
-				return [memory pointerToAddress:_hlRegister];
+				return [_memory pointerToAddress:_hlRegister];
 		break;
 
 		case 7:	return (uint8_t *)&_aRegister;
@@ -192,10 +190,10 @@
 
 - (uint8_t *)hlrTable:(int)index
 {
-	uint16_t *realIndexRegister = indexRegister;
-	indexRegister = &_hlRegister;
+	uint16_t *realIndexRegister = _indexRegister;
+	_indexRegister = &_hlRegister;
 	uint8_t *result = [self rTable:index];
-	indexRegister = realIndexRegister;
+	_indexRegister = realIndexRegister;
 	return result;
 }
 
@@ -211,9 +209,9 @@
 	*value = (uint8_t)result;
 
 	// sign, zero and 5 & 3 are set directly from the result
-	bit5And3Flags = lastSignResult = lastZeroResult = (uint8_t)result;
-	generalFlags =
-		(generalFlags & LLZ80FlagCarry) |		// carry isn't affected
+	_bit5And3Flags = _lastSignResult = _lastZeroResult = (uint8_t)result;
+	_generalFlags =
+		(_generalFlags & LLZ80FlagCarry) |		// carry isn't affected
 		(halfResult&LLZ80FlagHalfCarry) |			// half carry
 		((overflow >> 5)&LLZ80FlagParityOverflow);	// overflow
 													// implicitly: subtraction is reset
@@ -231,9 +229,9 @@
 	*value = (uint8_t)result;
 
 	// sign, zero and 5 & 3 are set directly from the result
-	bit5And3Flags = lastZeroResult = lastSignResult = (uint8_t)result;
-	generalFlags =
-		(generalFlags & LLZ80FlagCarry) |		// carry isn't affected
+	_bit5And3Flags = _lastZeroResult = _lastSignResult = (uint8_t)result;
+	_generalFlags =
+		(_generalFlags & LLZ80FlagCarry) |		// carry isn't affected
 		(halfResult&LLZ80FlagHalfCarry) |			// half carry
 		((overflow >> 5)&LLZ80FlagParityOverflow) |	// overflow
 		LLZ80FlagSubtraction;						// subtraction is set
@@ -257,9 +255,9 @@
 
 			_aRegister = (uint8_t)result;
 
-			lastSignResult = lastZeroResult =
-			bit5And3Flags = (uint8_t)result;				// set sign, zero and 5 and 3
-			generalFlags =
+			_lastSignResult = _lastZeroResult =
+			_bit5And3Flags = (uint8_t)result;				// set sign, zero and 5 and 3
+			_generalFlags =
 				((result >> 8) & LLZ80FlagCarry)	|		// carry flag
 				(halfResult & LLZ80FlagHalfCarry)	|		// half carry flag
 				((overflow&0x80) >> 5);						// overflow flag
@@ -269,8 +267,8 @@
 		
 		case 1: // adc a, ...
 		{
-			int result = _aRegister + value + (generalFlags&LLZ80FlagCarry);
-			int halfResult = (_aRegister&0xf) + (value&0xf) + (generalFlags&LLZ80FlagCarry);
+			int result = _aRegister + value + (_generalFlags&LLZ80FlagCarry);
+			int halfResult = (_aRegister&0xf) + (value&0xf) + (_generalFlags&LLZ80FlagCarry);
 
 			// overflow for addition is when the signs were originally
 			// the same and the result is different
@@ -278,9 +276,9 @@
 
 			_aRegister = (uint8_t)result;
 
-			lastSignResult = lastZeroResult =
-			bit5And3Flags = (uint8_t)result;			// set sign, zero and 5 and 3
-			generalFlags =
+			_lastSignResult = _lastZeroResult =
+			_bit5And3Flags = (uint8_t)result;			// set sign, zero and 5 and 3
+			_generalFlags =
 				((result >> 8) & LLZ80FlagCarry)	|		// carry flag
 				(halfResult & LLZ80FlagHalfCarry)	|		// half carry flag
 				((overflow&0x80) >> 5);						// overflow flag
@@ -299,9 +297,9 @@
 
 			_aRegister = (uint8_t)result;
 
-			lastSignResult = lastZeroResult =
-			bit5And3Flags = (uint8_t)result;			// set sign, zero and 5 and 3
-			generalFlags =
+			_lastSignResult = _lastZeroResult =
+			_bit5And3Flags = (uint8_t)result;			// set sign, zero and 5 and 3
+			_generalFlags =
 				((result >> 8) & LLZ80FlagCarry)	|		// carry flag
 				(halfResult & LLZ80FlagHalfCarry)	|		// half carry flag
 				((overflow&0x80) >> 5)				|		// overflow flag
@@ -311,8 +309,8 @@
 		
 		case 3:	// SBC A, ...
 		{
-			int result = _aRegister - value - (generalFlags&LLZ80FlagCarry);
-			int halfResult = (_aRegister&0xf) - (value&0xf) - (generalFlags&LLZ80FlagCarry);;
+			int result = _aRegister - value - (_generalFlags&LLZ80FlagCarry);
+			int halfResult = (_aRegister&0xf) - (value&0xf) - (_generalFlags&LLZ80FlagCarry);;
 
 			// overflow for a subtraction is when the signs were originally
 			// different and the result is different again
@@ -320,9 +318,9 @@
 
 			_aRegister = (uint8_t)result;
 
-			lastSignResult = lastZeroResult =
-			bit5And3Flags = (uint8_t)result;			// set sign, zero and 5 and 3
-			generalFlags =
+			_lastSignResult = _lastZeroResult =
+			_bit5And3Flags = (uint8_t)result;			// set sign, zero and 5 and 3
+			_generalFlags =
 				((result >> 8) & LLZ80FlagCarry)	|		// carry flag
 				(halfResult & LLZ80FlagHalfCarry)	|		// half carry flag
 				((overflow&0x80) >> 5)				|		// overflow flag
@@ -334,10 +332,10 @@
 		{
 			_aRegister &= value;
 
-			lastSignResult = lastZeroResult =
-			bit5And3Flags = _aRegister;
+			_lastSignResult = _lastZeroResult =
+			_bit5And3Flags = _aRegister;
 
-			generalFlags =
+			_generalFlags =
 				LLZ80FlagHalfCarry |
 				[self parity:_aRegister];
 		}
@@ -347,10 +345,10 @@
 		{
 			_aRegister ^= value;
 
-			lastSignResult = lastZeroResult =
-			bit5And3Flags = _aRegister;
+			_lastSignResult = _lastZeroResult =
+			_bit5And3Flags = _aRegister;
 
-			generalFlags = [self parity:_aRegister];
+			_generalFlags = [self parity:_aRegister];
 		}
 		break;
 
@@ -358,10 +356,10 @@
 		{
 			_aRegister |= value;
 
-			lastSignResult = lastZeroResult =
-			bit5And3Flags = _aRegister;
+			_lastSignResult = _lastZeroResult =
+			_bit5And3Flags = _aRegister;
 
-			generalFlags = [self parity:_aRegister];
+			_generalFlags = [self parity:_aRegister];
 		}
 		break;
 
@@ -374,11 +372,11 @@
 			// different and the result is different again
 			int overflow = (value^_aRegister) & (result^_aRegister);
 
-			lastSignResult =			// set sign and zero
-			lastZeroResult = (uint8_t)result;
-			bit5And3Flags = value;		// set the 5 and 3 flags, which come
+			_lastSignResult =			// set sign and zero
+			_lastZeroResult = (uint8_t)result;
+			_bit5And3Flags = value;		// set the 5 and 3 flags, which come
 											// from the operand atypically
-			generalFlags =
+			_generalFlags =
 				((result >> 8) & LLZ80FlagCarry)	|		// carry flag
 				(halfResult & LLZ80FlagHalfCarry)	|		// half carry flag
 				((overflow&0x80) >> 5)				|		// overflow flag
@@ -391,16 +389,16 @@
 - (void)push:(uint16_t)value
 {
 	_spRegister--;
-	[memory setValue:value >> 8 atAddress:_spRegister];
+	[_memory setValue:value >> 8 atAddress:_spRegister];
 	_spRegister--;
-	[memory setValue:value & 0xff atAddress:_spRegister];
+	[_memory setValue:value & 0xff atAddress:_spRegister];
 }
 
 - (uint16_t)pop
 {
-	uint16_t value = [memory valueAtAddress:_spRegister];
+	uint16_t value = [_memory valueAtAddress:_spRegister];
 	_spRegister++;
-	value |= [memory valueAtAddress:_spRegister] << 8;
+	value |= [_memory valueAtAddress:_spRegister] << 8;
 	_spRegister++;
 
 	return value;
@@ -414,8 +412,8 @@
 
 - (void)sbc16:(uint16_t)operand
 {
-	int result = _hlRegister - operand - (generalFlags&LLZ80FlagCarry);
-	int halfResult = (_hlRegister&0xfff) - (operand&0xfff) - (generalFlags&LLZ80FlagCarry);
+	int result = _hlRegister - operand - (_generalFlags&LLZ80FlagCarry);
+	int halfResult = (_hlRegister&0xfff) - (operand&0xfff) - (_generalFlags&LLZ80FlagCarry);
 
 	// subtraction, so parity rules are:
 	// signs of operands were different, 
@@ -424,9 +422,9 @@
 
 	_hlRegister = (uint16_t)result;
 
-	bit5And3Flags = lastSignResult = (uint8_t)(result >> 8);
-	lastZeroResult	= (uint8_t)(result | lastSignResult);
-	generalFlags =
+	_bit5And3Flags = _lastSignResult = (uint8_t)(result >> 8);
+	_lastZeroResult	= (uint8_t)(result | _lastSignResult);
+	_generalFlags =
 		LLZ80FlagSubtraction					|
 		((result >> 16)&LLZ80FlagCarry)			|
 		((halfResult >> 8)&LLZ80FlagHalfCarry)	|
@@ -435,14 +433,14 @@
 
 - (void)adc16:(uint16_t)operand
 {
-	int result = _hlRegister + operand + (generalFlags&LLZ80FlagCarry);
-	int halfResult = (_hlRegister&0xfff) + (operand&0xfff) + (generalFlags&LLZ80FlagCarry);
+	int result = _hlRegister + operand + (_generalFlags&LLZ80FlagCarry);
+	int halfResult = (_hlRegister&0xfff) + (operand&0xfff) + (_generalFlags&LLZ80FlagCarry);
 
 	int overflow = (result ^ _hlRegister) & ~(operand ^ _hlRegister);
 
-	bit5And3Flags = lastSignResult = (uint8_t)(result >> 8);
-	lastZeroResult	= (uint8_t)(result | lastSignResult);
-	generalFlags =
+	_bit5And3Flags = _lastSignResult = (uint8_t)(result >> 8);
+	_lastZeroResult	= (uint8_t)(result | _lastSignResult);
+	_generalFlags =
 		((result >> 16)&LLZ80FlagCarry)			|
 		((halfResult >> 8)&LLZ80FlagHalfCarry) |
 		((overflow&0x8000) >> 13);	// implicitly, subtract isn't set
@@ -455,9 +453,9 @@
 	int result = *target + operand;
 	int halfResult = (*target&0xfff) + (operand&0xfff);
 
-	bit5And3Flags = (uint8_t)(result >> 8);
-	generalFlags =
-		(generalFlags&LLZ80FlagParityOverflow)	|
+	_bit5And3Flags = (uint8_t)(result >> 8);
+	_generalFlags =
+		(_generalFlags&LLZ80FlagParityOverflow)	|
 		((result >> 16)&LLZ80FlagCarry)			|
 		((halfResult >> 8)&LLZ80FlagHalfCarry);	// implicitly, subtract isn't set
 
@@ -473,8 +471,8 @@
 		{
 			case 0:	// ld
 			{
-				uint8_t value = [memory valueAtAddress:_hlRegister];
-				[memory setValue:value atAddress:_deRegister];
+				uint8_t value = [_memory valueAtAddress:_hlRegister];
+				[_memory setValue:value atAddress:_deRegister];
 
 				flagResult = _aRegister + value;
 //				halfResult = (_aRegister&0xf) + (RAM[_hlRegister]&0xf);
@@ -482,7 +480,7 @@
 			break;
 			case 1: // cp
 			{
-				uint8_t value = [memory valueAtAddress:_hlRegister];
+				uint8_t value = [_memory valueAtAddress:_hlRegister];
 
 				flagResult = lastResult = _aRegister - value;
 				halfResult = (_aRegister&0xf) - (value&0xf);
@@ -518,17 +516,17 @@
 		if(!(_bcRegister >> ((instruction < 2) ? 0 : 8)) || !lastResult) break;
 	}
 
-	generalFlags =
-		(generalFlags&LLZ80FlagCarry) |
+	_generalFlags =
+		(_generalFlags&LLZ80FlagCarry) |
 		(_bcRegister ? LLZ80FlagParityOverflow : 0) |
 		(halfResult & LLZ80FlagHalfCarry);
 	if(instruction == 1)
 	{
-		generalFlags |= LLZ80FlagSubtraction;
-		lastSignResult = lastZeroResult = flagResult;
+		_generalFlags |= LLZ80FlagSubtraction;
+		_lastSignResult = _lastZeroResult = flagResult;
 	}
 
-	bit5And3Flags = (uint8_t)((flagResult&0x8) | ((flagResult&0x2) << 4));
+	_bit5And3Flags = (uint8_t)((flagResult&0x8) | ((flagResult&0x2) << 4));
 }
 
 - (uint8_t)set:(int)bit source:(uint8_t *)source
@@ -547,10 +545,10 @@
 {
 	uint8_t result = *source & (1 << bit);
 
-	lastSignResult = lastZeroResult = result;
-	bit5And3Flags = *source;
-	generalFlags =
-		(generalFlags & LLZ80FlagCarry) |
+	_lastSignResult = _lastZeroResult = result;
+	_bit5And3Flags = *source;
+	_generalFlags =
+		(_generalFlags & LLZ80FlagCarry) |
 		LLZ80FlagHalfCarry |
 		(result ? 0 : LLZ80FlagParityOverflow);
 }
@@ -577,13 +575,13 @@
 		case 2: // RL
 		{
 			carry = *source >> 7;
-			*source = (uint8_t)((*source << 1) | (generalFlags&LLZ80FlagCarry));
+			*source = (uint8_t)((*source << 1) | (_generalFlags&LLZ80FlagCarry));
 		}
 		break;
 		case 3: // RR
 		{
 			carry = *source & 1;
-			*source = (uint8_t)((*source >> 1) | (generalFlags << 7));
+			*source = (uint8_t)((*source >> 1) | (_generalFlags << 7));
 		}
 		break;
 		case 4: // SLA
@@ -612,8 +610,8 @@
 		break;
 	}
 
-	generalFlags = carry | [self parity:*source];
-	bit5And3Flags = lastSignResult = lastZeroResult = *source;
+	_generalFlags = carry | [self parity:*source];
+	_bit5And3Flags = _lastSignResult = _lastZeroResult = *source;
 
 	return *source;
 }
@@ -645,7 +643,7 @@
 					{
 						// in r, (c); sets f
 						*[self rTable:y] = 0xff;
-						bit5And3Flags = 0xa4;
+						_bit5And3Flags = 0xa4;
 //						fRegister = (fRegister&0x01) | 0xa4;
 					}
 				break;
@@ -677,9 +675,9 @@
 						uint16_t address = [self getAddress];
 						uint16_t *target = [self rpTable:y >> 1];
 
-						*target = [memory valueAtAddress:address];
+						*target = [_memory valueAtAddress:address];
 						address++;
-						*target |= (uint16_t)[memory valueAtAddress:address] << 8;
+						*target |= (uint16_t)[_memory valueAtAddress:address] << 8;
 						//LD rr, (nnnn)
 					}
 					else
@@ -687,9 +685,9 @@
 						uint16_t address = [self getAddress];
 						uint16_t *target = [self rpTable:y >> 1];
 
-						[memory setValue:(*target)&0xff atAddress:address];
+						[_memory setValue:(*target)&0xff atAddress:address];
 						address++;
-						[memory setValue:*target >> 8 atAddress:address];
+						[_memory setValue:*target >> 8 atAddress:address];
 						//LD (nnnn), rr
 					}
 				break;
@@ -702,8 +700,8 @@
 					int halfResult = 0 - (_aRegister&0xf);
 
 					_aRegister = (uint8_t)result;
-					bit5And3Flags = lastSignResult = lastZeroResult = _aRegister;
-					generalFlags =
+					_bit5And3Flags = _lastSignResult = _lastZeroResult = _aRegister;
+					_generalFlags =
 						(overflow ? LLZ80FlagParityOverflow : 0) |
 						LLZ80FlagSubtraction |
 						((result >> 8)&LLZ80FlagCarry) |
@@ -733,49 +731,49 @@
 						case 2:	// LD a, i
 						{
 							_aRegister = _iRegister;
-							lastZeroResult = lastSignResult = bit5And3Flags = _iRegister;
-							generalFlags &= LLZ80FlagCarry;
+							_lastZeroResult = _lastSignResult = _bit5And3Flags = _iRegister;
+							_generalFlags &= LLZ80FlagCarry;
 						}
 						break;
 						case 3: // ld a, r
 						{
 							_aRegister = _rRegister;
-							lastZeroResult = lastSignResult = bit5And3Flags = _rRegister;
-							generalFlags &= LLZ80FlagCarry;
+							_lastZeroResult = _lastSignResult = _bit5And3Flags = _rRegister;
+							_generalFlags &= LLZ80FlagCarry;
 						}
 						break;
 						case 4:	// RRD
 						{
-							uint8_t temporaryValue = [memory valueAtAddress:_hlRegister];
+							uint8_t temporaryValue = [_memory valueAtAddress:_hlRegister];
 
 							int lowNibble = _aRegister&0xf;
 							_aRegister = (_aRegister&0xf0) | (temporaryValue & 0xf);
 							temporaryValue = (uint8_t)((temporaryValue >> 4) | (lowNibble << 4));
 
-							generalFlags =
+							_generalFlags =
 								[self parity:_aRegister] |
-								(generalFlags&LLZ80FlagCarry);
-							lastSignResult = lastZeroResult =
-							bit5And3Flags = _aRegister;
+								(_generalFlags&LLZ80FlagCarry);
+							_lastSignResult = _lastZeroResult =
+							_bit5And3Flags = _aRegister;
 
-							[memory setValue:temporaryValue atAddress:_hlRegister];
+							[_memory setValue:temporaryValue atAddress:_hlRegister];
 						}
 						break;
 						case 5: // RLD
 						{
-							uint8_t temporaryValue = [memory valueAtAddress:_hlRegister];
+							uint8_t temporaryValue = [_memory valueAtAddress:_hlRegister];
 
 							int lowNibble = _aRegister&0xf;
 							_aRegister = (_aRegister&0xf0) | (temporaryValue >> 4);
 							temporaryValue = (uint8_t)((temporaryValue << 4) | lowNibble);
 
-							generalFlags =
+							_generalFlags =
 								[self parity:_aRegister] |
-								(generalFlags&LLZ80FlagCarry);
-							lastSignResult = lastZeroResult =
-							bit5And3Flags = _aRegister;
+								(_generalFlags&LLZ80FlagCarry);
+							_lastSignResult = _lastZeroResult =
+							_bit5And3Flags = _aRegister;
 
-							[memory setValue:temporaryValue atAddress:_hlRegister];
+							[_memory setValue:temporaryValue atAddress:_hlRegister];
 						}
 						break;
 						case 6:
@@ -791,13 +789,13 @@
 - (void)executeFromCBPage
 {
 	int8_t displacement = 0;
-	if(addOffset) displacement = (int8_t)readByteFromPC();
+	if(_shouldAddOffset) displacement = (int8_t)readByteFromPC();
 	uint8_t opcode = readByteFromPC();
 	int x = opcode >> 6;
 	int y = (opcode >> 3)&7;
 	int z = opcode&7;
 
-	if(addOffset)
+	if(_shouldAddOffset)
 	{
 		switch(x)
 		{
@@ -913,7 +911,7 @@
 				case 1:
 					if(y&1)
 					{
-						[self add16:indexRegister operand:*[self rpTable:y >> 1]];
+						[self add16:_indexRegister operand:*[self rpTable:y >> 1]];
 						// add hl, rr
 					}
 					else
@@ -926,41 +924,41 @@
 					switch(y)
 					{
 						case 0:	// LD (BC), A
-							[memory setValue:_aRegister atAddress:_bcRegister];
+							[_memory setValue:_aRegister atAddress:_bcRegister];
 						break;
 						case 1:	// LD A, (BC)
-							_aRegister = [memory valueAtAddress:_bcRegister];
+							_aRegister = [_memory valueAtAddress:_bcRegister];
 						break;
 						case 2: // LD (DE), A
-							[memory setValue:_aRegister atAddress:_deRegister];
+							[_memory setValue:_aRegister atAddress:_deRegister];
 						break;
 						case 3: // LD A, (DE)
-							_aRegister = [memory valueAtAddress:_deRegister];
+							_aRegister = [_memory valueAtAddress:_deRegister];
 						break;
 						case 4:
 						{
 							uint16_t address = [self getAddress];
-							[memory setValue:*[self rTable:rTableIndexL] atAddress:address];
+							[_memory setValue:*[self rTable:rTableIndexL] atAddress:address];
 							address++;
-							[memory setValue:*[self rTable:rTableIndexH] atAddress:address];
+							[_memory setValue:*[self rTable:rTableIndexH] atAddress:address];
 							// LD (nnnn), HL
 						}
 						break;
 						case 5:
 						{
 							uint16_t address = [self getAddress];
-							*[self rTable:rTableIndexL] = [memory valueAtAddress:address];
+							*[self rTable:rTableIndexL] = [_memory valueAtAddress:address];
 							address++;
-							*[self rTable:rTableIndexH] = [memory valueAtAddress:address];
+							*[self rTable:rTableIndexH] = [_memory valueAtAddress:address];
 							//LD HL, (nnnn)
 						}
 						break;
 						case 6:
-							[memory setValue:_aRegister atAddress:[self getAddress]];
+							[_memory setValue:_aRegister atAddress:[self getAddress]];
 							// LD (nnnn), a
 						break;
 						case 7:
-							_aRegister = [memory valueAtAddress:[self getAddress]];
+							_aRegister = [_memory valueAtAddress:[self getAddress]];
 							// LD a, (nnnn)
 						break;
 					}
@@ -1003,9 +1001,9 @@
 						{
 							uint8_t newCarry = _aRegister >> 7;
 							_aRegister = (uint8_t)((_aRegister << 1) | newCarry);
-							bit5And3Flags = _aRegister;
-							generalFlags =
-								(generalFlags & LLZ80FlagParityOverflow) |
+							_bit5And3Flags = _aRegister;
+							_generalFlags =
+								(_generalFlags & LLZ80FlagParityOverflow) |
 								newCarry;
 						}
 						break;
@@ -1013,29 +1011,29 @@
 						{
 							uint8_t newCarry = _aRegister & 1;
 							_aRegister = (uint8_t)((_aRegister >> 1) | (newCarry << 7));
-							bit5And3Flags = _aRegister;
-							generalFlags =
-								(generalFlags & LLZ80FlagParityOverflow) |
+							_bit5And3Flags = _aRegister;
+							_generalFlags =
+								(_generalFlags & LLZ80FlagParityOverflow) |
 								newCarry;
 						}
 						break;
 						case 2: // RLA
 						{
 							uint8_t newCarry = _aRegister >> 7;
-							_aRegister = (uint8_t)((_aRegister << 1) | (generalFlags&LLZ80FlagCarry));
-							bit5And3Flags = _aRegister;
-							generalFlags =
-								(generalFlags & LLZ80FlagParityOverflow) |
+							_aRegister = (uint8_t)((_aRegister << 1) | (_generalFlags&LLZ80FlagCarry));
+							_bit5And3Flags = _aRegister;
+							_generalFlags =
+								(_generalFlags & LLZ80FlagParityOverflow) |
 								newCarry;
 						}
 						break;
 						case 3:	// RRA
 						{
 							uint8_t newCarry = _aRegister & 1;
-							_aRegister = (uint8_t)((_aRegister >> 1) | ((generalFlags&LLZ80FlagCarry) << 7));
-							bit5And3Flags = _aRegister;
-							generalFlags =
-								(generalFlags & LLZ80FlagParityOverflow) |
+							_aRegister = (uint8_t)((_aRegister >> 1) | ((_generalFlags&LLZ80FlagCarry) << 7));
+							_bit5And3Flags = _aRegister;
+							_generalFlags =
+								(_generalFlags & LLZ80FlagParityOverflow) |
 								newCarry;
 						}
 						break;
@@ -1046,16 +1044,16 @@
 
 							int amountToAdd = 0;
 
-							if(generalFlags & LLZ80FlagCarry)
+							if(_generalFlags & LLZ80FlagCarry)
 							{
-								if(lowNibble > 0x9 || generalFlags&LLZ80FlagHalfCarry)
+								if(lowNibble > 0x9 || _generalFlags&LLZ80FlagHalfCarry)
 									amountToAdd = 0x66;
 								else
 									amountToAdd = 0x60;
 							}
 							else
 							{
-								if(generalFlags & LLZ80FlagHalfCarry)
+								if(_generalFlags & LLZ80FlagHalfCarry)
 								{
 									amountToAdd = (highNibble > 0x9) ? 0x66 : 0x60;
 								}
@@ -1075,7 +1073,7 @@
 								}
 							}
 
-							int newCarry = generalFlags & LLZ80FlagHalfCarry;
+							int newCarry = _generalFlags & LLZ80FlagHalfCarry;
 							if(!newCarry)
 							{
 								if(lowNibble > 0x9)
@@ -1089,10 +1087,10 @@
 							}
 
 							int newHalfCarry = 0;
-							if(generalFlags&LLZ80FlagSubtraction)
+							if(_generalFlags&LLZ80FlagSubtraction)
 							{
 								(_aRegister) -= amountToAdd;
-								if(generalFlags&LLZ80FlagHalfCarry)
+								if(_generalFlags&LLZ80FlagHalfCarry)
 								{
 									newHalfCarry = (lowNibble < 0x6) ? LLZ80FlagHalfCarry : 0;
 								}
@@ -1103,47 +1101,47 @@
 								newHalfCarry = (lowNibble > 0x9) ? LLZ80FlagHalfCarry : 0;
 							}
 
-							lastSignResult = lastZeroResult =
-							bit5And3Flags = _aRegister;
+							_lastSignResult = _lastZeroResult =
+							_bit5And3Flags = _aRegister;
 							
 							uint8_t parity = _aRegister;
 							parity ^= (parity >> 4);
 							parity ^= (parity >> 2);
 							parity ^= (parity >> 1);
 
-							generalFlags =
+							_generalFlags =
 								(uint8_t)(
 									newCarry |
 									newHalfCarry |
 									((parity&1) << 3) |
-									(generalFlags&LLZ80FlagSubtraction));
+									(_generalFlags&LLZ80FlagSubtraction));
 						}
 						break;
 						case 5:	// CPL
 						{
 							_aRegister ^= 0xff;
-							generalFlags |=
+							_generalFlags |=
 								LLZ80FlagHalfCarry |
 								LLZ80FlagSubtraction;
-							bit5And3Flags = _aRegister;
+							_bit5And3Flags = _aRegister;
 						}
 						break;
 						case 6:	// SCF
 						{
-							bit5And3Flags = _aRegister;
-							generalFlags =
-								(generalFlags & LLZ80FlagParityOverflow) |
+							_bit5And3Flags = _aRegister;
+							_generalFlags =
+								(_generalFlags & LLZ80FlagParityOverflow) |
 								LLZ80FlagCarry;
 						}
 						break;
 						case 7:	// CCF
 						{
-							bit5And3Flags = _aRegister;
-							generalFlags =
+							_bit5And3Flags = _aRegister;
+							_generalFlags =
 								(uint8_t)(
-									(generalFlags & LLZ80FlagParityOverflow) |
-									((generalFlags & LLZ80FlagCarry) << 4) |	// so half carry is what carry was
-									((generalFlags&LLZ80FlagCarry)^LLZ80FlagCarry));
+									(_generalFlags & LLZ80FlagParityOverflow) |
+									((_generalFlags & LLZ80FlagCarry) << 4) |	// so half carry is what carry was
+									((_generalFlags&LLZ80FlagCarry)^LLZ80FlagCarry));
 						}
 						break;
 					}
@@ -1207,10 +1205,10 @@
 							}
 							break;
 							case 2:	// JP indexRegister
-								_programCounter = *indexRegister;
+								_programCounter = *_indexRegister;
 							break;
 							case 3: // LD SP, indexRegister
-								_spRegister = *indexRegister;
+								_spRegister = *_indexRegister;
 							break;
 						}
 					}
@@ -1248,8 +1246,8 @@
 						case 4:
 						{
 							uint16_t temporaryValue = [self pop];
-							[self push:*indexRegister];
-							*indexRegister = temporaryValue;
+							[self push:*_indexRegister];
+							*_indexRegister = temporaryValue;
 							// ex (sp), hl
 						}
 						break;
@@ -1285,19 +1283,19 @@
 							}
 							break;
 							case 1:
-								indexRegister = &_ixRegister;
-								addOffset = YES;
+								_indexRegister = &_ixRegister;
+								_shouldAddOffset = YES;
 								[self executeFromStandardPage];
-								indexRegister = &_hlRegister;
-								addOffset = NO;
+								_indexRegister = &_hlRegister;
+								_shouldAddOffset = NO;
 							break;
 							case 2: [self executeFromEDPage];				break;
 							case 3:
-								indexRegister = &_iyRegister;
-								addOffset = YES;
+								_indexRegister = &_iyRegister;
+								_shouldAddOffset = YES;
 								[self executeFromStandardPage];
-								indexRegister = &_hlRegister;
-								addOffset = NO;
+								_indexRegister = &_hlRegister;
+								_shouldAddOffset = NO;
 							break;
 						}
 					}
@@ -1371,10 +1369,10 @@
 
 - (void)setAfRegister:(uint16_t)afRegister
 {
-	lastSignResult = afRegister & LLZ80FlagSign;
-	lastZeroResult = (afRegister & LLZ80FlagZero)^LLZ80FlagZero;
-	bit5And3Flags = afRegister & (LLZ80FlagBit5 | LLZ80FlagBit3);
-	generalFlags = afRegister & (LLZ80FlagCarry | LLZ80FlagHalfCarry | LLZ80FlagParityOverflow | LLZ80FlagSubtraction);
+	_lastSignResult = afRegister & LLZ80FlagSign;
+	_lastZeroResult = (afRegister & LLZ80FlagZero)^LLZ80FlagZero;
+	_bit5And3Flags = afRegister & (LLZ80FlagBit5 | LLZ80FlagBit3);
+	_generalFlags = afRegister & (LLZ80FlagCarry | LLZ80FlagHalfCarry | LLZ80FlagParityOverflow | LLZ80FlagSubtraction);
 
 	_aRegister = afRegister >> 8;
 }
@@ -1382,10 +1380,10 @@
 - (uint16_t)afRegister
 {
 	uint8_t fRegister =
-		(lastSignResult&LLZ80FlagSign) |
-		(lastZeroResult ? 0 : LLZ80FlagZero) |
-		(bit5And3Flags & (LLZ80FlagBit5 | LLZ80FlagBit3)) |
-		(generalFlags & (LLZ80FlagCarry | LLZ80FlagHalfCarry | LLZ80FlagParityOverflow | LLZ80FlagSubtraction));
+		(_lastSignResult&LLZ80FlagSign) |
+		(_lastZeroResult ? 0 : LLZ80FlagZero) |
+		(_bit5And3Flags & (LLZ80FlagBit5 | LLZ80FlagBit3)) |
+		(_generalFlags & (LLZ80FlagCarry | LLZ80FlagHalfCarry | LLZ80FlagParityOverflow | LLZ80FlagSubtraction));
 
 	return (_aRegister << 8) | fRegister;
 }

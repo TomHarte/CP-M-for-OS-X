@@ -11,43 +11,43 @@
 
 @implementation CPMTerminalView
 {
-	NSMutableAttributedString *attributedString;
-	NSMutableString *incomingString;
+	NSMutableAttributedString *_attributedString;
+	NSMutableString *_incomingString;
 
 //	int selectionStartX, selectionStartY, selectionCurrentX, selectionCurrentY;
 
-	CGFloat lineHeight, characterWidth;
+	CGFloat _lineHeight, _characterWidth;
 
-	int flashCount;
-	NSTimer *flashTimer;
+	int _flashCount;
+	NSTimer *_flashTimer;
 
-	CPMTerminalControlSet *controlSet;
-	NSMutableArray *candidateControlSets;
+	CPMTerminalControlSet *_controlSet;
+	NSMutableArray *_candidateControlSets;
 }
 
 - (void)doCommonInit
 {
-	incomingString = [[NSMutableString alloc] init];
+	_incomingString = [[NSMutableString alloc] init];
 
-	candidateControlSets = [[NSMutableArray alloc] init];
-	[candidateControlSets addObject:[CPMTerminalControlSet ADM3AControlSet]];
-	[candidateControlSets addObject:[CPMTerminalControlSet osborneControlSet]];
-	[candidateControlSets addObject:[CPMTerminalControlSet hazeltine1500ControlSet]];
-	[candidateControlSets addObject:[CPMTerminalControlSet VT52ControlSet]];
+	_candidateControlSets = [[NSMutableArray alloc] init];
+	[_candidateControlSets addObject:[CPMTerminalControlSet ADM3AControlSet]];
+	[_candidateControlSets addObject:[CPMTerminalControlSet osborneControlSet]];
+	[_candidateControlSets addObject:[CPMTerminalControlSet hazeltine1500ControlSet]];
+	[_candidateControlSets addObject:[CPMTerminalControlSet VT52ControlSet]];
 
-	for(CPMTerminalControlSet *set in candidateControlSets)
+	for(CPMTerminalControlSet *set in _candidateControlSets)
 	{
 		set.isTrackingCodePoints = YES;
 	}
 
 	NSFont *monaco = [NSFont fontWithName:@"Monaco" size:12.0f];
 
-	lineHeight = (monaco.ascender - monaco.descender + monaco.leading);
-	characterWidth = [monaco advancementForGlyph:'M'].width;
+	_lineHeight = (monaco.ascender - monaco.descender + monaco.leading);
+	_characterWidth = [monaco advancementForGlyph:'M'].width;
 
-	[self setControlSet:[candidateControlSets objectAtIndex:0]];
+	[self setControlSet:[_candidateControlSets objectAtIndex:0]];
 
-	flashTimer = [NSTimer
+	_flashTimer = [NSTimer
 		scheduledTimerWithTimeInterval:1.0/2.5
 		target:self
 		selector:@selector(updateFlash:)
@@ -57,17 +57,17 @@
 
 - (void)setControlSet:(CPMTerminalControlSet *)newControlSet
 {
-	NSUInteger oldWidth = controlSet.width;
-	NSUInteger oldHeight = controlSet.height;
-	controlSet.delegate = nil;
+	NSUInteger oldWidth = _controlSet.width;
+	NSUInteger oldHeight = _controlSet.height;
+	_controlSet.delegate = nil;
 
-	controlSet = newControlSet;
-	controlSet.delegate = self;
+	_controlSet = newControlSet;
+	_controlSet.delegate = self;
 
-	if(oldWidth != controlSet.width || oldHeight != controlSet.height)
+	if(oldWidth != _controlSet.width || oldHeight != _controlSet.height)
 	{
-		_idealSize.width = characterWidth * controlSet.width;
-		_idealSize.height = lineHeight * controlSet.height;
+		_idealSize.width = _characterWidth * _controlSet.width;
+		_idealSize.height = _lineHeight * _controlSet.height;
 
 		if([self.delegate respondsToSelector:@selector(terminalViewDidChangeIdealRect:)])
 			dispatch_async(dispatch_get_main_queue(),
@@ -93,20 +93,20 @@
 
 - (void)invalidate
 {
-	[flashTimer invalidate], flashTimer = nil;
+	[_flashTimer invalidate], _flashTimer = nil;
 }
 
 - (void)writeCharacter:(char)character
 {
 	// perform accounting to decide who's ahead
-	if([candidateControlSets count])
+	if([_candidateControlSets count])
 	{
 		// send the character to all control sets
-		for(CPMTerminalControlSet *set in candidateControlSets)
+		for(CPMTerminalControlSet *set in _candidateControlSets)
 			[set writeCharacter:character];
 
 		// sort by recognised percentage
-		[candidateControlSets sortUsingComparator:
+		[_candidateControlSets sortUsingComparator:
 			^NSComparisonResult(CPMTerminalControlSet *obj1, CPMTerminalControlSet *obj2)
 			{
 				NSUInteger recognisedQuantity1 = [[obj1 recognisedControlPoints] count];
@@ -118,8 +118,8 @@
 			}];
 
 		// switch to the current best recogniser
-		CPMTerminalControlSet *topSet = [candidateControlSets objectAtIndex:0];
-		if(topSet != controlSet)
+		CPMTerminalControlSet *topSet = [_candidateControlSets objectAtIndex:0];
+		if(topSet != _controlSet)
 		{
 			[self setControlSet:topSet];
 			[self setNeedsDisplay:YES];
@@ -127,18 +127,18 @@
 
 		// if there's a suitably large margin between positions one and two, and
 		// quite a few control codes have occurred then kill the rest of the list
-		NSUInteger controlSetTotalRecognised = [[controlSet recognisedControlPoints] count];
+		NSUInteger controlSetTotalRecognised = [[_controlSet recognisedControlPoints] count];
 		if(controlSetTotalRecognised > 10)
 		{
 			// get all control points recognised to date
 			NSMutableSet *allControlPoints = [NSMutableSet set];
-			for(CPMTerminalControlSet *set in candidateControlSets)
+			for(CPMTerminalControlSet *set in _candidateControlSets)
 				[allControlPoints unionSet:[set recognisedControlPoints]];
 
 			float totalPointsToDate = (float)[allControlPoints count];
 
 			float recognisedPercentage1 = (float)controlSetTotalRecognised / totalPointsToDate;
-			float recognisedPercentage2 = (float)[[[candidateControlSets objectAtIndex:1] recognisedControlPoints] count] / totalPointsToDate;
+			float recognisedPercentage2 = (float)[[[_candidateControlSets objectAtIndex:1] recognisedControlPoints] count] / totalPointsToDate;
 
 			// if the topmost one is at least 20% ahead, or we've had at least 150 control codes
 			// without establishing a clear winner then award victory and kill all the losers
@@ -147,14 +147,14 @@
 				(controlSetTotalRecognised > 150)
 			)
 			{
-				candidateControlSets = nil;
-				controlSet.isTrackingCodePoints = NO;
+				_candidateControlSets = nil;
+				_controlSet.isTrackingCodePoints = NO;
 			}
 		}
 	}
 	else
 	{
-		[controlSet writeCharacter:character];
+		[_controlSet writeCharacter:character];
 	}
 }
 
@@ -162,26 +162,26 @@
 {
 	// create a string of the ASCII characters first
 
-	NSString *asciiText = [NSString stringWithCString:(const char *)controlSet.characterBuffer encoding:NSASCIIStringEncoding];
-	attributedString = nil;
-	attributedString = [[NSMutableAttributedString alloc] initWithString:asciiText];
+	NSString *asciiText = [NSString stringWithCString:(const char *)_controlSet.characterBuffer encoding:NSASCIIStringEncoding];
+	_attributedString = nil;
+	_attributedString = [[NSMutableAttributedString alloc] initWithString:asciiText];
 
 	// establish the whole range as Monaco 12
 	CTFontRef monaco = CTFontCreateWithName((CFStringRef)@"Monaco", 12.0f, NULL);
-	[attributedString
+	[_attributedString
 		setAttributes:
 		@{
 			(id)kCTFontAttributeName : (__bridge id)monaco,
 			(id)kCTForegroundColorAttributeName: (id)[[NSColor greenColor] CGColor]
 		}
-		range:NSMakeRange(0, attributedString.length)];
+		range:NSMakeRange(0, _attributedString.length)];
 	CFRelease(monaco);
 
 	uint8_t lastAttribute = 0;
-	for(int y = 0; y < controlSet.height; y++)
+	for(int y = 0; y < _controlSet.height; y++)
 	{
-		uint16_t *attributes = [controlSet attributeBufferForY:y];
-		for(int x = 0; x < controlSet.width; x++)
+		uint16_t *attributes = [_controlSet attributeBufferForY:y];
+		for(int x = 0; x < _controlSet.width; x++)
 		{
 			uint8_t attribute = attributes[x];
 
@@ -223,9 +223,9 @@
 				}
 
 				NSRange rangeFromHereToEnd;
-				rangeFromHereToEnd.location = y*(controlSet.width+1) + x;
-				rangeFromHereToEnd.length = attributedString.length - rangeFromHereToEnd.location;
-				[attributedString
+				rangeFromHereToEnd.location = y*(_controlSet.width+1) + x;
+				rangeFromHereToEnd.length = _attributedString.length - rangeFromHereToEnd.location;
+				[_attributedString
 					addAttributes:newAttributes
 					range:rangeFromHereToEnd];
 			}
@@ -239,7 +239,7 @@
 
 - (void)updateFlash:(NSTimer *)timer
 {
-	flashCount++;
+	_flashCount++;
 	[self setNeedsDisplay:YES];
 }
 
@@ -273,20 +273,20 @@
 	// prepare Core Text
 	CGContextSetShouldSmoothFonts(context, true);
 	CGPathRef path = CGPathCreateWithRect(idealRect, NULL);
-	CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)attributedString);
-	CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, attributedString.length), path, NULL);
+	CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)_attributedString);
+	CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, _attributedString.length), path, NULL);
 
 	// TODO: render any solid areas necessary for inverse video, or for graphics
 	CGContextSetAllowsAntialiasing(context, false);
-	CGFloat yPosition = (lineHeight * controlSet.height) - lineHeight;
-	for(int y = 0; y < controlSet.height; y++)
+	CGFloat yPosition = (_lineHeight * _controlSet.height) - _lineHeight;
+	for(int y = 0; y < _controlSet.height; y++)
 	{
 		uint8_t lastAttribute = 0;
 		int startingColumn = 0;
 		NSColor *colour = nil;
-		uint16_t *attributes = [controlSet attributeBufferForY:y];
+		uint16_t *attributes = [_controlSet attributeBufferForY:y];
 
-		for(int x = 0; x < controlSet.width; x++)
+		for(int x = 0; x < _controlSet.width; x++)
 		{
 			uint8_t attribute = attributes[x]&(kCPMTerminalAttributeReducedIntensityOn|kCPMTerminalAttributeInverseVideoOn);
 
@@ -296,7 +296,7 @@
 				if(colour)
 				{
 					[colour set];
-					NSRectFill(NSMakeRect((CGFloat)startingColumn * characterWidth, yPosition, (CGFloat)(x - startingColumn) * characterWidth, lineHeight));
+					NSRectFill(NSMakeRect((CGFloat)startingColumn * _characterWidth, yPosition, (CGFloat)(x - startingColumn) * _characterWidth, _lineHeight));
 				}
 				startingColumn = x;
 
@@ -319,19 +319,19 @@
 		if(colour)
 		{
 			[colour set];
-			NSRectFill(NSMakeRect((CGFloat)startingColumn * characterWidth, yPosition, (CGFloat)(controlSet.width - startingColumn) * characterWidth, lineHeight));
+			NSRectFill(NSMakeRect((CGFloat)startingColumn * _characterWidth, yPosition, (CGFloat)(_controlSet.width - startingColumn) * _characterWidth, _lineHeight));
 		}
-		yPosition -= lineHeight;
+		yPosition -= _lineHeight;
 	}
 	CGContextSetAllowsAntialiasing(context, true);
 
 	// TODO: draw any graphics characters here
 
 	// draw cursor?
-	if(flashCount&1 && !controlSet.cursorIsDisabled)
+	if(_flashCount&1 && !_controlSet.cursorIsDisabled)
 	{
 		[[NSColor colorWithDeviceRed:0.0f green:0.5f blue:0.0f alpha:1.0f] set];
-		NSRectFill(NSMakeRect(controlSet.cursorX * characterWidth, (controlSet.height - 1 - controlSet.cursorY) * lineHeight, characterWidth, lineHeight));
+		NSRectFill(NSMakeRect(_controlSet.cursorX * _characterWidth, (_controlSet.height - 1 - _controlSet.cursorY) * _lineHeight, _characterWidth, _lineHeight));
 	}
 
 	// render the text
@@ -354,7 +354,7 @@
  
     // Telling the pasteboard we'll send a string, and attach the current output
     [pasteboard declareTypes:@[NSPasteboardTypeString] owner:self];
-    [pasteboard setString:attributedString.string forType:NSPasteboardTypeString];
+    [pasteboard setString:_attributedString.string forType:NSPasteboardTypeString];
 }
 
 - (void)paste:(id)sender
@@ -419,7 +419,7 @@
 {
 	@synchronized(self)
 	{
-		return incomingString.length;
+		return _incomingString.length;
 	}
 }
 
@@ -427,9 +427,9 @@
 {
 	@synchronized(self)
 	{
-		if(!incomingString.length) return 0;
-		unichar character = [incomingString characterAtIndex:0];
-		[incomingString deleteCharactersInRange:NSMakeRange(0, 1)];
+		if(!_incomingString.length) return 0;
+		unichar character = [_incomingString characterAtIndex:0];
+		[_incomingString deleteCharactersInRange:NSMakeRange(0, 1)];
 		return character;
 	}
 }
@@ -458,7 +458,7 @@
 
 	@synchronized(self)
 	{
-		[incomingString appendString:filteredString];
+		[_incomingString appendString:filteredString];
 	}
 
 	dispatch_async(dispatch_get_main_queue(),
