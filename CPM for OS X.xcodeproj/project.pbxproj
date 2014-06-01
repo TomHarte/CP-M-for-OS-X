@@ -25,7 +25,7 @@
 		4B8B14A7193AD066000BF24F /* TerminalControlSet+ADM3A.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B8B14A6193AD066000BF24F /* TerminalControlSet+ADM3A.m */; };
 		4B8B14AA193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B8B14A9193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.m */; };
 		4B8B14AD193AD2F3000BF24F /* TerminalControlSet+VT52.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B8B14AC193AD2F3000BF24F /* TerminalControlSet+VT52.m */; };
-		4B8B14B0193AD35B000BF24F /* CPMTerminalControlSet+Osborne.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B8B14AF193AD35B000BF24F /* CPMTerminalControlSet+Osborne.m */; };
+		4B8B14B0193AD35B000BF24F /* TerminalControlSet+Osborne.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B8B14AF193AD35B000BF24F /* TerminalControlSet+Osborne.m */; };
 		4B98BA03160E693D00685DAD /* TerminalControlSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B98BA02160E693D00685DAD /* TerminalControlSet.m */; };
 /* End PBXBuildFile section */
 
@@ -66,8 +66,8 @@
 		4B8B14A9193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+Hazeltine1500.m"; sourceTree = "<group>"; };
 		4B8B14AB193AD2F3000BF24F /* TerminalControlSet+VT52.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+VT52.h"; sourceTree = "<group>"; };
 		4B8B14AC193AD2F3000BF24F /* TerminalControlSet+VT52.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+VT52.m"; sourceTree = "<group>"; };
-		4B8B14AE193AD35B000BF24F /* CPMTerminalControlSet+Osborne.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CPMTerminalControlSet+Osborne.h"; sourceTree = "<group>"; };
-		4B8B14AF193AD35B000BF24F /* CPMTerminalControlSet+Osborne.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CPMTerminalControlSet+Osborne.m"; sourceTree = "<group>"; };
+		4B8B14AE193AD35B000BF24F /* TerminalControlSet+Osborne.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+Osborne.h"; sourceTree = "<group>"; };
+		4B8B14AF193AD35B000BF24F /* TerminalControlSet+Osborne.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+Osborne.m"; sourceTree = "<group>"; };
 		4B98BA01160E693D00685DAD /* TerminalControlSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalControlSet.h; sourceTree = "<group>"; };
 		4B98BA02160E693D00685DAD /* TerminalControlSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalControlSet.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -204,8 +204,8 @@
 				4B8B14A9193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.m */,
 				4B8B14AB193AD2F3000BF24F /* TerminalControlSet+VT52.h */,
 				4B8B14AC193AD2F3000BF24F /* TerminalControlSet+VT52.m */,
-				4B8B14AE193AD35B000BF24F /* CPMTerminalControlSet+Osborne.h */,
-				4B8B14AF193AD35B000BF24F /* CPMTerminalControlSet+Osborne.m */,
+				4B8B14AE193AD35B000BF24F /* TerminalControlSet+Osborne.h */,
+				4B8B14AF193AD35B000BF24F /* TerminalControlSet+Osborne.m */,
 			);
 			name = "Terminal View";
 			sourceTree = "<group>";
@@ -280,7 +280,7 @@
 				4B582998160197E0009515A6 /* CPMDocument.m in Sources */,
 				4B8B14AD193AD2F3000BF24F /* TerminalControlSet+VT52.m in Sources */,
 				4B5829B616019899009515A6 /* BDOS.m in Sources */,
-				4B8B14B0193AD35B000BF24F /* CPMTerminalControlSet+Osborne.m in Sources */,
+				4B8B14B0193AD35B000BF24F /* TerminalControlSet+Osborne.m in Sources */,
 				4B8B14AA193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.m in Sources */,
 				4B5829B716019899009515A6 /* FileControlBlock.m in Sources */,
 				4B5829B816019899009515A6 /* BIOS.m in Sources */,
