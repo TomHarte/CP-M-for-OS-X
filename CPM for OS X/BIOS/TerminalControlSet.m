@@ -684,8 +684,12 @@ typedef struct
 							[weakSelf clearToEndOfLine];
 						}},
 		{@"\33o",	0,	^{	[weakSelf clearFromStartOfLine];	}},
+
 		{@"\33p",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;	}},
 		{@"\33q",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;	}},
+
+		{@"\0334",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;	}},
+		{@"\0333",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;	}},
 		// ESC v - automatic overflow on
 		// ESC w - automatic overflow off
 		{nil}
