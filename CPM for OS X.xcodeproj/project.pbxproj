@@ -22,6 +22,10 @@
 		4B5829BA16019899009515A6 /* FuseTestRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829B016019899009515A6 /* FuseTestRunner.m */; };
 		4B5829BB16019899009515A6 /* Processor.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829B216019899009515A6 /* Processor.m */; };
 		4B5829BC16019899009515A6 /* RAMModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829B516019899009515A6 /* RAMModule.m */; };
+		4B8B14A7193AD066000BF24F /* TerminalControlSet+ADM3A.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B8B14A6193AD066000BF24F /* TerminalControlSet+ADM3A.m */; };
+		4B8B14AA193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B8B14A9193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.m */; };
+		4B8B14AD193AD2F3000BF24F /* TerminalControlSet+VT52.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B8B14AC193AD2F3000BF24F /* TerminalControlSet+VT52.m */; };
+		4B8B14B0193AD35B000BF24F /* CPMTerminalControlSet+Osborne.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B8B14AF193AD35B000BF24F /* CPMTerminalControlSet+Osborne.m */; };
 		4B98BA03160E693D00685DAD /* TerminalControlSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B98BA02160E693D00685DAD /* TerminalControlSet.m */; };
 /* End PBXBuildFile section */
 
@@ -56,6 +60,14 @@
 		4B5829B216019899009515A6 /* Processor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Processor.m; sourceTree = "<group>"; };
 		4B5829B416019899009515A6 /* RAMModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RAMModule.h; sourceTree = "<group>"; };
 		4B5829B516019899009515A6 /* RAMModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RAMModule.m; sourceTree = "<group>"; };
+		4B8B14A5193AD066000BF24F /* TerminalControlSet+ADM3A.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+ADM3A.h"; sourceTree = "<group>"; };
+		4B8B14A6193AD066000BF24F /* TerminalControlSet+ADM3A.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+ADM3A.m"; sourceTree = "<group>"; };
+		4B8B14A8193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+Hazeltine1500.h"; sourceTree = "<group>"; };
+		4B8B14A9193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+Hazeltine1500.m"; sourceTree = "<group>"; };
+		4B8B14AB193AD2F3000BF24F /* TerminalControlSet+VT52.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+VT52.h"; sourceTree = "<group>"; };
+		4B8B14AC193AD2F3000BF24F /* TerminalControlSet+VT52.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+VT52.m"; sourceTree = "<group>"; };
+		4B8B14AE193AD35B000BF24F /* CPMTerminalControlSet+Osborne.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CPMTerminalControlSet+Osborne.h"; sourceTree = "<group>"; };
+		4B8B14AF193AD35B000BF24F /* CPMTerminalControlSet+Osborne.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CPMTerminalControlSet+Osborne.m"; sourceTree = "<group>"; };
 		4B98BA01160E693D00685DAD /* TerminalControlSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalControlSet.h; sourceTree = "<group>"; };
 		4B98BA02160E693D00685DAD /* TerminalControlSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalControlSet.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -186,6 +198,14 @@
 				4B029E80160C18050014F528 /* TerminalControlSequence.m */,
 				4B98BA01160E693D00685DAD /* TerminalControlSet.h */,
 				4B98BA02160E693D00685DAD /* TerminalControlSet.m */,
+				4B8B14A5193AD066000BF24F /* TerminalControlSet+ADM3A.h */,
+				4B8B14A6193AD066000BF24F /* TerminalControlSet+ADM3A.m */,
+				4B8B14A8193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.h */,
+				4B8B14A9193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.m */,
+				4B8B14AB193AD2F3000BF24F /* TerminalControlSet+VT52.h */,
+				4B8B14AC193AD2F3000BF24F /* TerminalControlSet+VT52.m */,
+				4B8B14AE193AD35B000BF24F /* CPMTerminalControlSet+Osborne.h */,
+				4B8B14AF193AD35B000BF24F /* CPMTerminalControlSet+Osborne.m */,
 			);
 			name = "Terminal View";
 			sourceTree = "<group>";
@@ -217,7 +237,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = CPM;
-				LastUpgradeCheck = 0440;
+				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "Thomas Harte";
 			};
 			buildConfigurationList = 4B58297A160197E0009515A6 /* Build configuration list for PBXProject "CPM for OS X" */;
@@ -258,10 +278,14 @@
 			files = (
 				4B582991160197E0009515A6 /* main.m in Sources */,
 				4B582998160197E0009515A6 /* CPMDocument.m in Sources */,
+				4B8B14AD193AD2F3000BF24F /* TerminalControlSet+VT52.m in Sources */,
 				4B5829B616019899009515A6 /* BDOS.m in Sources */,
+				4B8B14B0193AD35B000BF24F /* CPMTerminalControlSet+Osborne.m in Sources */,
+				4B8B14AA193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.m in Sources */,
 				4B5829B716019899009515A6 /* FileControlBlock.m in Sources */,
 				4B5829B816019899009515A6 /* BIOS.m in Sources */,
 				4B5829B916019899009515A6 /* TerminalView.m in Sources */,
+				4B8B14A7193AD066000BF24F /* TerminalControlSet+ADM3A.m in Sources */,
 				4B5829BA16019899009515A6 /* FuseTestRunner.m in Sources */,
 				4B5829BB16019899009515A6 /* Processor.m in Sources */,
 				4B5829BC16019899009515A6 /* RAMModule.m in Sources */,
@@ -312,7 +336,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
@@ -329,7 +352,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
@@ -339,7 +362,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
@@ -350,7 +372,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				SDKROOT = macosx;
 			};
 			name = Release;

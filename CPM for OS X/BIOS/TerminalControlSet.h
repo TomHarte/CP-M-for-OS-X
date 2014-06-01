@@ -28,6 +28,17 @@
 @end
 
 /*
+	This is strictly for the various categories; it's to allow them
+	to dictate the mapping from codes to actions
+*/
+typedef struct
+{
+	__unsafe_unretained NSString *start;
+	NSUInteger requiredLength;
+	dispatch_block_t action;
+} CPMTerminalControlSequenceStruct;
+
+/*
 
 	A control set encapsulates the logic for converting a sequence of incoming
 	characters to formatted output. So this is where the emulation of VT52, ADM3A
@@ -35,11 +46,6 @@
 
 */
 @interface CPMTerminalControlSet : NSObject
-
-+ (id)ADM3AControlSet;
-+ (id)hazeltine1500ControlSet;
-+ (id)osborneControlSet;
-+ (id)VT52ControlSet;
 
 // The following three are accounting; every time the control set recognises a control
 // code it'll add the index at which it was recognised to recognisedControlPoints. Every time
@@ -72,6 +78,38 @@
 @property (nonatomic, readonly) int cursorX, cursorY;
 @property (nonatomic, readonly) BOOL cursorIsDisabled;
 
+/*
+	STRICTLY FOR CATEGORIES. Leave alone.
+*/
+- (id)initWithControlSet:(SEL)selectorForControlSet width:(int)width height:(int)height;
+- (void)installControlSequencesFromStructs:(CPMTerminalControlSequenceStruct *)structs;
+- (void)setCursorIsDisabled:(BOOL)cursorIsDisabled;
+
+@property (nonatomic, assign) uint16_t currentAttribute;
+@property (nonatomic, assign) uint8_t *inputQueue;
+
+- (void)homeCursor;
+
+- (void)upCursor;
+- (void)downCursor;
+- (void)leftCursor;
+- (void)rightCursor;
+
+- (void)clearToEndOfScreen;
+- (void)clearFromStartOfScreen;
+- (void)clearToEndOfLine;
+- (void)clearFromStartOfLine;
+
+- (void)saveCursorPosition;
+- (void)restoreCursorPosition;
+- (void)setCursorX:(int)newCursorX y:(int)newCursorY;
+
+- (void)deleteLine;
+- (void)insertLine;
+
+- (void)decrementY;
+- (void)incrementY;
+
 @end
 
 /*
@@ -89,3 +127,8 @@
 #define kCPMTerminalAttributeUnderlinedOn			0x08
 
 #define kCPMTerminalAttributeBackground				0x10
+
+#import "TerminalControlSet+ADM3A.h"
+#import "TerminalControlSet+Hazeltine1500.h"
+#import "TerminalControlSet+VT52.h"
+#import "CPMTerminalControlSet+Osborne.h"

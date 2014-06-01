@@ -9,13 +9,6 @@
 #import "TerminalControlSet.h"
 #import "TerminalControlSequence.h"
 
-@interface CPMTerminalControlSet ()
-@property (nonatomic, assign) uint16_t currentAttribute;
-@property (nonatomic, assign) uint8_t *inputQueue;
-@property (nonatomic, assign) BOOL cursorIsDisabled;
-@property (nonatomic, assign) int backupCursorX, backupCursorY;
-@end
-
 @implementation CPMTerminalControlSet
 {
 	uint8_t *_characters;
@@ -26,6 +19,8 @@
 
 	NSMutableDictionary *_sequencesToActions;
 	NSMutableSet *_allSequenceStartCharacters;
+
+	int _backupCursorX, _backupCursorY;
 }
 
 #define address(x, y) (((y)*(self.width+1))+(x))
@@ -178,10 +173,6 @@
 	_characters[address(self.width, self.height-1)] = '\0';
 }
 
-+ (id)ADM3AControlSet			{	return [[[self alloc] initWithControlSet:@selector(installADM3AControlCodes) width:80 height:24] autorelease];			}
-+ (id)hazeltine1500ControlSet	{	return [[[self alloc] initWithControlSet:@selector(installHazeltine1500ControlCodes) width:80 height:24] autorelease];	}
-+ (id)osborneControlSet			{	return [[[self alloc] initWithControlSet:@selector(installOsborneControlCodes) width:80 height:24] autorelease];		}
-+ (id)VT52ControlSet			{	return [[[self alloc] initWithControlSet:@selector(installVT52ControlCodes) width:80 height:25] autorelease];			}
 
 - (id)initWithControlSet:(SEL)selectorForControlSet width:(int)width height:(int)height
 {
@@ -431,13 +422,6 @@
 	});
 }
 
-typedef struct
-{
-	__unsafe_unretained NSString *start;
-	NSUInteger requiredLength;
-	dispatch_block_t action;
-} CPMTerminalControlSequenceStruct;
-
 - (void)installControlSequencesFromStructs:(CPMTerminalControlSequenceStruct *)structs
 {
 	while(structs->start)
@@ -470,227 +454,6 @@ typedef struct
 	{
 		{@"\n",	0,	^{	[weakSelf incrementY];						}},
 		{@"\r",	0,	^{	[weakSelf setCursorX:0 y:weakSelf.cursorY];	}},
-		{nil}
-	};
-
-	[self installControlSequencesFromStructs:sequences];
-}
-
-- (void)installADM3AControlCodes
-{
-	/*
-		This is actually the pure ADM3A with some Kaypro extensions thrown
-		in, I believe...
-		
-		Update! This may well just be the Kaypro. I'll need to look into this.
-	*/
-	__weak __block typeof(self) weakSelf = self;
-
-	CPMTerminalControlSequenceStruct sequences[] =
-	{
-		{@"\x0b",	0,	^{	[weakSelf upCursor];					}},
-		{@"\x17",	0,	^{	[weakSelf clearToEndOfScreen];			}},
-		{@"\x18",	0,	^{	[weakSelf clearToEndOfLine];			}},
-		{@"\x1a",	0,	^{
-							[weakSelf homeCursor];
-							[weakSelf clearToEndOfScreen];
-						}},
-		{@"\x1e",	0,	^{	[weakSelf homeCursor];					}},
-		{@"\x08",	0,	^{	[weakSelf leftCursor];					}},
-		{@"\x0c",	0,	^{	[weakSelf rightCursor];					}},
-		{@"\33=",	4,	^{
-							[weakSelf
-									setCursorX:(weakSelf.inputQueue[3] - 32)%weakSelf.width
-									y:(weakSelf.inputQueue[2] - 32)%weakSelf.height];
-						}},
-
-		{@"\33B0",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;		}},
-		{@"\33C0",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;		}},
-		{@"\33B1",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}},
-		{@"\33C1",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}},
-		{@"\33B2",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeBlinkingOn;			}},
-		{@"\33C2",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeBlinkingOn;			}},
-		{@"\33B3",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}},
-		{@"\33C3",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;		}},
-
-		{@"\33B4",	0,	^{	weakSelf.cursorIsDisabled = NO;			}},
-		{@"\33C4",	0,	^{	weakSelf.cursorIsDisabled = YES;		}},
-
-		{@"\33B6",	0,	^{	[weakSelf saveCursorPosition];			}},
-		{@"\33C6",	0,	^{	[weakSelf restoreCursorPosition];		}},
-
-		{@"\33R",	0,	^{	[weakSelf deleteLine];	}},
-		{@"\33E",	0,	^{	[weakSelf insertLine];	}},
-		{nil}
-	};
-
-	/*
-		Unimplemented at present:
-
-			(the graphics characters, 128–255)
-
-			Video mode on/off                  B5/C5
-			Status line preservation on/off    B7/C7
-
-			Print pixel            *, row + 31, col + 31
-			Erase pixel            #32 (space), row + 31, col + 31
-			Print line             L, row1 + 31, col1 + 31, row2 + 31, col2 + 31
-			Erase line             D, row1 + 31, col1 + 31, row2 + 31, col2 + 31
-
-			Stop cursor blinking     OUT 28, 10: OUT 29, 0
-			Turn cursor to underline OUT 28, 10: OUT 29, 15* 
-	*/
-
-
-	[self installControlSequencesFromStructs:sequences];
-}
-
-- (void)installHazeltine1500ControlCodes
-{
-	__weak __block typeof(self) weakSelf = self;
-
-	CPMTerminalControlSequenceStruct sequences[] =
-	{
-		{@"~\5",	0,	^{
-							dispatch_sync(dispatch_get_main_queue(),
-							^{
-								[weakSelf.delegate
-									terminalViewControlSet:weakSelf
-									addStringToInput:
-										[NSString stringWithFormat:@"%c%c",
-												weakSelf.cursorX,
-												weakSelf.cursorY]];
-							});
-						}},
-		{@"~\13",	0,	^{	[weakSelf downCursor];	}},
-		{@"~\14",	0,	^{	[weakSelf upCursor];	}},
-		{@"~\17",	0,	^{	[weakSelf clearToEndOfLine];	}},
-		{@"~\21",	4,	^{
-							[weakSelf
-								setCursorX:weakSelf.inputQueue[2]%weakSelf.width
-								y:weakSelf.inputQueue[3]%weakSelf.height];
-						}},
-		{@"~\22",	0,	^{	[weakSelf homeCursor];	}},
-		{@"~\23",	0,	^{	[weakSelf deleteLine];			}},
-		{@"~\30",	0,	^{	[weakSelf clearToEndOfScreen];	}},
-		{@"~\31",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeBackground;	}},
-		{@"~\32",	0,	^{	[weakSelf insertLine];			}},
-		{@"~\34",	0,	^{
-							[weakSelf homeCursor];
-							[weakSelf clearToEndOfScreen];
-						}},
-		{@"~\37",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeBackground;	}},
-		{nil}
-	};
-
-	/*
-		Unimplemented:
-
-			right cursor		dec 16
-			clear foreground	~ dec 29
-			clear to end-of-screen - background spaces	~ dec 23
-			keyboard lock		~ dec 21
-			keyboard unlock		~ dec 6
-			(alarm and tab)
-
-	*/
-
-	[self installControlSequencesFromStructs:sequences];
-}
-
-- (void)installOsborneControlCodes
-{
-	__weak __block typeof(self) weakSelf = self;
-
-	CPMTerminalControlSequenceStruct sequences[] =
-	{
-		{@"\x08",	0,	^{	[weakSelf leftCursor];	}},	// i.e. ^H
-		{@"\x0c",	0,	^{	[weakSelf rightCursor];	}},	// i.e. ^L
-		{@"\x0b",	0,	^{	[weakSelf upCursor];	}},	// i.e. ^K
-		{@"\x1a",	0,	^{
-							[weakSelf homeCursor];
-							[weakSelf clearToEndOfScreen];
-						}},								// i.e. ^Z
-		{@"\x1e",	0,	^{	[weakSelf homeCursor];	}},
-		{@"\33=",	4,	^{
-							[weakSelf
-									setCursorX:(weakSelf.inputQueue[3] - 32)%weakSelf.width
-									y:(weakSelf.inputQueue[2] - 32)%weakSelf.height];
-						}},
-		{@"\33T",	0,	^{	[weakSelf clearToEndOfLine];	}},
-
-		{@"\33)",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}},
-		{@"\33(",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}},
-		{@"\33L",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}},
-		{@"\33M",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;		}},
-
-		{@"\33E",	0,	^{	[weakSelf insertLine];			}},
-		{@"\33R",	0,	^{	[weakSelf deleteLine];			}},
-		{nil}
-	};
-
-	/*
-		Unimplemented at present:
-		
-			07		^G		rings the bell
-			1b 23	ESC #	locks keyboard
-			1b 22	ESC "	unlocks keyboard
-			1b 53	ESC S	screen XY positioning
-			1b 51	ESC Q	insert character
-			1b 57	ESC W	delete character
-			1b 67	ESC g	start graphics display
-			1b 47	ESC G	end graphics display
-			1b 5b	ESC [	homes screen
-	*/
-
-	[self installControlSequencesFromStructs:sequences];
-}
-
-- (void)installVT52ControlCodes
-{
-	__weak __block typeof(self) weakSelf = self;
-
-	CPMTerminalControlSequenceStruct sequences[] =
-	{
-		{@"\33A",	0,	^{	[weakSelf upCursor];	}},
-		{@"\33B",	0,	^{	[weakSelf downCursor];	}},
-		{@"\33C",	0,	^{	[weakSelf rightCursor];	}},
-		{@"\33D",	0,	^{	[weakSelf leftCursor];	}},
-		{@"\33E",	0,	^{
-							[weakSelf homeCursor];
-							[weakSelf clearToEndOfScreen];
-						}},
-		{@"\33H",	0,	^{	[weakSelf homeCursor];	}},
-		{@"\33I",	0,	^{	[weakSelf decrementY];	}},
-		{@"\33J",	0,	^{	[weakSelf clearToEndOfScreen];	}},
-		{@"\33K",	0,	^{	[weakSelf clearToEndOfLine];	}},
-		{@"\33L",	0,	^{	[weakSelf insertLine];	}},
-		{@"\33M",	0,	^{	[weakSelf deleteLine];	}},
-		{@"\33Y",	4,	^{
-							[weakSelf
-									setCursorX:(weakSelf.inputQueue[3] - 32)%weakSelf.width
-									y:(weakSelf.inputQueue[2] - 32)%weakSelf.height];
-						}},
-		// ESC b — select font colour
-		// ESC c — select background colour
-		{@"\33d",	0,	^{	[weakSelf clearFromStartOfScreen];	}},
-		{@"\33e",	0,	^{	weakSelf.cursorIsDisabled = NO;		}},
-		{@"\33f",	0,	^{	weakSelf.cursorIsDisabled = YES;	}},
-		{@"\33j",	0,	^{	[weakSelf saveCursorPosition];		}},
-		{@"\33k",	0,	^{	[weakSelf restoreCursorPosition];	}},
-		{@"\33l",	0,	^{
-							[weakSelf setCursorX:0 y:weakSelf.cursorY];
-							[weakSelf clearToEndOfLine];
-						}},
-		{@"\33o",	0,	^{	[weakSelf clearFromStartOfLine];	}},
-
-		{@"\33p",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;	}},
-		{@"\33q",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;	}},
-
-		{@"\0334",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;	}},
-		{@"\0333",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;	}},
-		// ESC v - automatic overflow on
-		// ESC w - automatic overflow off
 		{nil}
 	};
 
