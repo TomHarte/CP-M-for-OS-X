@@ -18,15 +18,14 @@
 
 @implementation CPMTerminalControlSet
 {
-	uint8_t *characters;
-	uint16_t *attributes;
-	int cursorX, cursorY;
+	uint8_t *_characters;
+	uint16_t *_attributes;
 
-	NSUInteger inputQueueWritePointer;
-	NSUInteger longestSequence;
+	NSUInteger _inputQueueWritePointer;
+	NSUInteger _longestSequence;
 
-	NSMutableDictionary *sequencesToActions;
-	NSMutableSet *allSequenceStartCharacters;
+	NSMutableDictionary *_sequencesToActions;
+	NSMutableSet *_allSequenceStartCharacters;
 }
 
 #define address(x, y) (((y)*(self.width+1))+(x))
@@ -52,12 +51,12 @@
 - (void)writeCharacter:(uint8_t)character
 {
 	// this enqueuing process has a quick safeguard against overflow
-	self.inputQueue[inputQueueWritePointer++] = character;
+	self.inputQueue[_inputQueueWritePointer++] = character;
 	_numberOfCharactersSoFar++;
 
 	// if we've gone beyond the length of things we can match without
 	// matching anything then just pop the first character
-	if(inputQueueWritePointer > longestSequence)
+	if(_inputQueueWritePointer > _longestSequence)
 	{
 		// this means we missed a code, probably
 		[(NSMutableSet *)_unrecognisedControlPoints addObject:[NSNumber numberWithInteger:_numberOfCharactersSoFar]];
@@ -65,32 +64,32 @@
 		// we'll attempt to output the first thing; some terminals (such as the Hazeltine 1500)
 		// use a printable character as the first thing in an escape code...
 		[self writeNormalCharacter:self.inputQueue[0]];
-		inputQueueWritePointer--;
-		memmove(self.inputQueue, &self.inputQueue[1], inputQueueWritePointer);
+		_inputQueueWritePointer--;
+		memmove(self.inputQueue, &self.inputQueue[1], _inputQueueWritePointer);
 	}
 
 	// output anything that's not possibly part of a control sequence
-	while(inputQueueWritePointer && ![allSequenceStartCharacters containsObject:[NSNumber numberWithChar:self.inputQueue[0]]])
+	while(_inputQueueWritePointer && ![_allSequenceStartCharacters containsObject:[NSNumber numberWithChar:self.inputQueue[0]]])
 	{
 		[self writeNormalCharacter:self.inputQueue[0]];
-		inputQueueWritePointer--;
-		memmove(self.inputQueue, &self.inputQueue[1], inputQueueWritePointer);
+		_inputQueueWritePointer--;
+		memmove(self.inputQueue, &self.inputQueue[1], _inputQueueWritePointer);
 	}
 
 	// have a go at matching what's left, if there is anything
-	if(inputQueueWritePointer)
+	if(_inputQueueWritePointer)
 	{
 		while(1)
 		{
-			NSString *attemptedString = [[[NSString alloc] initWithBytes:self.inputQueue length:inputQueueWritePointer encoding:NSASCIIStringEncoding] autorelease];
+			NSString *attemptedString = [[[NSString alloc] initWithBytes:self.inputQueue length:_inputQueueWritePointer encoding:NSASCIIStringEncoding] autorelease];
 			CPMTerminalControlSequence *foundMatch = nil;
 
 			while(attemptedString.length)
 			{
 				CPMTerminalControlSequence *potentialMatch =
-					[sequencesToActions valueForKey:attemptedString];
+					[_sequencesToActions valueForKey:attemptedString];
 
-				if(potentialMatch && potentialMatch.requiredLength <= inputQueueWritePointer)
+				if(potentialMatch && potentialMatch.requiredLength <= _inputQueueWritePointer)
 				{
 					foundMatch = potentialMatch;
 					break;
@@ -106,8 +105,8 @@
 
 			// perform the sequence and remove the matched characters from the queue
 			foundMatch.action();
-			inputQueueWritePointer -= foundMatch.requiredLength;
-			memmove(self.inputQueue, &self.inputQueue[foundMatch.requiredLength], inputQueueWritePointer);
+			_inputQueueWritePointer -= foundMatch.requiredLength;
+			memmove(self.inputQueue, &self.inputQueue[foundMatch.requiredLength], _inputQueueWritePointer);
 		}
 	}
 }
@@ -119,8 +118,8 @@
 	if(character < 0x20 || character > 0x7e) character = ' ';
 
 	// write the character, with the current attribute
-	characters[address(cursorX, cursorY)] = character;
-	attributes[address(cursorX, cursorY)] = self.currentAttribute;
+	_characters[address(cursorX, cursorY)] = character;
+	_attributes[address(cursorX, cursorY)] = self.currentAttribute;
 
 	// increment x and increment y if necessary
 	cursorX++;
@@ -150,10 +149,10 @@
 	});
 }
 
-- (uint8_t *)characterBuffer				{	return characters;	}
+- (uint8_t *)characterBuffer				{	return _characters;	}
 - (uint16_t *)attributeBufferForY:(int)y
 {
-	return &attributes[address(0, y)];
+	return &_attributes[address(0, y)];
 }
 
 - (void)setupForWidth:(int)width height:(int)height
@@ -163,20 +162,20 @@
 	_height = height;
 
 	// allocate storage area for the display
-	characters = (uint8_t *)calloc((width+1)*height, sizeof(uint8_t));
-	attributes = (uint16_t *)calloc((width+1)*height, sizeof(uint16_t));
+	_characters = (uint8_t *)calloc((width+1)*height, sizeof(uint8_t));
+	_attributes = (uint16_t *)calloc((width+1)*height, sizeof(uint16_t));
 
 	// set everything to spaces, initially
-	memset(characters, ' ', (width+1)*height);
+	memset(_characters, ' ', (width+1)*height);
 
 	// write in new lines
 	for(int y = 0; y < height; y++)
 	{
-		characters[address(self.width, y)] = '\n';
+		_characters[address(self.width, y)] = '\n';
 	}
 
 	// write in NULL terminator
-	characters[address(self.width, self.height-1)] = '\0';
+	_characters[address(self.width, self.height-1)] = '\0';
 }
 
 + (id)ADM3AControlSet			{	return [[[self alloc] initWithControlSet:@selector(installADM3AControlCodes) width:80 height:24] autorelease];			}
@@ -205,15 +204,15 @@
 
 - (void)dealloc
 {
-	if(characters)
+	if(_characters)
 	{
-		free(characters);
-		characters = NULL;
+		free(_characters);
+		_characters = NULL;
 	}
-	if(attributes)
+	if(_attributes)
 	{
-		free(attributes);
-		attributes = NULL;
+		free(_attributes);
+		_attributes = NULL;
 	}
 	if(_inputQueue)
 	{
@@ -222,8 +221,8 @@
 	}
 	[_recognisedControlPoints release], _recognisedControlPoints = nil;
 	[_unrecognisedControlPoints release], _unrecognisedControlPoints = nil;
-	[sequencesToActions release], sequencesToActions = nil;
-	[allSequenceStartCharacters release], allSequenceStartCharacters = nil;
+	[_sequencesToActions release], _sequencesToActions = nil;
+	[_allSequenceStartCharacters release], _allSequenceStartCharacters = nil;
 
 	[super dealloc];
 }
@@ -235,18 +234,18 @@
 	if(cursorY == self.height)
 	{
 		// scroll all contents up a line
-		memmove(characters, &characters[self.width+1], (self.height-1)*(self.width+1));
-		memmove(attributes, &attributes[self.width+1], (self.height-1)*(self.width+1));
+		memmove(_characters, &_characters[self.width+1], (self.height-1)*(self.width+1));
+		memmove(_attributes, &_attributes[self.width+1], (self.height-1)*(self.width+1));
 
 		// move the cursor back onto the screen
 		cursorY --;
 
 		// blank out the new bottom line
-		memset(&characters[address(0, cursorY)], 32, sizeof(uint8_t)*self.width);
-		memset(&attributes[address(0, cursorY)], 0, sizeof(uint16_t)*self.width);
+		memset(&_characters[address(0, cursorY)], 32, sizeof(uint8_t)*self.width);
+		memset(&_attributes[address(0, cursorY)], 0, sizeof(uint16_t)*self.width);
 
 		// remove the terminating NULL that just ascended a position
-		characters[address(self.width, self.height-2)] = '\n';
+		_characters[address(self.width, self.height-2)] = '\n';
 	}
 }
 
@@ -257,18 +256,18 @@
 	if(cursorY < 0)
 	{
 		// scroll all contents down a line
-		memmove(&characters[self.width+1], characters, (self.height-1)*(self.width+1));
-		memmove(&attributes[self.width+1], attributes, (self.height-1)*(self.width+1));
+		memmove(&_characters[self.width+1], _characters, (self.height-1)*(self.width+1));
+		memmove(&_attributes[self.width+1], _attributes, (self.height-1)*(self.width+1));
 
 		// move the cursor back onto the screen
 		cursorY ++;
 
 		// blank out the new top line
-		memset(&characters[address(0, 0)], 32, sizeof(uint8_t)*self.width);
-		memset(&attributes[address(0, 0)], 0, sizeof(uint16_t)*self.width);
+		memset(&_characters[address(0, 0)], 32, sizeof(uint8_t)*self.width);
+		memset(&_attributes[address(0, 0)], 0, sizeof(uint16_t)*self.width);
 
 		// add a terminating NULL at the end
-		characters[address(self.width, self.height-2)] = '\n';
+		_characters[address(self.width, self.height-2)] = '\n';
 	}
 }
 
@@ -277,16 +276,16 @@
 	if(cursorY < self.height-1)
 	{
 		// scroll all contents up a line
-		memmove(&characters[address(0, cursorY)], &characters[address(0, cursorY+1)], (self.height-1-cursorY)*(self.width+1));
-		memmove(&attributes[address(0, cursorY)], &attributes[address(0, cursorY+1)], (self.height-1-cursorY)*(self.width+1));
+		memmove(&_characters[address(0, cursorY)], &_characters[address(0, cursorY+1)], (self.height-1-cursorY)*(self.width+1));
+		memmove(&_attributes[address(0, cursorY)], &_attributes[address(0, cursorY+1)], (self.height-1-cursorY)*(self.width+1));
 
 		// fix the terminating NULL that just ascended a position
-		characters[address(self.width, self.height-2)] = '\n';
+		_characters[address(self.width, self.height-2)] = '\n';
 	}
 
 	// blank out the new bottom line
-	memset(&characters[address(0, self.height-1)], 32, sizeof(uint8_t)*self.width);
-	memset(&attributes[address(0, self.height-1)], 0, sizeof(uint16_t)*self.width);
+	memset(&_characters[address(0, self.height-1)], 32, sizeof(uint8_t)*self.width);
+	memset(&_attributes[address(0, self.height-1)], 0, sizeof(uint16_t)*self.width);
 }
 
 - (void)insertLine
@@ -294,32 +293,32 @@
 	if(cursorY < self.height-1)
 	{
 		// scroll all contents down a line
-		memmove(&characters[address(0, cursorY+1)], &characters[address(0, cursorY)], (self.height-1-cursorY)*(self.width+1));
-		memmove(&attributes[address(0, cursorY+1)], &attributes[address(0, cursorY)], (self.height-1-cursorY)*(self.width+1));
+		memmove(&_characters[address(0, cursorY+1)], &_characters[address(0, cursorY)], (self.height-1-cursorY)*(self.width+1));
+		memmove(&_attributes[address(0, cursorY+1)], &_attributes[address(0, cursorY)], (self.height-1-cursorY)*(self.width+1));
 
 		// fix the newline just descended a position
-		characters[address(self.width, self.height-1)] = '\0';
+		_characters[address(self.width, self.height-1)] = '\0';
 	}
 
 	// blank out this line
-	memset(&characters[address(0, cursorY)], 32, sizeof(uint8_t)*self.width);
-	memset(&attributes[address(0, cursorY)], 0, sizeof(uint16_t)*self.width);
+	memset(&_characters[address(0, cursorY)], 32, sizeof(uint8_t)*self.width);
+	memset(&_attributes[address(0, cursorY)], 0, sizeof(uint16_t)*self.width);
 }
 
 - (void)clearFrom:(size_t)start to:(size_t)end
 {
 	// write out spaces and zero attributes
-	memset(&characters[start], 32, sizeof(uint8_t)*(end-start));
-	memset(&attributes[start], 0, sizeof(uint16_t)*(end-start));
+	memset(&_characters[start], 32, sizeof(uint8_t)*(end-start));
+	memset(&_attributes[start], 0, sizeof(uint16_t)*(end-start));
 
 	// put end-of-line markers back in
 	size_t startLine = start / (self.width+1);
 	size_t endLine = end / (self.width+1);
 	for(size_t line = startLine; line < endLine; line++)
-		characters[address(self.width, line)] = '\n';
+		_characters[address(self.width, line)] = '\n';
 
 	// make sure we're still ending on a NULL
-	characters[address(self.width, self.height-1)] = '\0';
+	_characters[address(self.width, self.height-1)] = '\0';
 
 	// notify the delgate that we've visibly changed
 	dispatch_async(dispatch_get_main_queue(),
@@ -330,31 +329,31 @@
 
 - (void)addControlSequence:(CPMTerminalControlSequence *)controlSequence
 {
-	[sequencesToActions setObject:controlSequence forKey:controlSequence.start];
+	[_sequencesToActions setObject:controlSequence forKey:controlSequence.start];
 }
 
 - (void)beginControlCodes
 {
-	sequencesToActions = [[NSMutableDictionary alloc] init];
+	_sequencesToActions = [[NSMutableDictionary alloc] init];
 }
 
 - (void)finishControlCodes
 {
-	allSequenceStartCharacters = [[NSMutableSet alloc] init];
-	longestSequence = 1;
+	_allSequenceStartCharacters = [[NSMutableSet alloc] init];
+	_longestSequence = 1;
 
 	// determine the longest sequence we have, and build the set
 	// of all control sequence start characters
-	for(CPMTerminalControlSequence *controlSequence in [sequencesToActions allValues])
+	for(CPMTerminalControlSequence *controlSequence in [_sequencesToActions allValues])
 	{
-		[allSequenceStartCharacters addObject:[NSNumber numberWithChar:[controlSequence.start characterAtIndex:0]]];
+		[_allSequenceStartCharacters addObject:[NSNumber numberWithChar:[controlSequence.start characterAtIndex:0]]];
 
-		if(controlSequence.requiredLength > longestSequence)
-			longestSequence = controlSequence.requiredLength;
+		if(controlSequence.requiredLength > _longestSequence)
+			_longestSequence = controlSequence.requiredLength;
 	}
 
 	// hence allocate the input queue
-	_inputQueue = (uint8_t *)malloc(sizeof(uint8_t) * longestSequence);
+	_inputQueue = (uint8_t *)malloc(sizeof(uint8_t) * _longestSequence);
 }
 
 - (void)homeCursor
