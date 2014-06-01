@@ -20,7 +20,7 @@
 
 + (id)BIOSWithTerminalView:(CPMTerminalView *)terminalView processor:(CPMProcessor *)processor
 {
-	return [[[self alloc] initWithTerminalView:terminalView processor:processor] autorelease];
+	return [[self alloc] initWithTerminalView:terminalView processor:processor];
 }
 
 - (id)initWithTerminalView:(CPMTerminalView *)terminalView processor:(CPMProcessor *)processor
@@ -30,21 +30,13 @@
 	if(self)
 	{
 		// retain the terminal view and make this class the delegate
-		_terminalView = [terminalView retain];
+		_terminalView = terminalView;
 
 		// also keep the processor
-		_processor = [processor retain];
+		_processor = processor;
 	}
 
 	return self;
-}
-
-- (void)dealloc
-{
-	[_processor release], _processor = nil;
-	_terminalView.delegate = nil;
-	[_terminalView release], _terminalView = nil;
-	[super dealloc];
 }
 
 - (CPMProcessorShouldBlock)makeCall:(int)callNumber

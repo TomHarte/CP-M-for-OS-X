@@ -15,7 +15,7 @@
 
 + (id)RAMModule
 {
-	return [[[self alloc] init] autorelease];
+	return [[self alloc] init];
 }
 
 - (id)init
@@ -34,8 +34,6 @@
 {
 	if(storage) free(storage);
 	storage = NULL;
-
-	[super dealloc];
 }
 
 - (void)setValue:(uint8_t)value atAddress:(uint16_t)address		{	storage[address] = value;	}

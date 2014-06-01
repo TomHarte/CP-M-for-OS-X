@@ -10,7 +10,7 @@
 
 @implementation CPMTerminalControlSet (ADM3A)
 
-+ (id)ADM3AControlSet			{	return [[[self alloc] initWithControlSet:@selector(installADM3AControlCodes) width:80 height:24] autorelease];			}
++ (id)ADM3AControlSet			{	return [[self alloc] initWithControlSet:@selector(installADM3AControlCodes) width:80 height:24];			}
 
 - (void)installADM3AControlCodes
 {

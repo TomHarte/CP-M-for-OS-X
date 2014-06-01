@@ -34,7 +34,7 @@
 
 + (id)BDOSWithData:(NSData *)data terminalView:(CPMTerminalView *)terminalView;
 {
-	return [[[self alloc] initWithData:data terminalView:terminalView] autorelease];
+	return [[self alloc] initWithData:data terminalView:terminalView];
 }
 
 - (id)initWithData:(NSData *)data terminalView:(CPMTerminalView *)terminalView
@@ -46,14 +46,13 @@
 		// load the nominated executable
 		if(!data || !terminalView)
 		{
-			[self release];
 			return nil;
 		}
 
 		// create memory, a CPU and a BIOS
-		_memory = [[CPMRAMModule RAMModule] retain];
-		_processor = [[CPMProcessor processorWithRAM:_memory] retain];
-		_bios = [[CPMBIOS BIOSWithTerminalView:terminalView processor:_processor] retain];
+		_memory = [CPMRAMModule RAMModule];
+		_processor = [CPMProcessor processorWithRAM:_memory];
+		_bios = [CPMBIOS BIOSWithTerminalView:terminalView processor:_processor];
 
 		// copy the executable into memory, set the initial program counter
 		[_memory setData:data atAddress:0x100];
@@ -106,18 +105,6 @@
 	}
 
 	return self;
-}
-
-- (void)dealloc
-{
-	[_memory release], _memory = nil;
-	[_processor release], _processor = nil;
-	[_bios release], _bios = nil;
-	[_fileHandlesByControlBlock release], _fileHandlesByControlBlock = nil;
-	[_basePath release], _basePath = nil;
-	[_searchEnumerator release], _searchEnumerator = nil;
-
-	[super dealloc];
 }
 
 - (void)runForTimeInterval:(NSTimeInterval)interval;
@@ -238,7 +225,7 @@
 
 - (BOOL)searchForFirstWithParameter:(uint16_t)parameter
 {
-	[_searchEnumerator release], _searchEnumerator = nil;
+	_searchEnumerator = nil;
 
 	if(!self.basePath)
 	{
@@ -254,7 +241,7 @@
 		NSArray *matchingFiles = [allFilesInPath filteredArrayUsingPredicate:fileControlBlock.matchesPredicate];
 		NSLog(@"%@ versus %@ begat %@", allFilesInPath, fileControlBlock, matchingFiles);
 
-		_searchEnumerator = [[matchingFiles objectEnumerator] retain];
+		_searchEnumerator = [matchingFiles objectEnumerator];
 		return [self searchForNextWithParameter:parameter];
 	}
 
@@ -267,7 +254,7 @@
 	if(!nextFileName)
 	{
 		[_processor set8bitCPMResult:0xff];
-		[_searchEnumerator release], _searchEnumerator = nil;
+		_searchEnumerator = nil;
 		return NO;
 	}
 

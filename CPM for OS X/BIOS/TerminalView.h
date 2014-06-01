@@ -36,7 +36,7 @@
 /*
 	The following two are intended for use on the main queue only.
 */
-@property (nonatomic, assign) id <CPMTerminalViewDelegate> delegate;
+@property (nonatomic, unsafe_unretained) id <CPMTerminalViewDelegate> delegate;
 @property (nonatomic, readonly) CGSize idealSize;
 
 - (void)invalidate;

@@ -28,8 +28,8 @@
 
 - (void)setIsTrackingCodePoints:(BOOL)isTrackingCodePoints
 {
-	[_recognisedControlPoints release], _recognisedControlPoints = nil;
-	[_unrecognisedControlPoints release], _unrecognisedControlPoints = nil;
+	_recognisedControlPoints = nil;
+	_unrecognisedControlPoints = nil;
 
 	if(isTrackingCodePoints)
 	{
@@ -76,7 +76,7 @@
 	{
 		while(1)
 		{
-			NSString *attemptedString = [[[NSString alloc] initWithBytes:self.inputQueue length:_inputQueueWritePointer encoding:NSASCIIStringEncoding] autorelease];
+			NSString *attemptedString = [[NSString alloc] initWithBytes:self.inputQueue length:_inputQueueWritePointer encoding:NSASCIIStringEncoding];
 			CPMTerminalControlSequence *foundMatch = nil;
 
 			while(attemptedString.length)
@@ -210,12 +210,6 @@
 		free(_inputQueue);
 		_inputQueue = NULL;
 	}
-	[_recognisedControlPoints release], _recognisedControlPoints = nil;
-	[_unrecognisedControlPoints release], _unrecognisedControlPoints = nil;
-	[_sequencesToActions release], _sequencesToActions = nil;
-	[_allSequenceStartCharacters release], _allSequenceStartCharacters = nil;
-
-	[super dealloc];
 }
 
 - (void)incrementY

@@ -34,7 +34,7 @@ typedef BOOL CPMProcessorShouldBlock;
 - (void)set8bitCPMResult:(uint8_t)result;
 - (void)set16bitCPMResult:(uint16_t)result;
 
-@property (nonatomic, assign) id <CPMProcessorDelegate> delegate;
+@property (nonatomic, unsafe_unretained) id <CPMProcessorDelegate> delegate;
 
 @property (nonatomic, assign) uint16_t afRegister;
 @property (nonatomic, assign) uint16_t bcRegister;

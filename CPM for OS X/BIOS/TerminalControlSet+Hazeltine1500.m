@@ -10,7 +10,7 @@
 
 @implementation CPMTerminalControlSet (Hazeltine1500)
 
-+ (id)hazeltine1500ControlSet	{	return [[[self alloc] initWithControlSet:@selector(installHazeltine1500ControlCodes) width:80 height:24] autorelease];	}
++ (id)hazeltine1500ControlSet	{	return [[self alloc] initWithControlSet:@selector(installHazeltine1500ControlCodes) width:80 height:24];	}
 
 - (void)installHazeltine1500ControlCodes
 {

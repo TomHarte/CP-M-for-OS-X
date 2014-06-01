@@ -35,7 +35,7 @@ typedef struct
 {
 	__unsafe_unretained NSString *start;
 	NSUInteger requiredLength;
-	dispatch_block_t action;
+	__unsafe_unretained dispatch_block_t action;
 } CPMTerminalControlSequenceStruct;
 
 /*
@@ -61,7 +61,7 @@ typedef struct
 // the width and height are the dimensions of this terminal in characters
 @property (nonatomic, readonly) NSUInteger width, height;
 
-@property (atomic, assign) id <CPMTerminalControlSetDelegate> delegate;
+@property (atomic, weak) id <CPMTerminalControlSetDelegate> delegate;
 
 // write character is the single entry point for updating state; post all output characters here
 - (void)writeCharacter:(uint8_t)character;

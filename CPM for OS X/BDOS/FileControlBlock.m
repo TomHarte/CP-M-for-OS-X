@@ -12,8 +12,8 @@
 
 @interface CPMFileControlBlock ()
 
-@property (nonatomic, retain) NSString *fileName;
-@property (nonatomic, retain) NSString *fileType;
+@property (nonatomic, strong) NSString *fileName;
+@property (nonatomic, strong) NSString *fileType;
 
 @end
 
@@ -25,7 +25,7 @@
 
 + (id)fileControlBlockWithAddress:(uint16_t)address inMemory:(CPMRAMModule *)memory
 {
-	return [[[self alloc] initWithAddress:address inMemory:memory] autorelease];
+	return [[self alloc] initWithAddress:address inMemory:memory];
 }
 
 - (void)trimTailSpacesIn:(char *)buffer
@@ -46,7 +46,7 @@
 
 	if(self)
 	{
-		memory = [someMemory retain];
+		memory = someMemory;
 		baseAddress = address;
 
 		NSData *data = [memory dataAtAddress:address length:36];
@@ -64,8 +64,8 @@
 		[self trimTailSpacesIn:fileName];
 		[self trimTailSpacesIn:fileType];
 
-		_fileName = [[NSString stringWithFormat:@"%s", fileName] retain];
-		_fileType = [[NSString stringWithFormat:@"%s", fileType] retain];
+		_fileName = [NSString stringWithFormat:@"%s", fileName];
+		_fileType = [NSString stringWithFormat:@"%s", fileType];
 
 		uint8_t record = bytes[0x20]&127;
 		uint8_t extent = bytes[0x0c]&31;
@@ -88,20 +88,12 @@
 	[memory setValue:self.linearFileOffset >> 19 atAddress:baseAddress+0x0e];
 }
 
-- (void)dealloc
-{
-	[_fileName release], _fileName = nil;
-	[_fileType release], _fileType = nil;
-	[memory release], memory = nil;
-	[super dealloc];
-}
-
 - (id)copyWithZone:(NSZone *)zone
 {
 	CPMFileControlBlock *newBlock = [[CPMFileControlBlock alloc] init];
 
-	newBlock->_fileName = [self.fileName retain];
-	newBlock->_fileType = [self.fileType retain];
+	newBlock->_fileName = self.fileName;
+	newBlock->_fileType = self.fileType;
 	newBlock->_drive = self.drive;
 
 	return newBlock;

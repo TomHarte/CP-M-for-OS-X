@@ -60,9 +60,8 @@
 	NSUInteger oldWidth = controlSet.width;
 	NSUInteger oldHeight = controlSet.height;
 	controlSet.delegate = nil;
-	[controlSet release];
 
-	controlSet = [newControlSet	retain];
+	controlSet = newControlSet;
 	controlSet.delegate = self;
 
 	if(oldWidth != controlSet.width || oldHeight != controlSet.height)
@@ -90,16 +89,6 @@
 	self = [super initWithCoder:aDecoder];
 	[self doCommonInit];
 	return self;
-}
-
-- (void)dealloc
-{
-	[attributedString release], attributedString = nil;
-	[candidateControlSets release], candidateControlSets = nil;
-
-	controlSet.delegate = nil;
-	[controlSet release], controlSet = nil;
-	[super dealloc];
 }
 
 - (void)invalidate
@@ -158,7 +147,7 @@
 				(controlSetTotalRecognised > 150)
 			)
 			{
-				[candidateControlSets release], candidateControlSets = nil;
+				candidateControlSets = nil;
 				controlSet.isTrackingCodePoints = NO;
 			}
 		}
@@ -174,7 +163,7 @@
 	// create a string of the ASCII characters first
 
 	NSString *asciiText = [NSString stringWithCString:(const char *)controlSet.characterBuffer encoding:NSASCIIStringEncoding];
-	[attributedString release], attributedString = nil;
+	attributedString = nil;
 	attributedString = [[NSMutableAttributedString alloc] initWithString:asciiText];
 
 	// establish the whole range as Monaco 12
@@ -182,7 +171,7 @@
 	[attributedString
 		setAttributes:
 		@{
-			(id)kCTFontAttributeName : (id)monaco,
+			(id)kCTFontAttributeName : (__bridge id)monaco,
 			(id)kCTForegroundColorAttributeName: (id)[[NSColor greenColor] CGColor]
 		}
 		range:NSMakeRange(0, attributedString.length)];
@@ -462,7 +451,7 @@
 		if(!asciiString) return;
 
 		filteredString =
-			[[[NSString alloc] initWithBytesNoCopy:(void *)asciiString length:strlen(asciiString) encoding:NSASCIIStringEncoding freeWhenDone:NO] autorelease];
+			[[NSString alloc] initWithBytesNoCopy:(void *)asciiString length:strlen(asciiString) encoding:NSASCIIStringEncoding freeWhenDone:NO];
 	}
 
 	if(![filteredString length]) return;

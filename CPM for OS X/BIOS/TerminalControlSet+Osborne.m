@@ -10,7 +10,7 @@
 
 @implementation CPMTerminalControlSet (Osborne)
 
-+ (id)osborneControlSet			{	return [[[self alloc] initWithControlSet:@selector(installOsborneControlCodes) width:80 height:24] autorelease];		}
++ (id)osborneControlSet			{	return [[self alloc] initWithControlSet:@selector(installOsborneControlCodes) width:80 height:24];		}
 
 - (void)installOsborneControlCodes
 {

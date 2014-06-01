@@ -23,7 +23,6 @@
 	unsigned int result;
 	NSScanner *scanner = [[NSScanner alloc] initWithString:self];
 	[scanner scanHexInt:&result];
-	[scanner release];
 
 	return result;
 }

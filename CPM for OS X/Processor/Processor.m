@@ -53,7 +53,7 @@
 
 + (id)processorWithRAM:(CPMRAMModule *)RAM
 {
-	return [[[self alloc] initWithRAM:RAM] autorelease];
+	return [[self alloc] initWithRAM:RAM];
 }
 
 - (id)initWithRAM:(CPMRAMModule *)RAM
@@ -62,20 +62,13 @@
 
 	if(self)
 	{
-		memory = [RAM retain];
+		memory = RAM;
 		indexRegister = &hlRegister;
 		addOffset = NO;
 	}
 
 	return self;
 }
-
-- (void)dealloc
-{
-	[memory release], memory = nil;
-	[super dealloc];
-}
-
 
 /*
 
@@ -1374,6 +1367,8 @@
 			executeFromStandardPage(self, @selector(executeFromStandardPage));
 		}
 	}
+	
+	NSLog(@"..");
 }
 
 - (void)unblock

@@ -21,6 +21,6 @@
 - (void)runForNumberOfInstructions:(NSUInteger)numberOfInstructions;
 
 @property (nonatomic, readonly) BOOL didBlock;
-@property (nonatomic, retain) NSString *basePath;
+@property (nonatomic, strong) NSString *basePath;
 
 @end

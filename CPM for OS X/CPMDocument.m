@@ -15,7 +15,7 @@
 
 @interface CPMDocument ()
 
-@property (nonatomic, assign) IBOutlet CPMTerminalView *terminalView;
+@property (nonatomic, weak) IBOutlet CPMTerminalView *terminalView;
 
 @end
 
@@ -32,9 +32,9 @@
 
 - (void)close
 {
-	[_bdos release], _bdos = nil;
+	_bdos = nil;
 	[_executionTimer invalidate], _executionTimer = nil;
-	[_sourceURL release], _sourceURL = nil;
+	_sourceURL = nil;
 	[self.terminalView invalidate];
 	if(serialDispatchQueue)
 	{
@@ -54,7 +54,7 @@
 	[super windowControllerDidLoadNib:aController];
 
 	// create our BDOS instance and pipe the terminal view's delegate messages to here
-	_bdos = [[CPMBDOS BDOSWithContentsOfURL:_sourceURL terminalView:self.terminalView] retain];
+	_bdos = [CPMBDOS BDOSWithContentsOfURL:_sourceURL terminalView:self.terminalView];
 	self.terminalView.delegate = self;
 
 	// get base path...
@@ -84,7 +84,7 @@
 
 - (BOOL)readFromURL:(NSURL *)url ofType:(NSString *)typeName error:(NSError **)outError
 {
-	_sourceURL = [url retain];
+	_sourceURL = url;
 	return YES;
 }
 

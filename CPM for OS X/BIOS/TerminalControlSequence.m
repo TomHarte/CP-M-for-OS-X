@@ -12,12 +12,12 @@
 
 + (id)terminalControlSequenceWithStart:(NSString *)start requiredLength:(NSUInteger)requiredLength action:(dispatch_block_t)action
 {
-	return [[[self alloc] initWithStart:start requiredLength:requiredLength action:action] autorelease];
+	return [[self alloc] initWithStart:start requiredLength:requiredLength action:action];
 }
 
 + (id)terminalControlSequenceWithStart:(NSString *)start action:(dispatch_block_t)action
 {
-	return [[[self alloc] initWithStart:start requiredLength:[start length] action:action] autorelease];
+	return [[self alloc] initWithStart:start requiredLength:[start length] action:action];
 }
 
 - (id)initWithStart:(NSString *)start requiredLength:(NSUInteger)requiredLength action:(dispatch_block_t)action
@@ -26,19 +26,12 @@
 
 	if(self)
 	{
-		_start = [start retain];
+		_start = start;
 		_requiredLength = requiredLength;
 		_action = [action copy];
 	}
 
 	return self;
-}
-
-- (void)dealloc
-{
-	[_start release], _start = nil;
-	[_action release], _action = nil;
-	[super dealloc];
 }
 
 - (NSUInteger)hash
@@ -49,9 +42,9 @@
 - (id)copyWithZone:(NSZone *)zone
 {
 	CPMTerminalControlSequence *copy = [[CPMTerminalControlSequence allocWithZone:zone] init];
-	copy->_start = [self.start retain];
+	copy->_start = self.start;
 	copy->_requiredLength = self.requiredLength;
-	copy->_action = [self.action retain];
+	copy->_action = self.action;
 	
 	return copy;
 }
