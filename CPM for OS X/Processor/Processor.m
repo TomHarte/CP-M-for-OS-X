@@ -1353,7 +1353,7 @@
 {
 	// we're going to call this thing millions of times a second, probably, so caching the IMP
 	// is a pragmatic performance optimisation
-	IMP executeFromStandardPage = [self methodForSelector:@selector(executeFromStandardPage)];
+	void (*executeFromStandardPage)(id, SEL) = (void(*)(id,SEL))[self methodForSelector:@selector(executeFromStandardPage)];
 
 	while(!isBlocked && numberOfInstructions--)
 	{
@@ -1368,7 +1368,6 @@
 		}
 	}
 	
-	NSLog(@"..");
 }
 
 - (void)unblock
