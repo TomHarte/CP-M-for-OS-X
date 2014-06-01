@@ -27,14 +27,9 @@
 	NSEnumerator *_searchEnumerator;
 }
 
-+ (id)BDOSWithContentsOfURL:(NSURL *)URL terminalView:(CPMTerminalView *)terminalView
+- (id)initWithContentsOfURL:(NSURL *)URL terminalView:(CPMTerminalView *)terminalView
 {
-	return [self BDOSWithData:[NSData dataWithContentsOfURL:URL] terminalView:terminalView];
-}
-
-+ (id)BDOSWithData:(NSData *)data terminalView:(CPMTerminalView *)terminalView;
-{
-	return [[self alloc] initWithData:data terminalView:terminalView];
+	return [self initWithData:[NSData dataWithContentsOfURL:URL] terminalView:terminalView];
 }
 
 - (id)initWithData:(NSData *)data terminalView:(CPMTerminalView *)terminalView
@@ -50,9 +45,9 @@
 		}
 
 		// create memory, a CPU and a BIOS
-		_memory = [CPMRAMModule RAMModule];
-		_processor = [CPMProcessor processorWithRAM:_memory];
-		_bios = [CPMBIOS BIOSWithTerminalView:terminalView processor:_processor];
+		_memory = [[CPMRAMModule alloc] init];
+		_processor = [[CPMProcessor alloc] initWithRAM:_memory];
+		_bios = [[CPMBIOS alloc] initWithTerminalView:terminalView processor:_processor];
 
 		// copy the executable into memory, set the initial program counter
 		[_memory setData:data atAddress:0x100];
@@ -220,7 +215,7 @@
 
 - (CPMFileControlBlock *)fileControlBlockWithParameter:(uint16_t)parameter
 {
-	return [CPMFileControlBlock fileControlBlockWithAddress:parameter inMemory:_memory];
+	return [[CPMFileControlBlock alloc] initWithAddress:parameter inMemory:_memory];
 }
 
 - (BOOL)searchForFirstWithParameter:(uint16_t)parameter

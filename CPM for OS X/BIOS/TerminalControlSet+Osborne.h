@@ -10,6 +10,6 @@
 
 @interface CPMTerminalControlSet (Osborne)
 
-+ (id)osborneControlSet;
++ (instancetype)osborneControlSet;
 
 @end

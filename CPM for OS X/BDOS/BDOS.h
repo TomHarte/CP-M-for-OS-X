@@ -14,8 +14,8 @@
 
 @interface CPMBDOS : NSObject <CPMProcessorDelegate, CPMTerminalViewDelegate>
 
-+ (id)BDOSWithContentsOfURL:(NSURL *)URL terminalView:(CPMTerminalView *)terminalView;
-+ (id)BDOSWithData:(NSData *)data terminalView:(CPMTerminalView *)terminalView;
+- (id)initWithContentsOfURL:(NSURL *)URL terminalView:(CPMTerminalView *)terminalView;
+- (id)initWithData:(NSData *)data terminalView:(CPMTerminalView *)terminalView;
 
 - (void)runForTimeInterval:(NSTimeInterval)interval;
 - (void)runForNumberOfInstructions:(NSUInteger)numberOfInstructions;

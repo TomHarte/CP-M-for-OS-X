@@ -10,6 +10,6 @@
 
 @interface CPMTerminalControlSet (VT52)
 
-+ (id)VT52ControlSet;
++ (instancetype)VT52ControlSet;
 
 @end

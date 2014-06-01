@@ -10,7 +10,7 @@
 
 @implementation CPMTerminalControlSet (VT52)
 
-+ (id)VT52ControlSet			{	return [[self alloc] initWithControlSet:@selector(installVT52ControlCodes) width:80 height:25];			}
++ (instancetype)VT52ControlSet			{	return [[self alloc] initWithControlSet:@selector(installVT52ControlCodes) width:80 height:25];			}
 
 - (void)installVT52ControlCodes
 {

@@ -18,7 +18,7 @@
 
 @interface CPMBIOS : NSObject <CPMTerminalViewDelegate>
 
-+ (id)BIOSWithTerminalView:(CPMTerminalView *)terminalView processor:(CPMProcessor *)processor;
+- (id)initWithTerminalView:(CPMTerminalView *)terminalView processor:(CPMProcessor *)processor;
 
 - (CPMProcessorShouldBlock)makeCall:(int)callNumber;
 

@@ -10,8 +10,8 @@
 
 @interface CPMTerminalControlSequence : NSObject <NSCopying>
 
-+ (id)terminalControlSequenceWithStart:(NSString *)start requiredLength:(NSUInteger)requiredLength action:(dispatch_block_t)action;
-+ (id)terminalControlSequenceWithStart:(NSString *)start action:(dispatch_block_t)action;
+- (id)initWithStart:(NSString *)start requiredLength:(NSUInteger)requiredLength action:(dispatch_block_t)action;
+- (id)initWithStart:(NSString *)start action:(dispatch_block_t)action;
 
 @property (nonatomic, readonly) NSString *start;
 @property (nonatomic, readonly) NSUInteger requiredLength;

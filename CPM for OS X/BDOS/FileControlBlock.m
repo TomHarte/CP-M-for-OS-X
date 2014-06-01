@@ -23,11 +23,6 @@
 	uint16_t baseAddress;
 }
 
-+ (id)fileControlBlockWithAddress:(uint16_t)address inMemory:(CPMRAMModule *)memory
-{
-	return [[self alloc] initWithAddress:address inMemory:memory];
-}
-
 - (void)trimTailSpacesIn:(char *)buffer
 {
 	size_t c = strlen(buffer);

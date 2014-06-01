@@ -44,8 +44,8 @@
 
 	if(!input || !expectedOutput) return;
 
-	CPMRAMModule *memory = [CPMRAMModule RAMModule];
-	CPMProcessor *testProcessor = [CPMProcessor processorWithRAM:memory];
+	CPMRAMModule *memory = [[CPMRAMModule alloc] init];
+	CPMProcessor *testProcessor = [[CPMProcessor alloc] initWithRAM:memory];
 
 	if(!memory || !testProcessor) return;
 

@@ -54,7 +54,7 @@
 	[super windowControllerDidLoadNib:aController];
 
 	// create our BDOS instance and pipe the terminal view's delegate messages to here
-	_bdos = [CPMBDOS BDOSWithContentsOfURL:_sourceURL terminalView:self.terminalView];
+	_bdos = [[CPMBDOS alloc] initWithContentsOfURL:_sourceURL terminalView:self.terminalView];
 	self.terminalView.delegate = self;
 
 	// get base path...

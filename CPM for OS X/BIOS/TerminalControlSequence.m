@@ -10,14 +10,9 @@
 
 @implementation CPMTerminalControlSequence
 
-+ (id)terminalControlSequenceWithStart:(NSString *)start requiredLength:(NSUInteger)requiredLength action:(dispatch_block_t)action
+- (id)initWithStart:(NSString *)start action:(dispatch_block_t)action
 {
-	return [[self alloc] initWithStart:start requiredLength:requiredLength action:action];
-}
-
-+ (id)terminalControlSequenceWithStart:(NSString *)start action:(dispatch_block_t)action
-{
-	return [[self alloc] initWithStart:start requiredLength:[start length] action:action];
+	return [self initWithStart:start requiredLength:[start length] action:action];
 }
 
 - (id)initWithStart:(NSString *)start requiredLength:(NSUInteger)requiredLength action:(dispatch_block_t)action

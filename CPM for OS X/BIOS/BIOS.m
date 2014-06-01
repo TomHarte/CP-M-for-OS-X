@@ -18,11 +18,6 @@
 	BOOL _shouldEcho;
 }
 
-+ (id)BIOSWithTerminalView:(CPMTerminalView *)terminalView processor:(CPMProcessor *)processor
-{
-	return [[self alloc] initWithTerminalView:terminalView processor:processor];
-}
-
 - (id)initWithTerminalView:(CPMTerminalView *)terminalView processor:(CPMProcessor *)processor
 {
 	self = [super init];

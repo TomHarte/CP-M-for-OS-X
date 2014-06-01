@@ -13,11 +13,6 @@
 	uint8_t *_storage;
 }
 
-+ (id)RAMModule
-{
-	return [[self alloc] init];
-}
-
 - (id)init
 {
 	self = [super init];

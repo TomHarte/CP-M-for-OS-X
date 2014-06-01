@@ -10,6 +10,6 @@
 
 @interface CPMTerminalControlSet (Hazeltine1500)
 
-+ (id)hazeltine1500ControlSet;
++ (instancetype)hazeltine1500ControlSet;
 
 @end

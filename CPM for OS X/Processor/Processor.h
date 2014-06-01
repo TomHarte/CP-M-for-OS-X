@@ -23,7 +23,7 @@ typedef BOOL CPMProcessorShouldBlock;
 
 @interface CPMProcessor : NSObject
 
-+ (id)processorWithRAM:(CPMRAMModule *)RAM;
+- (id)initWithRAM:(CPMRAMModule *)RAM;
 
 - (void)runForTimeInterval:(NSTimeInterval)timeInterval;
 - (void)runForNumberOfInstructions:(NSUInteger)numberOfInstructions;

@@ -422,16 +422,16 @@
 		if(structs->requiredLength)
 		{
 			[self addControlSequence:
-				[CPMTerminalControlSequence
-					terminalControlSequenceWithStart:structs->start
+				[[CPMTerminalControlSequence alloc]
+					initWithStart:structs->start
 					requiredLength:structs->requiredLength
 					action:structs->action]];
 		}
 		else
 		{
 			[self addControlSequence:
-				[CPMTerminalControlSequence
-					terminalControlSequenceWithStart:structs->start
+				[[CPMTerminalControlSequence alloc]
+					initWithStart:structs->start
 					action:structs->action]];
 		}
 

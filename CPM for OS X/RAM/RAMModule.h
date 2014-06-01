@@ -10,7 +10,9 @@
 
 @interface CPMRAMModule : NSObject
 
-+ (id)RAMModule;	// this'll return an unbanked, 64kb module
+//
+// plain init will return an unbanked, 64kb module
+//
 
 //
 // setValue:atAddress: and valueAtAddress: read and write single bytes;

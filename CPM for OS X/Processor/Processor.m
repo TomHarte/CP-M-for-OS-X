@@ -43,11 +43,6 @@
 
 */
 
-+ (id)processorWithRAM:(CPMRAMModule *)RAM
-{
-	return [[self alloc] initWithRAM:RAM];
-}
-
 - (id)initWithRAM:(CPMRAMModule *)RAM
 {
 	self = [super init];
