@@ -8,6 +8,14 @@
 
 #import <Foundation/Foundation.h>
 
+/*
+
+	RAM is given its own class on the expectation that I may
+	want to add banking in the future, in which case there'll
+	start being a conversion between logical and physical addresses
+
+*/
+
 @interface CPMRAMModule : NSObject
 
 //

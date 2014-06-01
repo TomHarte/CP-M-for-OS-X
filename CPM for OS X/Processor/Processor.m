@@ -57,6 +57,9 @@
 	return self;
 }
 
+#pragma mark -
+#pragma mark Read/Write/Offset Helpers
+
 /*
 
 	These are a couple of helpers for reading a value from the PC,
@@ -64,10 +67,6 @@
 
 */
 #define readByteFromPC() [_memory valueAtAddress:_programCounter++]
-//- (uint8_t)readByteFromPC
-//{
-//	return [memory valueAtAddress:_programCounter++];
-//}
 
 - (uint16_t)readShortFromPC
 {
@@ -96,6 +95,9 @@
 {
 	return [_memory pointerToAddress:*_indexRegister + offset];
 }
+
+#pragma mark -
+#pragma mark Condition Lookup and Parity Helpers
 
 /*
 
@@ -127,6 +129,9 @@
 		case 7: return _lastSignResult&0x80;						//M
 	}
 }
+
+#pragma mark -
+#pragma mark Register Table Lookups
 
 /*
 */
@@ -191,6 +196,9 @@
 	_indexRegister = realIndexRegister;
 	return result;
 }
+
+#pragma mark -
+#pragma mark ALU Operations
 
 - (void)inc:(uint8_t *)value
 {
@@ -381,30 +389,6 @@
 	}
 }
 
-- (void)push:(uint16_t)value
-{
-	_spRegister--;
-	[_memory setValue:value >> 8 atAddress:_spRegister];
-	_spRegister--;
-	[_memory setValue:value & 0xff atAddress:_spRegister];
-}
-
-- (uint16_t)pop
-{
-	uint16_t value = [_memory valueAtAddress:_spRegister];
-	_spRegister++;
-	value |= [_memory valueAtAddress:_spRegister] << 8;
-	_spRegister++;
-
-	return value;
-}
-
-- (void)call:(uint16_t)address
-{
-	[self push:_programCounter];
-	_programCounter = address;
-}
-
 - (void)sbc16:(uint16_t)operand
 {
 	int result = _hlRegister - operand - (_generalFlags&LLZ80FlagCarry);
@@ -456,6 +440,36 @@
 
 	*target = (uint16_t)result;
 }
+
+#pragma mark -
+#pragma mark Stack Operations
+
+- (void)push:(uint16_t)value
+{
+	_spRegister--;
+	[_memory setValue:value >> 8 atAddress:_spRegister];
+	_spRegister--;
+	[_memory setValue:value & 0xff atAddress:_spRegister];
+}
+
+- (uint16_t)pop
+{
+	uint16_t value = [_memory valueAtAddress:_spRegister];
+	_spRegister++;
+	value |= [_memory valueAtAddress:_spRegister] << 8;
+	_spRegister++;
+
+	return value;
+}
+
+- (void)call:(uint16_t)address
+{
+	[self push:_programCounter];
+	_programCounter = address;
+}
+
+#pragma mark -
+#pragma mark Block Copies/Moves
 
 - (void)blockInstruction:(int)instruction repeatType:(int)repeatType
 {
@@ -524,6 +538,9 @@
 	_bit5And3Flags = (uint8_t)((flagResult&0x8) | ((flagResult&0x2) << 4));
 }
 
+#pragma mark -
+#pragma mark Set/Res/Bit
+
 - (uint8_t)set:(int)bit source:(uint8_t *)source
 {
 	*source |= 1 << bit;
@@ -547,6 +564,9 @@
 		LLZ80FlagHalfCarry |
 		(result ? 0 : LLZ80FlagParityOverflow);
 }
+
+#pragma mark -
+#pragma mark Shifts and Rolls
 
 - (uint8_t)rotationOperation:(int)operation source:(uint8_t *)source
 {
@@ -610,6 +630,9 @@
 
 	return *source;
 }
+
+#pragma mark -
+#pragma mark Opcode Decoding Logic
 
 - (void)executeFromEDPage
 {
@@ -1317,6 +1340,9 @@
 	}
 }
 
+#pragma mark -
+#pragma mark Temporal Call-ins
+
 - (void)runUntilPC:(uint16_t)targetPC
 {
 	int maxInstructionCount = 1000;
@@ -1356,6 +1382,9 @@
 	}
 	
 }
+
+#pragma mark -
+#pragma mark Getters and Setters
 
 - (void)unblock
 {

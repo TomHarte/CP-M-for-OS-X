@@ -30,19 +30,28 @@
 	BOOL _disallowFastExecution;
 }
 
-- (void)close
+#pragma mark -
+#pragma mark Document conversion to/from NSData
+- (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError
 {
-	_bdos = nil;
-	[_executionTimer invalidate], _executionTimer = nil;
-	_sourceURL = nil;
-	[self.terminalView invalidate];
-	if(_serialDispatchQueue)
-	{
-		dispatch_release(_serialDispatchQueue), _serialDispatchQueue = NULL;
-	}
-
-	[super close];
+	// Insert code here to write your document to data of the specified type. If outError != NULL, ensure that you create and set an appropriate error when returning nil.
+	// You can also choose to override -fileWrapperOfType:error:, -writeToURL:ofType:error:, or -writeToURL:ofType:forSaveOperation:originalContentsURL:error: instead.
+//	NSException *exception = [NSException exceptionWithName:@"UnimplementedMethod" reason:[NSString stringWithFormat:@"%@ is unimplemented", NSStringFromSelector(_cmd)] userInfo:nil];
+//	@throw exception;
+	return [NSData data];
 }
+
+- (BOOL)readFromURL:(NSURL *)url ofType:(NSString *)typeName error:(NSError **)outError
+{
+	// we do the actual setup consequentially to loading of the NIB so, for now,
+	// just store the URL away
+	_sourceURL = url;
+
+	return YES;
+}
+
+#pragma mark -
+#pragma mark NIB nomination and loading
 
 - (NSString *)windowNibName
 {
@@ -62,7 +71,9 @@
 	// get base path...
 	_bdos.basePath = [[_sourceURL path] stringByDeletingLastPathComponent];
 
-	// we'll call our execution timer 50 times a second, as a nod towards PAL
+	// we'll call our execution timer 50 times a second, as a nod towards PAL;
+	// no need to worry about a retain cycle here as -close will be called
+	// before any attempt to dealloc
 	_executionTimer = [NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(doMoreProcessing:) userInfo:nil repeats:YES];
 
 	// a serial dispatch queue will keep actual machine execution off the main queue
@@ -70,24 +81,11 @@
 
 	// this isn't entirely honest, but it'll force us to lock the aspect ratio now
 	[self terminalViewDidChangeIdealRect:self.terminalView];
+
+	// were you to want to run the FUSE Z80 conformance tests, you would...
 //	CPMFuseTestRunner *testRunner = [[CPMFuseTestRunner alloc] init];
 //	[testRunner go];
 //	[testRunner release];
-}
-
-- (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError
-{
-	// Insert code here to write your document to data of the specified type. If outError != NULL, ensure that you create and set an appropriate error when returning nil.
-	// You can also choose to override -fileWrapperOfType:error:, -writeToURL:ofType:error:, or -writeToURL:ofType:forSaveOperation:originalContentsURL:error: instead.
-//	NSException *exception = [NSException exceptionWithName:@"UnimplementedMethod" reason:[NSString stringWithFormat:@"%@ is unimplemented", NSStringFromSelector(_cmd)] userInfo:nil];
-//	@throw exception;
-	return [NSData data];
-}
-
-- (BOOL)readFromURL:(NSURL *)url ofType:(NSString *)typeName error:(NSError **)outError
-{
-	_sourceURL = url;
-	return YES;
 }
 
 - (void)doMoreProcessing:(NSTimer *)timer
@@ -140,8 +138,25 @@
 	});
 }
 
+- (void)close
+{
+	[_executionTimer invalidate];
+	[self.terminalView invalidate];
+	if(_serialDispatchQueue)
+	{
+		dispatch_release(_serialDispatchQueue), _serialDispatchQueue = NULL;
+	}
+
+	[super close];
+}
+
+
+#pragma mark -
+#pragma mark CPMTerminalViewDelegate
+
 - (void)terminalViewDidAddCharactersToBuffer:(CPMTerminalView *)terminalView
 {
+	// channel the news onto our serial dispatch queue
 	dispatch_async(_serialDispatchQueue,
 	^{
 		[_bdos terminalViewDidAddCharactersToBuffer:terminalView];
