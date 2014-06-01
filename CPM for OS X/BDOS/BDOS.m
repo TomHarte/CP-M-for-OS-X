@@ -25,6 +25,10 @@
 	NSMutableDictionary *_fileHandlesByControlBlock;
 
 	NSEnumerator *_searchEnumerator;
+
+	BOOL _isPerformingConsoleInput;
+	uint8_t _inputBufferSize, _inputBufferOffset;
+	uint16_t _inputBufferAddress;
 }
 
 #pragma mark -
@@ -144,6 +148,7 @@
 		case 2:		shouldBlock = [self writeConsoleOutput:parameter];				break;
 		case 6:		shouldBlock = [self directConsoleIOWithParameter:parameter];	break;
 		case 9:		shouldBlock = [self outputStringWithParameter:parameter];		break;
+		case 10:	shouldBlock = [self inputStringWithParameter:parameter];		break;
 		case 11:	shouldBlock = [self getConsoleStatus];							break;
 		case 12:	shouldBlock = [self getVersionNumber];							break;
 		case 13:	shouldBlock = [self resetAllDisks];								break;
@@ -442,6 +447,71 @@
 	return NO;
 }
 
+- (BOOL)inputStringWithParameter:(uint16_t)parameter
+{
+	// figure out the buffer address
+	if(parameter)
+	{
+		_inputBufferAddress = parameter;
+		_inputBufferOffset = 0;
+	}
+	else
+	{
+		_inputBufferAddress = _dmaAddress;
+		_inputBufferOffset = [_memory valueAtAddress:_inputBufferAddress+1];
+	}
+	_inputBufferSize = [_memory valueAtAddress:_inputBufferAddress];
+
+	_isPerformingConsoleInput = YES;
+	[self performMoreConsoleInput];
+
+	return YES;
+}
+
+- (void)performMoreConsoleInput
+{
+	uint8_t nextChar;
+	while((nextChar = [_bios dequeueCharacterIfAvailable]))
+	{
+		// terminate if we've hit any sort of newline or
+		// carriage return
+		if((nextChar == '\r') || (nextChar == '\n'))
+		{
+			_isPerformingConsoleInput = NO;
+			[_processor unblock];
+			return;
+		}
+
+		// check for backspace
+		if(nextChar == '\b' || nextChar == '\x7f')
+		{
+			if(_inputBufferOffset)
+			{
+				_inputBufferOffset--;
+
+				[_bios writeConsoleOutput:'\b'];
+				[_bios writeConsoleOutput:' '];
+				[_bios writeConsoleOutput:'\b'];
+			}
+		}
+		else
+		{
+			// otherwise echo the thing and deposit it
+			// in memory as requested
+			[_bios writeConsoleOutput:nextChar];
+
+			if(_inputBufferOffset < _inputBufferSize)
+			{
+				[_memory setValue:nextChar atAddress:(uint16_t)(_inputBufferAddress + _inputBufferOffset + 2)];
+				_inputBufferOffset++;
+			}
+		}
+
+		// write out the new string length
+		[_memory setValue:_inputBufferOffset atAddress:_inputBufferAddress+1];
+	}
+}
+
 - (BOOL)writeConsoleOutput:(uint16_t)character
 {
 	[_bios writeConsoleOutput:character&0xff];
@@ -454,6 +524,9 @@
 - (void)terminalViewDidAddCharactersToBuffer:(CPMTerminalView *)terminalView
 {
 	[_bios terminalViewDidAddCharactersToBuffer:terminalView];
+
+	if(_isPerformingConsoleInput)
+		[self performMoreConsoleInput];
 }
 
 @end
