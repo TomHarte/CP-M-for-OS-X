@@ -19,7 +19,7 @@
 @property (nonatomic, readonly, strong) NSString *fileType;
 
 @property (nonatomic, assign) size_t linearFileOffset;
-@property (nonatomic, readonly) size_t randomFileOffset;
+@property (nonatomic, assign) size_t randomFileOffset;
 
 - (NSString *)nameWithExtension;
 - (void)setNameWithExtension:(NSString *)nameWithExtension;

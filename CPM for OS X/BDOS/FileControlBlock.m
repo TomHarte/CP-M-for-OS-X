@@ -83,6 +83,15 @@
 	[memory setValue:(uint8_t)(self.linearFileOffset >> 19)			atAddress:baseAddress+0x0e];
 }
 
+- (void)setRandomFileOffset:(size_t)randomFileOffset
+{
+	_randomFileOffset = randomFileOffset;
+
+	[memory setValue:(uint8_t)(randomFileOffset&0xff)			atAddress:baseAddress+0x21];
+	[memory setValue:(uint8_t)((randomFileOffset >> 8)&0xff)	atAddress:baseAddress+0x22];
+	[memory setValue:(uint8_t)((randomFileOffset >> 16)&0x03)	atAddress:baseAddress+0x23];
+}
+
 - (id)copyWithZone:(NSZone *)zone
 {
 	CPMFileControlBlock *newBlock = [[CPMFileControlBlock alloc] init];

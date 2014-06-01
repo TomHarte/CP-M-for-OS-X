@@ -148,24 +148,27 @@
 		case 2:		shouldBlock = [self writeConsoleOutput:parameter];				break;
 		case 6:		shouldBlock = [self directConsoleIOWithParameter:parameter];	break;
 		case 9:		shouldBlock = [self outputStringWithParameter:parameter];		break;
+
 		case 10:	shouldBlock = [self inputStringWithParameter:parameter];		break;
 		case 11:	shouldBlock = [self getConsoleStatus];							break;
 		case 12:	shouldBlock = [self getVersionNumber];							break;
 		case 13:	shouldBlock = [self resetAllDisks];								break;
+		case 14:	// select disk
+			[_processor set8bitCPMResult:0];
+		break;
 		case 15:	shouldBlock = [self openFileWithParameter:parameter];			break;
 		case 16:	shouldBlock = [self closeFileWithParameter:parameter];			break;
 		case 17:	shouldBlock	= [self searchForFirstWithParameter:parameter];		break;
 		case 18:	shouldBlock	= [self searchForNextWithParameter:parameter];		break;
 		case 19:	shouldBlock = [self deleteFileWithParameter:parameter];			break;
+
 		case 20:	shouldBlock = [self readNextRecordWithParameter:parameter];		break;
 		case 21:	shouldBlock = [self writeNextRecordWithParameter:parameter];	break;
 		case 25:	shouldBlock = [self getCurrentDrive];							break;
 		case 26:	shouldBlock = [self setDMAAddressWithParameter:parameter];		break;
-		case 33:	shouldBlock = [self readRandomRecordWithParameter:parameter];	break;
 
-		case 14:	// select disk
-			[_processor set8bitCPMResult:0];
-		break;
+		case 33:	shouldBlock = [self readRandomRecordWithParameter:parameter];	break;
+		case 35:	shouldBlock = [self computeFileSizeWithParameter:parameter];	break;
 
 		default:
 			NSLog(@"!!UNIMPLEMENTED!! BDOS call %d with parameter %04x", call, parameter);
@@ -290,17 +293,23 @@
 #pragma mark -
 #pragma mark File Open and Close
 
+- (NSString *)fullPathForFileControlBlock:(CPMFileControlBlock *)fileControlBlock
+{
+	NSString *fullPath = [fileControlBlock nameWithExtension];
+	if(self.basePath)
+	{
+		fullPath = [self.basePath stringByAppendingPathComponent:fullPath];
+	}
+	return fullPath;
+}
+
 - (BOOL)openFileWithParameter:(uint16_t)parameter
 {
 	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
 
 	NSError *error = nil;
 
-	NSString *fullPath = [fileControlBlock nameWithExtension];
-	if(self.basePath)
-	{
-		fullPath = [self.basePath stringByAppendingPathComponent:fullPath];
-	}
+	NSString *fullPath = [self fullPathForFileControlBlock:fileControlBlock];
 	NSFileHandle *handle = [NSFileHandle fileHandleForReadingAtPath:fullPath];
 
 	if(handle && !error)
@@ -406,6 +415,30 @@
 	}
 
 //	NSLog(@"did read random record for %@, offset %zd, DMA address %04x", fileControlBlock, fileControlBlock.randomFileOffset, _dmaAddress);
+
+	return NO;
+}
+
+- (BOOL)computeFileSizeWithParameter:(uint16_t)parameter
+{
+	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
+	NSString *fullPath = [self fullPathForFileControlBlock:fileControlBlock];
+
+	NSError *error;
+	NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:fullPath error:&error];
+
+	if(error)
+	{
+		[_processor set8bitCPMResult:0xff];
+	}
+	else
+	{
+		[_processor set8bitCPMResult:0];
+		size_t size = [fileAttributes[NSFileSize] unsignedIntegerValue];
+		fileControlBlock.randomFileOffset = size >> 7;
+	}
+
+//	NSLog(@"did compute size of random record for %@, size %zd", fileControlBlock, fileControlBlock.randomFileOffset);
 
 	return NO;
 }
