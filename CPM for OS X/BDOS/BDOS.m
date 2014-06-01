@@ -154,7 +154,7 @@
 		case 6:		shouldBlock = [self directConsoleIOWithParameter:parameter];	break;
 		case 9:		shouldBlock = [self outputStringWithParameter:parameter];		break;
 		case 11:	shouldBlock = [self getConsoleStatus];							break;
-		case 12:	shouldBlock = [self getVersionNumber];							break;	// [self liftHead] is CPM 1
+		case 12:	shouldBlock = [self getVersionNumber];							break;
 		case 13:	shouldBlock = [self resetAllDisks];								break;
 		case 15:	shouldBlock = [self openFileWithParameter:parameter];			break;
 		case 16:	shouldBlock = [self closeFileWithParameter:parameter];			break;
