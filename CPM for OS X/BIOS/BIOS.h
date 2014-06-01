@@ -29,6 +29,6 @@
 
 - (uint8_t)dequeueCharacterIfAvailable;			// BDOS call 6, e = 0xff
 
-@property (nonatomic, unsafe_unretained) id <CPMBIOSDelegate> delegate;
+@property (nonatomic, weak) id <CPMBIOSDelegate> delegate;
 
 @end
