@@ -30,5 +30,6 @@
 - (uint8_t)dequeueCharacterIfAvailable;			// BDOS call 6, e = 0xff
 
 @property (nonatomic, weak) id <CPMBIOSDelegate> delegate;
+@property (nonatomic, readonly) CPMTerminalView *terminalView;
 
 @end

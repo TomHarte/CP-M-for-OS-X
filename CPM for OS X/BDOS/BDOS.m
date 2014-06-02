@@ -30,7 +30,7 @@
 	/*
 		State for open drives
 	*/
-	uint8_t _currentDrive;
+	uint8_t _currentDrive, _numberOfMappedDrives;
 	NSMutableDictionary *_basePathsByDrive;
 
 	/*
@@ -52,7 +52,7 @@
 }
 
 #pragma mark -
-#pragma mark Init
+#pragma mark Init; drive management
 
 - (id)initWithContentsOfURL:(NSURL *)URL terminalView:(CPMTerminalView *)terminalView
 {
@@ -70,7 +70,7 @@
 		// get base path for drive 0...
 		_basePathsByDrive = [NSMutableDictionary dictionary];
 		_basePathsByDrive[@1] = [[URL path] stringByDeletingLastPathComponent];
-		_currentDrive = 1;
+		_currentDrive = _numberOfMappedDrives = 1;
 
 		// create memory, a CPU and a BIOS
 		_memory = [[CPMRAMModule alloc] init];
@@ -128,6 +128,27 @@
 	}
 
 	return self;
+}
+
+- (void)addAccessToURL:(NSURL *)URL
+{
+	NSString *basePath = [[URL path] stringByDeletingLastPathComponent];
+	uint8_t driveNumber;
+
+	NSArray *allKeys = [_basePathsByDrive allKeysForObject:basePath];
+	if([allKeys count])
+	{
+		driveNumber = [allKeys[0] unsignedCharValue];
+	}
+	else
+	{
+		_numberOfMappedDrives++;
+		driveNumber = _numberOfMappedDrives;
+		_basePathsByDrive[@(_numberOfMappedDrives)] = basePath;
+	}
+
+	NSString *cpmPath = [NSString stringWithFormat:@"%c:%@", 'A' + driveNumber - 1, [URL lastPathComponent]];
+	[_bios.terminalView addStringToInputQueue:cpmPath filterToASCII:YES];
 }
 
 #pragma mark -

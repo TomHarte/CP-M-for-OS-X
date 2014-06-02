@@ -21,4 +21,6 @@
 
 @property (nonatomic, readonly) BOOL didBlock;
 
+- (void)addAccessToURL:(NSURL *)URL;
+
 @end

@@ -9,6 +9,9 @@
 #import "TerminalView.h"
 #import "TerminalControlSequence.h"
 
+@interface CPMTerminalView () <NSDraggingDestination>
+@end
+
 @implementation CPMTerminalView
 {
 	NSMutableAttributedString *_attributedString;
@@ -53,6 +56,9 @@
 		selector:@selector(updateFlash:)
 		userInfo:nil
 		repeats:YES];
+
+	// accept drag and drop for filenames
+	[self registerForDraggedTypes:@[@"public.file-url"]];
 }
 
 - (void)setControlSet:(CPMTerminalControlSet *)newControlSet
@@ -475,6 +481,21 @@
 - (void)terminalViewControlSet:(CPMTerminalControlSet *)controlSet addStringToInput:(NSString *)string
 {
 	[self addStringToInputQueue:string filterToASCII:NO];
+}
+
+#pragma mark -
+#pragma mark NSDraggingDestination
+
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
+{
+	for(NSPasteboardItem *item in [[sender draggingPasteboard] pasteboardItems])
+	{
+		NSURL *URL = [NSURL URLWithString:[item stringForType:@"public.file-url"]];
+		
+		if([self.delegate respondsToSelector:@selector(terminalView:didReceiveFileAtURL:)])
+			[self.delegate terminalView:self didReceiveFileAtURL:URL];
+	}
+	return YES;
 }
 
 @end

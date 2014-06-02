@@ -11,7 +11,6 @@
 
 @implementation CPMBIOS
 {
-	CPMTerminalView *_terminalView;
 	CPMProcessor *_processor;
 
 	BOOL _isWaitingOnConsoleInput;

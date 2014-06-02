@@ -20,6 +20,7 @@
 
 @optional
 - (void)terminalViewDidChangeIdealRect:(CPMTerminalView *)terminalView;
+- (void)terminalView:(CPMTerminalView *)terminalView didReceiveFileAtURL:(NSURL *)URL;
 
 @end
 
@@ -32,6 +33,8 @@
 
 - (BOOL)hasCharacterToDequeue;
 - (unichar)dequeueBufferedCharacter;
+
+- (void)addStringToInputQueue:(NSString *)string filterToASCII:(BOOL)filterToASCII;
 
 /*
 	The following two are intended for use on the main queue only.

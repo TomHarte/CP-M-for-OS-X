@@ -193,4 +193,9 @@
 	[window setFrame:frame display:YES animate:YES];
 }
 
+- (void)terminalView:(CPMTerminalView *)terminalView didReceiveFileAtURL:(NSURL *)URL
+{
+	[_bdos addAccessToURL:URL];
+}
+
 @end
