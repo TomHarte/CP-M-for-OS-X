@@ -121,7 +121,7 @@
 
 - (NSString *)description
 {
-	return [NSString stringWithFormat:@"%@ [.] %@, drive %d", self.fileName, self.fileType, self.drive];
+	return [NSString stringWithFormat:@"[%c:] %@ [.] %@, drive %d", 'A' + self.drive - 1, self.fileName, self.fileType, self.drive];
 }
 
 - (NSString *)nameWithExtension
