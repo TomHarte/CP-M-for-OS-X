@@ -174,9 +174,7 @@
 		case 11:	shouldBlock = [self getConsoleStatus];							break;
 		case 12:	shouldBlock = [self getVersionNumber];							break;
 		case 13:	shouldBlock = [self resetAllDisks];								break;
-		case 14:	// select disk
-			[_processor set8bitCPMResult:0];
-		break;
+		case 14:	shouldBlock = [self selectDiskWithParameter:parameter];			break;
 		case 15:	shouldBlock = [self openFileWithParameter:parameter];			break;
 		case 16:	shouldBlock = [self closeFileWithParameter:parameter];			break;
 		case 17:	shouldBlock	= [self searchForFirstWithParameter:parameter];		break;
@@ -263,22 +261,36 @@
 - (BOOL)resetAllDisks
 {
 	_dmaAddress = 0x80;
+	_currentDrive = 1;
+	[_processor set8bitCPMResult:0];
+	return NO;
+}
+
+- (BOOL)selectDiskWithParameter:(uint16_t)parameter
+{
+	// does the disk exist?
+	if(_basePathsByDrive[@(parameter+1)])
+	{
+		_currentDrive = (parameter&0xff)+1;
+		[_processor set8bitCPMResult:0];
+	}
+	else
+	{
+		[_processor set8bitCPMResult:0xff];
+	}
+
 	return NO;
 }
 
 - (BOOL)getCurrentDrive
 {
-	// return current drive in a; a = 0, b = 1, etc
-	NSLog(@"Returned current drive as 0");
-	[_processor set8bitCPMResult:0];
-
+	[_processor set8bitCPMResult:_currentDrive-1];
 	return NO;
 }
 
 - (BOOL)setDMAAddressWithParameter:(uint16_t)parameter
 {
 	_dmaAddress = parameter;
-
 	return NO;
 }
 
