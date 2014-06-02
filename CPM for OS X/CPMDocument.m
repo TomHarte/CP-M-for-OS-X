@@ -68,9 +68,6 @@
 	_bdos = [[CPMBDOS alloc] initWithContentsOfURL:_sourceURL terminalView:self.terminalView];
 	self.terminalView.delegate = self;
 
-	// get base path...
-	_bdos.basePath = [[_sourceURL path] stringByDeletingLastPathComponent];
-
 	// we'll call our execution timer 50 times a second, as a nod towards PAL;
 	// no need to worry about a retain cycle here as -close will be called
 	// before any attempt to dealloc

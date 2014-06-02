@@ -15,12 +15,10 @@
 @interface CPMBDOS : NSObject <CPMProcessorDelegate, CPMTerminalViewDelegate>
 
 - (id)initWithContentsOfURL:(NSURL *)URL terminalView:(CPMTerminalView *)terminalView;
-- (id)initWithData:(NSData *)data terminalView:(CPMTerminalView *)terminalView;
 
 - (void)runForTimeInterval:(NSTimeInterval)interval;
 - (void)runForNumberOfInstructions:(NSUInteger)numberOfInstructions;
 
 @property (nonatomic, readonly) BOOL didBlock;
-@property (nonatomic, strong) NSString *basePath;
 
 @end

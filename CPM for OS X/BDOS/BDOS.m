@@ -13,22 +13,42 @@
 #import "BIOS.h"
 #import "FileControlBlock.h"
 
-
 @implementation CPMBDOS
 {
+	/*
+		The three things we need to connect in order to function
+	*/
 	CPMRAMModule *_memory;
 	CPMProcessor *_processor;
 	CPMBIOS *_bios;
 
-	uint16_t _dmaAddress;
-
+	/*
+		State for open files
+	*/
 	NSMutableDictionary *_fileHandlesByControlBlock;
 
+	/*
+		State for open drives
+	*/
+	uint8_t _currentDrive;
+	NSMutableDictionary *_basePathsByDrive;
+
+	/*
+		State for ongoing file search
+	*/
 	NSEnumerator *_searchEnumerator;
 
+	/*
+		State for buffered console input
+	*/
 	BOOL _isPerformingConsoleInput;
 	uint8_t _inputBufferSize, _inputBufferOffset;
 	uint16_t _inputBufferAddress;
+
+	/*
+		General state
+	*/
+	uint16_t _dmaAddress;
 }
 
 #pragma mark -
@@ -36,20 +56,21 @@
 
 - (id)initWithContentsOfURL:(NSURL *)URL terminalView:(CPMTerminalView *)terminalView
 {
-	return [self initWithData:[NSData dataWithContentsOfURL:URL] terminalView:terminalView];
-}
-
-- (id)initWithData:(NSData *)data terminalView:(CPMTerminalView *)terminalView
-{
 	self = [super init];
 
 	if(self)
 	{
 		// load the nominated executable
+		NSData *data = [NSData dataWithContentsOfURL:URL];
 		if(!data || !terminalView)
 		{
 			return nil;
 		}
+
+		// get base path for drive 0...
+		_basePathsByDrive = [NSMutableDictionary dictionary];
+		_basePathsByDrive[@1] = [[URL path] stringByDeletingLastPathComponent];
+		_currentDrive = 1;
 
 		// create memory, a CPU and a BIOS
 		_memory = [[CPMRAMModule alloc] init];
@@ -272,20 +293,28 @@
 #pragma mark -
 #pragma mark File Search
 
+- (NSString *)basePathForFileControlBlock:(CPMFileControlBlock *)fileControlBlock
+{
+	return _basePathsByDrive[@(fileControlBlock.drive ? fileControlBlock.drive : _currentDrive)];
+}
+
 - (BOOL)searchForFirstWithParameter:(uint16_t)parameter
 {
 	_searchEnumerator = nil;
 
-	if(!self.basePath)
+	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
+	NSString *basePath = [self basePathForFileControlBlock:fileControlBlock];
+
+	if(!basePath)
 	{
 		[_processor set8bitCPMResult:0xff];
 	}
 	else
 	{
-		CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
+		[_processor set8bitCPMResult:0];
 
 		NSError *error = nil;
-		NSArray *allFilesInPath = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:self.basePath error:&error];
+		NSArray *allFilesInPath = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:basePath error:&error];
 
 		NSArray *matchingFiles = [allFilesInPath filteredArrayUsingPredicate:fileControlBlock.matchesPredicate];
 		NSLog(@"%@ versus %@ begat %@", allFilesInPath, fileControlBlock, matchingFiles);
@@ -318,12 +347,13 @@
 
 - (NSString *)fullPathForFileControlBlock:(CPMFileControlBlock *)fileControlBlock
 {
-	NSString *fullPath = [fileControlBlock nameWithExtension];
-	if(self.basePath)
+	NSString *filename = [fileControlBlock nameWithExtension];
+	NSString *basePath = [self basePathForFileControlBlock:fileControlBlock];
+	if(basePath)
 	{
-		fullPath = [self.basePath stringByAppendingPathComponent:fullPath];
+		filename = [basePath stringByAppendingPathComponent:filename];
 	}
-	return fullPath;
+	return filename;
 }
 
 - (BOOL)openFileWithParameter:(uint16_t)parameter
