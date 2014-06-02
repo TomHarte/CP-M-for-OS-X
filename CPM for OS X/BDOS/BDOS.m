@@ -207,6 +207,7 @@
 		case 25:	shouldBlock = [self getCurrentDrive];							break;
 		case 26:	shouldBlock = [self setDMAAddressWithParameter:parameter];		break;
 
+		case 32:	shouldBlock = [self getOrSetUserAreaWithParameter:parameter];	break;
 		case 33:	shouldBlock = [self readRandomRecordWithParameter:parameter];	break;
 		case 35:	shouldBlock = [self computeFileSizeWithParameter:parameter];	break;
 
@@ -525,6 +526,24 @@
 	}
 
 //	NSLog(@"did compute size of random record for %@, size %zd", fileControlBlock, fileControlBlock.randomFileOffset);
+
+	return NO;
+}
+
+#pragma mark -
+#pragma mark User Area Manipulation
+
+- (BOOL)getOrSetUserAreaWithParameter:(uint16_t)parameter
+{
+	if((parameter&0xff) == 0xff)
+	{
+		// we're always in area 0
+		[_processor set8bitCPMResult:0];
+	}
+	else
+	{
+		// we don't support additional user areas
+	}
 
 	return NO;
 }
