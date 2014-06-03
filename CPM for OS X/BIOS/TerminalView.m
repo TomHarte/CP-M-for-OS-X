@@ -164,6 +164,35 @@
 	}
 }
 
+- (NSColor *)colourWithIntensity:(CGFloat)intensity
+{
+	return [NSColor
+		colorWithCalibratedRed:0.996f * intensity
+		green:0.859f * intensity
+		blue:0.055f * intensity
+		alpha:1.0f];
+}
+
+- (NSColor *)fullIntensityColour
+{
+	return [self colourWithIntensity:1.0f];
+}
+
+- (NSColor *)halfIntensityColour
+{
+	return [self colourWithIntensity:0.66f];
+}
+
+- (NSColor *)zeroIntensityColour
+{
+	return [self colourWithIntensity:0.0f];
+}
+
+- (NSColor *)cursorColour
+{
+	return [self colourWithIntensity:0.5f];
+}
+
 - (void)viewWillDraw
 {
 	// create a string of the ASCII characters first
@@ -178,7 +207,7 @@
 		setAttributes:
 		@{
 			(id)kCTFontAttributeName : (__bridge id)monaco,
-			(id)kCTForegroundColorAttributeName: (id)[[NSColor greenColor] CGColor]
+			(id)kCTForegroundColorAttributeName: (id)[[self fullIntensityColour] CGColor]
 		}
 		range:NSMakeRange(0, _attributedString.length)];
 	CFRelease(monaco);
@@ -205,16 +234,16 @@
 					switch(attribute & (kCPMTerminalAttributeReducedIntensityOn | kCPMTerminalAttributeInverseVideoOn))
 					{
 						default:
-							textColour = [NSColor greenColor];
+							textColour = [self fullIntensityColour];
 						break;
 						case kCPMTerminalAttributeReducedIntensityOn:
-							textColour = [NSColor colorWithDeviceRed:0.0f green:0.66f blue:0.0f alpha:1.0f];
+							textColour = [self halfIntensityColour];
 						break;
 						case kCPMTerminalAttributeInverseVideoOn:
-							textColour = [NSColor colorWithDeviceRed:0.0f green:0.0f blue:0.0f alpha:1.0f];
+							textColour = [self zeroIntensityColour];
 						break;
 						case kCPMTerminalAttributeInverseVideoOn | kCPMTerminalAttributeReducedIntensityOn:
-							textColour = [NSColor colorWithDeviceRed:0.0f green:0.0f blue:0.0f alpha:1.0f];
+							textColour = [self zeroIntensityColour];
 						break;
 					}
 					[newAttributes setValue:(id)[textColour CGColor] forKey:(id)kCTForegroundColorAttributeName];
@@ -313,10 +342,10 @@
 						colour = nil;
 					break;
 					case kCPMTerminalAttributeInverseVideoOn:
-						colour = [NSColor colorWithDeviceRed:0.0f green:1.0f blue:0.0f alpha:1.0f];
+						colour = [self fullIntensityColour];
 					break;
 					case kCPMTerminalAttributeInverseVideoOn | kCPMTerminalAttributeReducedIntensityOn:
-						colour = [NSColor colorWithDeviceRed:0.0f green:0.66f blue:0.0f alpha:1.0f];
+						colour = [self halfIntensityColour];
 					break;
 				}
 			}
@@ -336,7 +365,7 @@
 	// draw cursor?
 	if(_flashCount&1 && !_controlSet.cursorIsDisabled)
 	{
-		[[NSColor colorWithDeviceRed:0.0f green:0.5f blue:0.0f alpha:1.0f] set];
+		[[self cursorColour] set];
 		NSRectFill(NSMakeRect(_controlSet.cursorX * _characterWidth, (_controlSet.height - 1 - _controlSet.cursorY) * _lineHeight, _characterWidth, _lineHeight));
 	}
 
