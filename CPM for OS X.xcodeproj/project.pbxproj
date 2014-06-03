@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4B029E81160C18050014F528 /* TerminalControlSequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B029E80160C18050014F528 /* TerminalControlSequence.m */; };
+		4B42CAAB193D812000E92BEE /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4B42CAAA193D812000E92BEE /* Images.xcassets */; };
 		4B582985160197E0009515A6 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B582984160197E0009515A6 /* Cocoa.framework */; };
 		4B58298F160197E0009515A6 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4B58298D160197E0009515A6 /* InfoPlist.strings */; };
 		4B582991160197E0009515A6 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B582990160197E0009515A6 /* main.m */; };
@@ -32,6 +33,7 @@
 /* Begin PBXFileReference section */
 		4B029E7F160C18040014F528 /* TerminalControlSequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalControlSequence.h; sourceTree = "<group>"; };
 		4B029E80160C18050014F528 /* TerminalControlSequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalControlSequence.m; sourceTree = "<group>"; };
+		4B42CAAA193D812000E92BEE /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		4B582980160197E0009515A6 /* CPM for OS X.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CPM for OS X.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4B582984160197E0009515A6 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		4B582987160197E0009515A6 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -131,6 +133,7 @@
 				4B582997160197E0009515A6 /* CPMDocument.m */,
 				4B582999160197E0009515A6 /* CPMDocument.xib */,
 				4B58299C160197E0009515A6 /* MainMenu.xib */,
+				4B42CAAA193D812000E92BEE /* Images.xcassets */,
 				4B58298B160197E0009515A6 /* Supporting Files */,
 			);
 			path = "CPM for OS X";
@@ -263,6 +266,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4B58298F160197E0009515A6 /* InfoPlist.strings in Resources */,
+				4B42CAAB193D812000E92BEE /* Images.xcassets in Resources */,
 				4B582995160197E0009515A6 /* Credits.rtf in Resources */,
 				4B58299B160197E0009515A6 /* CPMDocument.xib in Resources */,
 				4B58299E160197E0009515A6 /* MainMenu.xib in Resources */,
@@ -442,6 +446,7 @@
 		4B5829A2160197E0009515A6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -456,6 +461,7 @@
 		4B5829A3160197E0009515A6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
