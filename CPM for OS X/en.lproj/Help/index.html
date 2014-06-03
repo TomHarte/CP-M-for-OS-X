@@ -1,13 +1,38 @@
-<!DOCTYPE html><html lang=en-GB>
-<meta charset="UTF-8">
+<!DOCTYPE html>
+<html lang=en-GB>
+	<meta charset="UTF-8">
 
-<title>CP/M for OS X Help</title>
-<meta name="AppleTitle" content="CPM for OS X Help" />
-<meta name="AppleIcon" content="../../AppIcon.icns" />
+	<head>
+		<title>CP/M for OS X Help</title>
+		<meta name="AppleTitle" content="CPM for OS X Help" />
+		<meta name="AppleIcon" content="../../AppIcon.icns" />
 
-<meta name="description" content="How to use CP/M for OS X" />
-<body>
-<h1 id="main">CP/M for OS X</h1>
+		<meta name="description" content="How to use CP/M for OS X" />
+	</head>
+	<body>
+		<h1>CP/M for OS X</h1>
 
-</body>
+		<p>
+			CP/M for OS X is a reimplementation of CP/M-80 for OS X, allowing
+			CP/M transient programs (ie, applications) to run on modern computers.
+		</p><p>
+			CP/M for OS X does not attempt to reimplement the command control processor
+			and does not provide any other sort of command-line interface.
+		</p>
+		<h2>Launching CP/M Software</h2>
+		<p>
+			To launch a CP/M program, locate its .COM in the Finder and double click.
+		</p>
+		<h2>Loading Documents from Other Directories</h2>
+		<p>
+			When it launches an application, CP/M for OS X will create a virtual A:
+			drive that maps to that application's directory. The application will then
+			be launched from the A: drive.
+		</p><p>
+			To give the application access to a file outside of its own directory, drag
+			and drop the file onto the application's window. CP/M for OS X will ensure
+			that it has a virtual drive mapped for that file's folder and then type
+			the drive letter and filename into the virtual machine.
+		</p>
+	</body>
 </html>
