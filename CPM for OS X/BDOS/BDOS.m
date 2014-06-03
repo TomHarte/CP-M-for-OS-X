@@ -452,6 +452,32 @@
 	return NO;
 }
 
+- (void)storeRecordWithData:(NSData *)record atAddress:(uint16_t)address
+{
+	[_memory setData:record atAddress:address];
+
+	// OS X allows files that aren't multiples of 128 bytes in length;
+	// CP/M doesn't. So we may need to fill in some extra information
+	if([record length] < 128)
+	{
+		// test: if the data we found didn't end with a CTRL+Z then
+		// we'll insert one...
+		uint16_t trailingAddress = (uint16_t)(address + record.length);
+		if((trailingAddress == address) || ((uint8_t *)[record bytes])[trailingAddress - 1] != '\032')
+		{
+			[_memory setValue:'\032' atAddress:trailingAddress];
+			trailingAddress++;
+		}
+
+		// ... and then pad out the rest of the 128-byte area with 0s
+		while(trailingAddress < address + 128)
+		{
+			[_memory setValue:0 atAddress:trailingAddress];
+			trailingAddress++;
+		}
+	}
+}
+
 - (BOOL)readNextRecordWithParameter:(uint16_t)parameter
 {
 	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
@@ -461,7 +487,7 @@
 	NSData *nextRecord = [fileHandle readDataOfLength:128];
 	if([nextRecord length])
 	{
-		[_memory setData:nextRecord atAddress:_dmaAddress];
+		[self storeRecordWithData:nextRecord atAddress:_dmaAddress];
 
 		// sequential reads update the FCB
 		fileControlBlock.linearFileOffset += 128;
@@ -490,7 +516,7 @@
 
 	if([nextRecord length])
 	{
-		[_memory setData:nextRecord atAddress:_dmaAddress];
+		[self storeRecordWithData:nextRecord atAddress:_dmaAddress];
 
 		// report success
 		[_processor set8bitCPMResult:0];
