@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4B029E81160C18050014F528 /* TerminalControlSequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B029E80160C18050014F528 /* TerminalControlSequence.m */; };
+		4B1681C9193E8F75006341D9 /* Help in Resources */ = {isa = PBXBuildFile; fileRef = 4B1681C7193E8F75006341D9 /* Help */; };
 		4B42CAAB193D812000E92BEE /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4B42CAAA193D812000E92BEE /* Images.xcassets */; };
 		4B582985160197E0009515A6 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B582984160197E0009515A6 /* Cocoa.framework */; };
 		4B58298F160197E0009515A6 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4B58298D160197E0009515A6 /* InfoPlist.strings */; };
@@ -33,6 +34,7 @@
 /* Begin PBXFileReference section */
 		4B029E7F160C18040014F528 /* TerminalControlSequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalControlSequence.h; sourceTree = "<group>"; };
 		4B029E80160C18050014F528 /* TerminalControlSequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalControlSequence.m; sourceTree = "<group>"; };
+		4B1681C8193E8F75006341D9 /* en */ = {isa = PBXFileReference; lastKnownFileType = folder; name = en; path = en.lproj/Help; sourceTree = "<group>"; };
 		4B42CAAA193D812000E92BEE /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		4B582980160197E0009515A6 /* CPM for OS X.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CPM for OS X.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4B582984160197E0009515A6 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -142,6 +144,7 @@
 		4B58298B160197E0009515A6 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				4B1681C7193E8F75006341D9 /* Help */,
 				4B58298C160197E0009515A6 /* CPM for OS X-Info.plist */,
 				4B58298D160197E0009515A6 /* InfoPlist.strings */,
 				4B582990160197E0009515A6 /* main.m */,
@@ -268,6 +271,7 @@
 				4B58298F160197E0009515A6 /* InfoPlist.strings in Resources */,
 				4B42CAAB193D812000E92BEE /* Images.xcassets in Resources */,
 				4B582995160197E0009515A6 /* Credits.rtf in Resources */,
+				4B1681C9193E8F75006341D9 /* Help in Resources */,
 				4B58299B160197E0009515A6 /* CPMDocument.xib in Resources */,
 				4B58299E160197E0009515A6 /* MainMenu.xib in Resources */,
 			);
@@ -301,6 +305,14 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
+		4B1681C7193E8F75006341D9 /* Help */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4B1681C8193E8F75006341D9 /* en */,
+			);
+			name = Help;
+			sourceTree = "<group>";
+		};
 		4B58298D160197E0009515A6 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
