@@ -32,6 +32,7 @@
 
 #pragma mark -
 #pragma mark Document conversion to/from NSData
+
 - (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError
 {
 	// Insert code here to write your document to data of the specified type. If outError != NULL, ensure that you create and set an appropriate error when returning nil.
