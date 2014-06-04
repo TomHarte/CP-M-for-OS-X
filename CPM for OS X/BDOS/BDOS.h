@@ -11,6 +11,13 @@
 #import "TerminalView.h"
 
 @class CPMTerminalView;
+@class CPMBDOS;
+
+@protocol CPMBDOSDelegate <NSObject>
+
+- (void)bdosWillUnblock:(CPMBDOS *)bdos;
+
+@end
 
 @interface CPMBDOS : NSObject <CPMProcessorDelegate, CPMTerminalViewDelegate>
 
@@ -20,7 +27,10 @@
 - (void)runForNumberOfInstructions:(NSUInteger)numberOfInstructions;
 
 @property (nonatomic, readonly) BOOL didBlock;
+@property (nonatomic, readonly) BOOL isBlocked;
 
 - (void)addAccessToURL:(NSURL *)URL;
+
+@property (nonatomic, weak) id <CPMBDOSDelegate> delegate;
 
 @end

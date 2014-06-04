@@ -13,7 +13,7 @@
 
 @class CPMTerminalView;
 
-@interface CPMDocument ()
+@interface CPMDocument () <CPMBDOSDelegate>
 
 @property (nonatomic, weak) IBOutlet CPMTerminalView *terminalView;
 
@@ -67,14 +67,13 @@
 
 	// create our BDOS instance and pipe the terminal view's delegate messages to here
 	_bdos = [[CPMBDOS alloc] initWithContentsOfURL:_sourceURL terminalView:self.terminalView];
+	_bdos.delegate = self;
 	self.terminalView.delegate = self;
 
 	// we'll call our execution timer 50 times a second, as a nod towards PAL;
 	// no need to worry about a retain cycle here as -close will be called
 	// before any attempt to dealloc
-	_executionTimer = [NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(doMoreProcessing:) userInfo:nil repeats:YES];
-	if([_executionTimer respondsToSelector:@selector(setTolerance:)])
-		[_executionTimer setTolerance:0.01];
+	[self beginTimer];
 
 	// a serial dispatch queue will keep actual machine execution off the main queue
 	_serialDispatchQueue = dispatch_queue_create("CPM dispatch queue", DISPATCH_QUEUE_SERIAL);
@@ -139,6 +138,14 @@
 			else
 				strongSelf->_blockedCount = 0;
 		}
+
+		if([strongSelf->_bdos isBlocked])
+		{
+			dispatch_async(dispatch_get_main_queue(),
+			^{
+				[strongSelf endTimer];
+			});
+		}
 	});
 }
 
@@ -154,6 +161,28 @@
 	[super close];
 }
 
+#pragma mark -
+#pragma mark CPMBDOSDelegate
+
+- (void)bdosWillUnblock:(CPMBDOS *)bdos
+{
+	dispatch_async(dispatch_get_main_queue(),
+	^{
+		[self beginTimer];
+	});
+}
+
+- (void)beginTimer
+{
+	_executionTimer = [NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(doMoreProcessing:) userInfo:nil repeats:YES];
+	if([_executionTimer respondsToSelector:@selector(setTolerance:)])
+		[_executionTimer setTolerance:0.01];
+}
+
+- (void)endTimer
+{
+	[_executionTimer invalidate], _executionTimer = nil;
+}
 
 #pragma mark -
 #pragma mark CPMTerminalViewDelegate

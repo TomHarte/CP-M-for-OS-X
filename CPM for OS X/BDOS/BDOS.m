@@ -175,8 +175,18 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 	_didBlock = _processor.isBlocked;
 }
 
+- (BOOL)isBlocked
+{
+	return _processor.isBlocked;
+}
+
 #pragma mark -
 #pragma mark CPMProcessorDelegate
+
+- (void)processorWillUnblock:(CPMProcessor *)processor
+{
+	[self.delegate bdosWillUnblock:self];
+}
 
 - (CPMProcessorShouldBlock)processor:(CPMProcessor *)processor isMakingBDOSCall:(uint8_t)call parameter:(uint16_t)parameter
 {

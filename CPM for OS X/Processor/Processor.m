@@ -1393,6 +1393,8 @@
 
 - (void)unblock
 {
+	if(_isBlocked)
+		[self.delegate processorWillUnblock:self];
 	_isBlocked = NO;
 }
 
