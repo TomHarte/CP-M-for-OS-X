@@ -73,6 +73,8 @@
 	// no need to worry about a retain cycle here as -close will be called
 	// before any attempt to dealloc
 	_executionTimer = [NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(doMoreProcessing:) userInfo:nil repeats:YES];
+	if([_executionTimer respondsToSelector:@selector(setTolerance:)])
+		[_executionTimer setTolerance:0.01];
 
 	// a serial dispatch queue will keep actual machine execution off the main queue
 	_serialDispatchQueue = dispatch_queue_create("CPM dispatch queue", DISPATCH_QUEUE_SERIAL);

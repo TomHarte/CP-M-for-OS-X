@@ -56,6 +56,8 @@
 		selector:@selector(updateFlash:)
 		userInfo:nil
 		repeats:YES];
+	if([_flashTimer respondsToSelector:@selector(setTolerance:)])
+		[_flashTimer setTolerance:0.5/2.5];
 
 	// accept drag and drop for filenames
 	[self registerForDraggedTypes:@[@"public.file-url"]];
