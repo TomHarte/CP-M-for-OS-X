@@ -13,6 +13,8 @@
 #import "BIOS.h"
 #import "FileControlBlock.h"
 
+const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
+
 @implementation CPMBDOS
 {
 	/*
@@ -30,7 +32,7 @@
 	/*
 		State for open drives
 	*/
-	uint8_t _currentDrive, _numberOfMappedDrives;
+	uint8_t _numberOfMappedDrives;
 	NSMutableDictionary *_basePathsByDrive;
 
 	/*
@@ -67,11 +69,6 @@
 			return nil;
 		}
 
-		// get base path for drive 0...
-		_basePathsByDrive = [NSMutableDictionary dictionary];
-		_basePathsByDrive[@1] = [[URL path] stringByDeletingLastPathComponent];
-		_currentDrive = _numberOfMappedDrives = 1;
-
 		// create memory, a CPU and a BIOS
 		_memory = [[CPMRAMModule alloc] init];
 		_processor = [[CPMProcessor alloc] initWithRAM:_memory];
@@ -80,6 +77,12 @@
 		// copy the executable into memory, set the initial program counter
 		[_memory setData:data atAddress:0x100];
 		_processor.programCounter = 0x100;
+
+		// get base path for drive 0...
+		_basePathsByDrive = [NSMutableDictionary dictionary];
+		_basePathsByDrive[@1] = [[URL path] stringByDeletingLastPathComponent];
+		_numberOfMappedDrives = 1;
+		[_memory setValue:0x01 atAddress:kCPMBDOSCurrentDriveAddress];
 
 		// configure the bios trapping to occur as late as it can while
 		// still having room for a full BIOS jump table
@@ -283,7 +286,7 @@
 - (BOOL)resetAllDisks
 {
 	_dmaAddress = 0x80;
-	_currentDrive = 1;
+	[_memory setValue:0x01 atAddress:kCPMBDOSCurrentDriveAddress];
 	[_processor set8bitCPMResult:0];
 	return NO;
 }
@@ -293,7 +296,8 @@
 	// does the disk exist?
 	if(_basePathsByDrive[@(parameter+1)])
 	{
-		_currentDrive = (parameter&0xff)+1;
+		uint8_t currentDrive = (parameter&0xff)+1;
+		[_memory setValue:currentDrive atAddress:kCPMBDOSCurrentDriveAddress];
 		[_processor set8bitCPMResult:0];
 	}
 	else
@@ -306,7 +310,8 @@
 
 - (BOOL)getCurrentDrive
 {
-	[_processor set8bitCPMResult:_currentDrive-1];
+	uint8_t currentDrive = [_memory valueAtAddress:kCPMBDOSCurrentDriveAddress];
+	[_processor set8bitCPMResult:currentDrive-1];
 	return NO;
 }
 
@@ -329,7 +334,8 @@
 
 - (NSString *)basePathForFileControlBlock:(CPMFileControlBlock *)fileControlBlock
 {
-	return _basePathsByDrive[@(fileControlBlock.drive ? fileControlBlock.drive : _currentDrive)];
+	uint8_t currentDrive = [_memory valueAtAddress:kCPMBDOSCurrentDriveAddress];
+	return _basePathsByDrive[@(fileControlBlock.drive ? fileControlBlock.drive : currentDrive)];
 }
 
 - (BOOL)searchForFirstWithParameter:(uint16_t)parameter
