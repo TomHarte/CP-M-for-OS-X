@@ -51,13 +51,13 @@
 	[self setControlSet:_candidateControlSets[0]];
 
 	_flashTimer = [NSTimer
-		scheduledTimerWithTimeInterval:1.0/2.5
+		scheduledTimerWithTimeInterval:0.9
 		target:self
 		selector:@selector(updateFlash:)
 		userInfo:nil
 		repeats:YES];
 	if([_flashTimer respondsToSelector:@selector(setTolerance:)])
-		[_flashTimer setTolerance:0.5/2.5];
+		[_flashTimer setTolerance:0.5];
 
 	// accept drag and drop for filenames
 	[self registerForDraggedTypes:@[@"public.file-url"]];
