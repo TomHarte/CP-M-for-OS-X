@@ -380,6 +380,8 @@
 	CFRelease(frame);
 }
 
+#pragma mark -
+#pragma mark Copy/Paste Responder Actions
 /*
 
 	This view implements copy and paste so as to work with the pasteboard
@@ -401,15 +403,14 @@
 	[self addStringToInputQueue:[pasteboard stringForType:NSPasteboardTypeString] filterToASCII:YES];
 }
 
+#pragma mark -
+#pragma mark NSResponder
 /*
 
-	In conjunction with that, it implements mouse down/up/dragged to allow text selection
-
+	TODO:
+		in conjunction with the pasteboard functionality, implement
+		mouse down/up/dragged to allow text selection
 */
-- (CGPoint)textLocationFromMouseLocation:(CGPoint)mouseLocation
-{
-	return CGPointMake(0, 0);
-}
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
@@ -426,6 +427,10 @@
 	NSLog(@"up %@", theEvent);
 }
 
+- (CGPoint)textLocationFromMouseLocation:(CGPoint)mouseLocation
+{
+	return CGPointMake(0, 0);
+}
 
 /*
 
@@ -452,6 +457,18 @@
 	}
 }
 
+#pragma mark -
+#pragma mark NSDraggingDestination
+
+- (NSDragOperation)draggingEntered:(id < NSDraggingInfo >)sender
+{
+	// we'll drag and drop, yeah?
+	return NSDragOperationLink;
+}
+
+#pragma mark -
+#pragma mark The Input Queue
+
 - (BOOL)hasCharacterToDequeue
 {
 	@synchronized(self)
@@ -469,12 +486,6 @@
 		[_incomingString deleteCharactersInRange:NSMakeRange(0, 1)];
 		return character;
 	}
-}
-
-- (NSDragOperation)draggingEntered:(id < NSDraggingInfo >)sender
-{
-	// we'll drag and drop, yeah?
-	return NSDragOperationLink;
 }
 
 - (void)addStringToInputQueue:(NSString *)string filterToASCII:(BOOL)filterToASCII
@@ -503,6 +514,9 @@
 		[self.delegate terminalViewDidAddCharactersToBuffer:self];
 	});
 }
+
+#pragma mark -
+#pragma mark CPMTerminalControlSetDelegate
 
 - (void)terminalViewControlSetDidChangeOutput:(CPMTerminalControlSet *)controlSet
 {
