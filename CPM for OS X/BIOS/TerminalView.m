@@ -21,8 +21,8 @@
 
 	CGFloat _lineHeight, _characterWidth;
 
-	int _flashCount;
-	NSTimer *_flashTimer;
+//	int _flashCount;
+//	NSTimer *_flashTimer;
 
 	CPMTerminalControlSet *_controlSet;
 	NSMutableArray *_candidateControlSets;
@@ -50,14 +50,14 @@
 
 	[self setControlSet:_candidateControlSets[0]];
 
-	_flashTimer = [NSTimer
-		scheduledTimerWithTimeInterval:0.9
-		target:self
-		selector:@selector(updateFlash:)
-		userInfo:nil
-		repeats:YES];
-	if([_flashTimer respondsToSelector:@selector(setTolerance:)])
-		[_flashTimer setTolerance:0.5];
+//	_flashTimer = [NSTimer
+//		scheduledTimerWithTimeInterval:0.9
+//		target:self
+//		selector:@selector(updateFlash:)
+//		userInfo:nil
+//		repeats:YES];
+//	if([_flashTimer respondsToSelector:@selector(setTolerance:)])
+//		[_flashTimer setTolerance:0.5];
 
 	// accept drag and drop for filenames
 	[self registerForDraggedTypes:@[@"public.file-url"]];
@@ -101,7 +101,7 @@
 
 - (void)invalidate
 {
-	[_flashTimer invalidate], _flashTimer = nil;
+//	[_flashTimer invalidate], _flashTimer = nil;
 }
 
 - (void)writeCharacter:(char)character
@@ -274,11 +274,11 @@
 - (BOOL)acceptsFirstResponder	{	return YES;	}
 - (BOOL)isOpaque				{	return YES;	}
 
-- (void)updateFlash:(NSTimer *)timer
-{
-	_flashCount++;
-	[self setNeedsDisplay:YES];
-}
+//- (void)updateFlash:(NSTimer *)timer
+//{
+//	_flashCount++;
+//	[self setNeedsDisplay:YES];
+//}
 
 - (void)drawRect:(NSRect)dirtyRect
 {
@@ -365,7 +365,7 @@
 	// TODO: draw any graphics characters here
 
 	// draw cursor?
-	if(_flashCount&1 && !_controlSet.cursorIsDisabled)
+	if(!_controlSet.cursorIsDisabled)	// _flashCount&1 && 
 	{
 		[[self cursorColour] set];
 		NSRectFill(NSMakeRect(_controlSet.cursorX * _characterWidth, (_controlSet.height - 1 - _controlSet.cursorY) * _lineHeight, _characterWidth, _lineHeight));
