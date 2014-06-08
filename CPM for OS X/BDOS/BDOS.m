@@ -348,6 +348,14 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 	return _basePathsByDrive[@(fileControlBlock.drive ? fileControlBlock.drive : currentDrive)];
 }
 
+- (NSArray *)filesInPath:(NSString *)basePath matchingFileControlBlock:(CPMFileControlBlock *)fileControlBlock
+{
+	NSError *error = nil;
+	NSArray *allFilesInPath = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:basePath error:&error];
+
+	return [allFilesInPath filteredArrayUsingPredicate:fileControlBlock.matchesPredicate];
+}
+
 - (BOOL)searchForFirstWithParameter:(uint16_t)parameter
 {
 	_searchEnumerator = nil;
@@ -363,13 +371,9 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 	{
 		[_processor set8bitCPMResult:0];
 
-		NSError *error = nil;
-		NSArray *allFilesInPath = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:basePath error:&error];
-
-		NSArray *matchingFiles = [allFilesInPath filteredArrayUsingPredicate:fileControlBlock.matchesPredicate];
-		NSLog(@"%@ versus %@ begat %@", allFilesInPath, fileControlBlock, matchingFiles);
-
+		NSArray *matchingFiles = [self filesInPath:basePath matchingFileControlBlock:fileControlBlock];
 		_searchEnumerator = [matchingFiles objectEnumerator];
+
 		return [self searchForNextWithParameter:parameter];
 	}
 
