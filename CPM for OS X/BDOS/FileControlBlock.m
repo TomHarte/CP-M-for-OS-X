@@ -59,8 +59,8 @@
 		[self trimTailSpacesIn:fileName];
 		[self trimTailSpacesIn:fileType];
 
-		_fileName = [NSString stringWithFormat:@"%s", fileName];
-		_fileType = [NSString stringWithFormat:@"%s", fileType];
+		_fileName = [[NSString stringWithFormat:@"%s", fileName] uppercaseString];
+		_fileType = [[NSString stringWithFormat:@"%s", fileType] uppercaseString];
 
 		uint8_t record = bytes[0x20]&127;
 		uint8_t extent = bytes[0x0c]&31;
@@ -167,8 +167,8 @@
 		[self unpackNameWithExtension:evaluatedObject toName:&comparisonName extension:&comparisonType];
 
 		// now compare
-		BOOL areEqual = [self wildcardComparePattern:self.fileName string:comparisonName];
-		areEqual &= [self wildcardComparePattern:self.fileType string:comparisonType];
+		BOOL areEqual = [self wildcardComparePattern:self.fileName string:[comparisonName uppercaseString]];
+		areEqual &= [self wildcardComparePattern:self.fileType string:[comparisonType uppercaseString]];
 
 		return areEqual;
 	}];
