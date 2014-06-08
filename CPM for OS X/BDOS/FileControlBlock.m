@@ -167,35 +167,45 @@
 		[self unpackNameWithExtension:evaluatedObject toName:&comparisonName extension:&comparisonType];
 
 		// now compare
-		BOOL areEqual = [self wildcardComparePattern:self.fileName string:[comparisonName uppercaseString]];
-		areEqual &= [self wildcardComparePattern:self.fileType string:[comparisonType uppercaseString]];
+		BOOL areEqual = [self wildcardComparePattern:self.fileName string:[comparisonName uppercaseString] length:8];
+		areEqual &= [self wildcardComparePattern:self.fileType string:[comparisonType uppercaseString] length:3];
 
 		return areEqual;
 	}];
 }
 
-- (BOOL)wildcardComparePattern:(NSString *)pattern string:(NSString *)string
+- (NSString *)spaceStringOfLength:(NSUInteger)length
 {
-	// we'll remove case from the equation
-	pattern = [pattern lowercaseString];
-	string = [string lowercaseString];
+	NSMutableString *string = [NSMutableString string];
+
+	while(length >= 8)	{	[string appendString:@"        "];	length -= 8;	}
+	while(length >= 4)	{	[string appendString:@"    "];		length -= 4;	}
+	while(length >= 2)	{	[string appendString:@"  "];		length -= 2;	}
+	while(length >= 1)	{	[string appendString:@" "];			length -= 1;	}
+
+	return string;
+}
+
+- (NSString *)unpackString:(NSString *)string length:(NSUInteger)length
+{
+	if([string length] < length) string = [string stringByAppendingString:[self spaceStringOfLength:length - string.length]];
+	if([string length] > length) string = [string substringToIndex:length];
+
+	return string;
+}
+
+- (BOOL)wildcardComparePattern:(NSString *)pattern string:(NSString *)string length:(NSUInteger)length
+{
+	pattern = [self unpackString:pattern length:length];
+	string = [self unpackString:string length:length];
 
 	for(NSUInteger index = 0; index < [pattern length]; index++)
 	{
 		unichar patternCharacter = [pattern characterAtIndex:index];
+		unichar stringCharacter = [string characterAtIndex:index];
 
-		if(index < string.length)
-		{
-			unichar stringCharacter = [string characterAtIndex:index];
-			
-			if(patternCharacter != '?' && stringCharacter != patternCharacter)
-				return NO;
-		}
-		else
-		{
-			if(patternCharacter != '?')
-				return NO;
-		}
+		if(patternCharacter != '?' && stringCharacter != patternCharacter)
+			return NO;
 	}
 
 	return YES;
