@@ -21,8 +21,8 @@
 
 	CGFloat _lineHeight, _characterWidth;
 
-	int _flashCount;
-	NSTimer *_flashTimer;
+//	int _flashCount;
+//	NSTimer *_flashTimer;
 
 	CPMTerminalControlSet *_controlSet;
 	NSMutableArray *_candidateControlSets;
@@ -50,14 +50,14 @@
 
 	[self setControlSet:_candidateControlSets[0]];
 
-	_flashTimer = [NSTimer
-		scheduledTimerWithTimeInterval:0.9
-		target:self
-		selector:@selector(updateFlash:)
-		userInfo:nil
-		repeats:YES];
-	if([_flashTimer respondsToSelector:@selector(setTolerance:)])
-		[_flashTimer setTolerance:0.5];
+//	_flashTimer = [NSTimer
+//		scheduledTimerWithTimeInterval:0.9
+//		target:self
+//		selector:@selector(updateFlash:)
+//		userInfo:nil
+//		repeats:YES];
+//	if([_flashTimer respondsToSelector:@selector(setTolerance:)])
+//		[_flashTimer setTolerance:0.5];
 
 	// accept drag and drop for filenames
 	[self registerForDraggedTypes:@[@"public.file-url"]];
@@ -101,7 +101,7 @@
 
 - (void)invalidate
 {
-	[_flashTimer invalidate], _flashTimer = nil;
+//	[_flashTimer invalidate], _flashTimer = nil;
 }
 
 - (void)writeCharacter:(char)character
@@ -274,11 +274,11 @@
 - (BOOL)acceptsFirstResponder	{	return YES;	}
 - (BOOL)isOpaque				{	return YES;	}
 
-- (void)updateFlash:(NSTimer *)timer
-{
-	_flashCount++;
-	[self setNeedsDisplay:YES];
-}
+//- (void)updateFlash:(NSTimer *)timer
+//{
+//	_flashCount++;
+//	[self setNeedsDisplay:YES];
+//}
 
 - (void)drawRect:(NSRect)dirtyRect
 {
@@ -365,7 +365,7 @@
 	// TODO: draw any graphics characters here
 
 	// draw cursor?
-	if(_flashCount&1 && !_controlSet.cursorIsDisabled)
+	if(!_controlSet.cursorIsDisabled)	// _flashCount&1 && 
 	{
 		[[self cursorColour] set];
 		NSRectFill(NSMakeRect(_controlSet.cursorX * _characterWidth, (_controlSet.height - 1 - _controlSet.cursorY) * _lineHeight, _characterWidth, _lineHeight));
@@ -380,6 +380,8 @@
 	CFRelease(frame);
 }
 
+#pragma mark -
+#pragma mark Copy/Paste Responder Actions
 /*
 
 	This view implements copy and paste so as to work with the pasteboard
@@ -401,15 +403,14 @@
 	[self addStringToInputQueue:[pasteboard stringForType:NSPasteboardTypeString] filterToASCII:YES];
 }
 
+#pragma mark -
+#pragma mark NSResponder
 /*
 
-	In conjunction with that, it implements mouse down/up/dragged to allow text selection
-
+	TODO:
+		in conjunction with the pasteboard functionality, implement
+		mouse down/up/dragged to allow text selection
 */
-- (CGPoint)textLocationFromMouseLocation:(CGPoint)mouseLocation
-{
-	return CGPointMake(0, 0);
-}
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
@@ -426,6 +427,10 @@
 	NSLog(@"up %@", theEvent);
 }
 
+- (CGPoint)textLocationFromMouseLocation:(CGPoint)mouseLocation
+{
+	return CGPointMake(0, 0);
+}
 
 /*
 
@@ -452,6 +457,18 @@
 	}
 }
 
+#pragma mark -
+#pragma mark NSDraggingDestination
+
+- (NSDragOperation)draggingEntered:(id < NSDraggingInfo >)sender
+{
+	// we'll drag and drop, yeah?
+	return NSDragOperationLink;
+}
+
+#pragma mark -
+#pragma mark The Input Queue
+
 - (BOOL)hasCharacterToDequeue
 {
 	@synchronized(self)
@@ -469,12 +486,6 @@
 		[_incomingString deleteCharactersInRange:NSMakeRange(0, 1)];
 		return character;
 	}
-}
-
-- (NSDragOperation)draggingEntered:(id < NSDraggingInfo >)sender
-{
-	// we'll drag and drop, yeah?
-	return NSDragOperationLink;
 }
 
 - (void)addStringToInputQueue:(NSString *)string filterToASCII:(BOOL)filterToASCII
@@ -503,6 +514,9 @@
 		[self.delegate terminalViewDidAddCharactersToBuffer:self];
 	});
 }
+
+#pragma mark -
+#pragma mark CPMTerminalControlSetDelegate
 
 - (void)terminalViewControlSetDidChangeOutput:(CPMTerminalControlSet *)controlSet
 {

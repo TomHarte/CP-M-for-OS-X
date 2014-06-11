@@ -65,6 +65,9 @@
 {
 	[super windowControllerDidLoadNib:aController];
 
+	// a serial dispatch queue will keep actual machine execution off the main queue
+	_serialDispatchQueue = dispatch_queue_create("CPM dispatch queue", DISPATCH_QUEUE_SERIAL);
+
 	// create our BDOS instance and pipe the terminal view's delegate messages to here
 	_bdos = [[CPMBDOS alloc] initWithContentsOfURL:_sourceURL terminalView:self.terminalView];
 	_bdos.delegate = self;
@@ -74,9 +77,6 @@
 	// no need to worry about a retain cycle here as -close will be called
 	// before any attempt to dealloc
 	[self beginTimer];
-
-	// a serial dispatch queue will keep actual machine execution off the main queue
-	_serialDispatchQueue = dispatch_queue_create("CPM dispatch queue", DISPATCH_QUEUE_SERIAL);
 
 	// this isn't entirely honest, but it'll force us to lock the aspect ratio now
 	[self terminalViewDidChangeIdealRect:self.terminalView];
