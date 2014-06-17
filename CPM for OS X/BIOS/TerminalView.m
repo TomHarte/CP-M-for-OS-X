@@ -471,47 +471,45 @@
 
 - (BOOL)hasCharacterToDequeue
 {
-	@synchronized(self)
-	{
-		return !!_incomingString.length;
-	}
+	return !!_incomingString.length;
 }
 
 - (unichar)dequeueBufferedCharacter
 {
-	@synchronized(self)
-	{
-		if(!_incomingString.length) return 0;
-		unichar character = [_incomingString characterAtIndex:0];
-		[_incomingString deleteCharactersInRange:NSMakeRange(0, 1)];
-		return character;
-	}
+	if(!_incomingString.length) return 0;
+	unichar character = [_incomingString characterAtIndex:0];
+	[_incomingString deleteCharactersInRange:NSMakeRange(0, 1)];
+	return character;
 }
 
 - (void)addStringToInputQueue:(NSString *)string filterToASCII:(BOOL)filterToASCII
 {
-	NSString *filteredString = string;
+	__weak typeof(self) weakSelf = self;
 
-	if(filterToASCII)
-	{
-		const char *asciiString = [string cStringUsingEncoding:NSASCIIStringEncoding];
-
-		if(!asciiString) return;
-
-		filteredString =
-			[[NSString alloc] initWithBytesNoCopy:(void *)asciiString length:strlen(asciiString) encoding:NSASCIIStringEncoding freeWhenDone:NO];
-	}
-
-	if(![filteredString length]) return;
-
-	@synchronized(self)
-	{
-		[_incomingString appendString:filteredString];
-	}
-
-	dispatch_async(dispatch_get_main_queue(),
+	dispatch_async(self.callingDispatchQueue,
 	^{
-		[self.delegate terminalViewDidAddCharactersToBuffer:self];
+		typeof(self) strongSelf = weakSelf;
+		if(!strongSelf) return;
+
+		NSString *filteredString = string;
+
+		if(filterToASCII)
+		{
+			const char *asciiString = [string cStringUsingEncoding:NSASCIIStringEncoding];
+
+			if(!asciiString) return;
+
+			filteredString =
+				[[NSString alloc] initWithBytesNoCopy:(void *)asciiString length:strlen(asciiString) encoding:NSASCIIStringEncoding freeWhenDone:NO];
+		}
+
+		if(![filteredString length]) return;
+		[strongSelf->_incomingString appendString:filteredString];
+
+		dispatch_async(dispatch_get_main_queue(),
+		^{
+			[weakSelf.delegate terminalViewDidAddCharactersToBuffer:self];
+		});
 	});
 }
 

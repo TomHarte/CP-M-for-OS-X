@@ -127,4 +127,13 @@
 	return YES;
 }
 
+#pragma mark -
+#pragma mark Setters
+
+- (void)setCallingDispatchQueue:(dispatch_queue_t)callingDispatchQueue
+{
+	_callingDispatchQueue = callingDispatchQueue;
+	_terminalView.callingDispatchQueue = callingDispatchQueue;
+}
+
 @end

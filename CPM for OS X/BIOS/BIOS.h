@@ -31,5 +31,6 @@
 
 @property (nonatomic, weak) id <CPMBIOSDelegate> delegate;
 @property (nonatomic, readonly) CPMTerminalView *terminalView;
+@property (nonatomic, assign) dispatch_queue_t callingDispatchQueue;
 
 @end

@@ -709,4 +709,13 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 		[self performMoreConsoleInput];
 }
 
+#pragma mark -
+#pragma mark Setters
+
+- (void)setCallingDispatchQueue:(dispatch_queue_t)callingDispatchQueue
+{
+	_callingDispatchQueue = callingDispatchQueue;
+	_bios.callingDispatchQueue = callingDispatchQueue;
+}
+
 @end

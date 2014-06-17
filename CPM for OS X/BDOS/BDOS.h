@@ -28,6 +28,7 @@
 
 @property (nonatomic, readonly) BOOL didBlock;
 @property (nonatomic, readonly) BOOL isBlocked;
+@property (nonatomic, assign) dispatch_queue_t callingDispatchQueue;
 
 - (void)addAccessToURL:(NSURL *)URL;
 

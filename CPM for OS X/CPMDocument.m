@@ -70,6 +70,7 @@
 
 	// create our BDOS instance and pipe the terminal view's delegate messages to here
 	_bdos = [[CPMBDOS alloc] initWithContentsOfURL:_sourceURL terminalView:self.terminalView];
+	_bdos.callingDispatchQueue = _serialDispatchQueue;
 	_bdos.delegate = self;
 	self.terminalView.delegate = self;
 

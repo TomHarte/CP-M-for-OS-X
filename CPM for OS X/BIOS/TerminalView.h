@@ -36,6 +36,8 @@
 
 - (void)addStringToInputQueue:(NSString *)string filterToASCII:(BOOL)filterToASCII;
 
+@property (nonatomic, assign) dispatch_queue_t callingDispatchQueue;
+
 /*
 	The following two are intended for use on the main queue only.
 */
