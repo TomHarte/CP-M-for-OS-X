@@ -22,6 +22,7 @@
 @property (nonatomic, assign) size_t randomFileOffset;
 
 - (NSString *)nameWithExtension;
+- (NSString *)renameTargetWithExtension;
 - (void)setNameWithExtension:(NSString *)nameWithExtension;
 
 - (NSPredicate *)matchesPredicate;

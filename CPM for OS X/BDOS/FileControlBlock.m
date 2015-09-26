@@ -21,6 +21,7 @@
 {
 	CPMRAMModule *memory;
 	uint16_t baseAddress;
+	NSData *_sourceData;
 }
 
 - (void)trimTailSpacesIn:(char *)buffer
@@ -35,6 +36,23 @@
 	}
 }
 
+- (void)nameAndTypeFomData:(NSData *)data offset:(size_t)offset name:(NSString *__strong *)name type:(NSString *__strong *)type
+{
+	uint8_t *bytes = (uint8_t *)[data bytes];
+	char fileName[9], fileType[4];
+	for(size_t c = 0; c < 8; c++)	fileName[c] = bytes[offset+c]&0x7f;
+	for(size_t c = 0; c < 3; c++)	fileType[c] = bytes[offset+c+8]&0x7f;
+
+	// add final terminators
+	fileName[8] = fileType[3] = '\0';
+
+	[self trimTailSpacesIn:fileName];
+	[self trimTailSpacesIn:fileType];
+
+	*name = [NSString stringWithFormat:@"%s", fileName];
+	*type = [NSString stringWithFormat:@"%s", fileType];
+}
+
 - (id)initWithAddress:(uint16_t)address inMemory:(CPMRAMModule *)someMemory
 {
 	self = [super init];
@@ -44,23 +62,11 @@
 		memory = someMemory;
 		baseAddress = address;
 
-		NSData *data = [memory dataAtAddress:address length:36];
-		uint8_t *bytes = (uint8_t *)[data bytes];
+		_sourceData = [memory dataAtAddress:address length:36];
+		uint8_t *bytes = (uint8_t *)[_sourceData bytes];
 
 		_drive = bytes[0];
-
-		char fileName[9], fileType[4];
-		for(int c = 0; c < 8; c++)	fileName[c] = bytes[c+0x01]&0x7f;
-		for(int c = 0; c < 3; c++)	fileType[c] = bytes[c+0x09]&0x7f;
-
-		// add final terminators
-		fileName[8] = fileType[3] = '\0';
-		
-		[self trimTailSpacesIn:fileName];
-		[self trimTailSpacesIn:fileType];
-
-		_fileName = [NSString stringWithFormat:@"%s", fileName];
-		_fileType = [NSString stringWithFormat:@"%s", fileType];
+		[self nameAndTypeFomData:_sourceData offset:1 name:&_fileName type:&_fileType];
 
 		uint8_t record = bytes[0x20]&127;
 		uint8_t extent = bytes[0x0c]&31;
@@ -124,12 +130,24 @@
 	return [NSString stringWithFormat:@"[%c:] %@ [.] %@, drive %d", 'A' + self.drive - 1, self.fileName, self.fileType, self.drive];
 }
 
+- (NSString *)fullNameWithName:(NSString *)name type:(NSString *)type
+{
+	if([type length])
+		return [NSString stringWithFormat:@"%@.%@", name, type];
+	else
+		return name;
+}
+
+- (NSString *)renameTargetWithExtension
+{
+	NSString *name, *type;
+	[self nameAndTypeFomData:_sourceData offset:17 name:&name type:&type];
+	return [self fullNameWithName:name type:type];
+}
+
 - (NSString *)nameWithExtension
 {
-	if([self.fileType length])
-		return [NSString stringWithFormat:@"%@.%@", self.fileName, self.fileType];
-	else
-		return self.fileName;
+	return [self fullNameWithName:self.fileName type:self.fileType];
 }
 
 - (void)unpackNameWithExtension:(NSString *)evaluatedObject toName:(NSString **)comparisonName extension:(NSString **)comparisonType

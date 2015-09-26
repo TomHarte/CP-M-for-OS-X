@@ -217,11 +217,14 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 
 		case 20:	shouldBlock = [self readNextRecordWithParameter:parameter];		break;
 		case 21:	shouldBlock = [self writeNextRecordWithParameter:parameter];	break;
+		case 22:	shouldBlock = [self createFileWithParameter:parameter];			break;
+		case 23:	shouldBlock = [self renameFileWithParameter:parameter];			break;
 		case 25:	shouldBlock = [self getCurrentDrive];							break;
 		case 26:	shouldBlock = [self setDMAAddressWithParameter:parameter];		break;
 
 		case 32:	shouldBlock = [self getOrSetUserAreaWithParameter:parameter];	break;
 		case 33:	shouldBlock = [self readRandomRecordWithParameter:parameter];	break;
+		case 34:	shouldBlock = [self writeRandomRecordWithParameter:parameter];	break;
 		case 35:	shouldBlock = [self computeFileSizeWithParameter:parameter];	break;
 
 		default:
@@ -397,13 +400,64 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 
 - (NSString *)fullPathForFileControlBlock:(CPMFileControlBlock *)fileControlBlock
 {
-	NSString *filename = [fileControlBlock nameWithExtension];
+	return [self fullPathForFileControlBlock:fileControlBlock name:[fileControlBlock nameWithExtension]];
+}
+
+- (NSString *)fullPathForFileControlBlock:(CPMFileControlBlock *)fileControlBlock name:(NSString *)name
+{
+	NSString *filename = name;
 	NSString *basePath = [self basePathForFileControlBlock:fileControlBlock];
 	if(basePath)
 	{
 		filename = [basePath stringByAppendingPathComponent:filename];
 	}
 	return filename;
+}
+
+- (BOOL)createFileWithParameter:(uint16_t)parameter
+{
+	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
+	NSString *fullPath = [self fullPathForFileControlBlock:fileControlBlock];
+
+	[[NSFileManager defaultManager] createFileAtPath:fullPath contents:nil attributes:nil];
+	NSFileHandle *handle = [NSFileHandle fileHandleForWritingAtPath:fullPath];
+
+	if(handle)
+	{
+		NSLog(@"Created %@ for record %04x", fileControlBlock, parameter);
+
+		[_processor set8bitCPMResult:0];
+		_fileHandlesByControlBlock[fileControlBlock] = handle;
+	}
+	else
+	{
+		NSLog(@"Failed to create %@", fileControlBlock);
+		[_processor set8bitCPMResult:0xff];
+	}
+
+	return NO;
+}
+
+- (BOOL)renameFileWithParameter:(uint16_t)parameter
+{
+	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
+	NSString *fullPath = [self fullPathForFileControlBlock:fileControlBlock];
+	NSString *fullRenamePath = [self fullPathForFileControlBlock:fileControlBlock name:[fileControlBlock renameTargetWithExtension]];
+
+	NSError *error;
+	[[NSFileManager defaultManager] moveItemAtPath:fullPath toPath:fullRenamePath error:&error];
+
+	if(error)
+	{
+		NSLog(@"Failed to rename %@ to %@: %@", fileControlBlock, fullRenamePath, error);
+		[_processor set8bitCPMResult:0xff];
+	}
+	else
+	{
+		[_processor set8bitCPMResult:0];
+	}
+
+	return NO;
 }
 
 - (BOOL)openFileWithParameter:(uint16_t)parameter
@@ -434,8 +488,10 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 - (BOOL)closeFileWithParameter:(uint16_t)parameter
 {
 	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
+	NSFileHandle *fileHandle = _fileHandlesByControlBlock[fileControlBlock];
 
 	NSLog(@"Closing %@", fileControlBlock);
+	[fileHandle closeFile];
 	[_fileHandlesByControlBlock removeObjectForKey:fileControlBlock];
 	[_processor set8bitCPMResult:0];
 
@@ -447,10 +503,20 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 
 - (BOOL)deleteFileWithParameter:(uint16_t)parameter
 {
-	NSLog(@"!!UNIMPLEMENTED!! should delete %@", [self fileControlBlockWithParameter:parameter]);
+	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
+	NSString *fullPath = [self fullPathForFileControlBlock:fileControlBlock];
 
-	// pretend we succeeded
-	[_processor set8bitCPMResult:0];
+	NSError *error;
+	[[NSFileManager defaultManager] removeItemAtPath:fullPath error:&error];
+
+	if(error)
+	{
+		[_processor set8bitCPMResult:0xff];
+	}
+	else
+	{
+		[_processor set8bitCPMResult:0];
+	}
 
 	return NO;
 }
@@ -460,10 +526,39 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 
 - (BOOL)writeNextRecordWithParameter:(uint16_t)parameter
 {
-	NSLog(@"!!UNIMPLEMENTED!! should write next record to %@", [self fileControlBlockWithParameter:parameter]);
+	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
+	NSFileHandle *fileHandle = _fileHandlesByControlBlock[fileControlBlock];
 
-	// pretend we succeeded
-	[_processor set8bitCPMResult:0];
+	[fileHandle seekToFileOffset:fileControlBlock.linearFileOffset];
+	NSData *outputData = [_memory dataAtAddress:_dmaAddress length:128];
+
+	@try {
+		[fileHandle writeData:outputData];
+		[_processor set8bitCPMResult:0];
+	}
+	@catch (NSException *exception) {
+		NSLog(@"Exception: %@", exception);
+		[_processor set8bitCPMResult:0xff];
+	}
+
+	return NO;
+}
+
+- (BOOL)writeRandomRecordWithParameter:(uint16_t)parameter
+{
+	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
+	NSFileHandle *fileHandle = _fileHandlesByControlBlock[fileControlBlock];
+	
+	@try {
+		[fileHandle seekToFileOffset:fileControlBlock.randomFileOffset];
+		NSData *outputData = [_memory dataAtAddress:_dmaAddress length:128];
+		[fileHandle writeData:outputData];
+		[_processor set8bitCPMResult:0];
+	}
+	@catch (NSException *exception) {
+		NSLog(@"Exception: %@", exception);
+		[_processor set8bitCPMResult:0xff];
+	}
 
 	return NO;
 }
