@@ -12,7 +12,7 @@
 
 @interface CPMFileControlBlock ()
 
-@property (nonatomic, strong) NSString *fileName;
+@property (nonatomic, strong) NSString *filename;
 @property (nonatomic, strong) NSString *fileType;
 
 @end
@@ -66,7 +66,7 @@
 		uint8_t *bytes = (uint8_t *)[_sourceData bytes];
 
 		_drive = bytes[0];
-		[self nameAndTypeFomData:_sourceData offset:1 name:&_fileName type:&_fileType];
+		[self nameAndTypeFomData:_sourceData offset:1 name:&_filename type:&_fileType];
 
 		uint8_t record = bytes[0x20]&127;
 		uint8_t extent = bytes[0x0c]&31;
@@ -102,7 +102,7 @@
 {
 	CPMFileControlBlock *newBlock = [[CPMFileControlBlock alloc] init];
 
-	newBlock->_fileName = self.fileName;
+	newBlock->_filename = self.filename;
 	newBlock->_fileType = self.fileType;
 	newBlock->_drive = self.drive;
 
@@ -114,7 +114,7 @@
 	if(![object isKindOfClass:[CPMFileControlBlock class]]) return NO;
 
 	if(object.drive != self.drive) return NO;
-	if(![object.fileName isEqual:self.fileName]) return NO;
+	if(![object.filename isEqual:self.filename]) return NO;
 	if(![object.fileType isEqual:self.fileType]) return NO;
 
 	return YES;
@@ -122,12 +122,12 @@
 
 - (NSUInteger)hash
 {
-	return [self.fileType hash] + [self.fileName hash] + self.drive;
+	return [self.fileType hash] + [self.filename hash] + self.drive;
 }
 
 - (NSString *)description
 {
-	return [NSString stringWithFormat:@"[%c:] %@ [.] %@, drive %d", 'A' + self.drive - 1, self.fileName, self.fileType, self.drive];
+	return [NSString stringWithFormat:@"[%c:] %@ [.] %@, drive %d", 'A' + self.drive - 1, self.filename, self.fileType, self.drive];
 }
 
 - (NSString *)fullNameWithName:(NSString *)name type:(NSString *)type
@@ -147,7 +147,7 @@
 
 - (NSString *)nameWithExtension
 {
-	return [self fullNameWithName:self.fileName type:self.fileType];
+	return [self fullNameWithName:self.filename type:self.fileType];
 }
 
 - (void)unpackNameWithExtension:(NSString *)evaluatedObject toName:(NSString **)comparisonName extension:(NSString **)comparisonType
@@ -185,7 +185,7 @@
 		[self unpackNameWithExtension:evaluatedObject toName:&comparisonName extension:&comparisonType];
 
 		// now compare
-		BOOL areEqual = [self wildcardComparePattern:self.fileName string:comparisonName];
+		BOOL areEqual = [self wildcardComparePattern:self.filename string:comparisonName];
 		areEqual &= [self wildcardComparePattern:self.fileType string:comparisonType];
 
 		return areEqual;
@@ -226,7 +226,7 @@
 	[self unpackNameWithExtension:nameWithExtension toName:&name extension:&type];
 
 	// store to our local properties
-	self.fileName = name;
+	self.filename = name;
 	self.fileType = type;
 
 	// write out to memory

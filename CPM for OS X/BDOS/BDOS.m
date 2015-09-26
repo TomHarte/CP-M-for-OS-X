@@ -396,7 +396,7 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 }
 
 #pragma mark -
-#pragma mark File Open and Close
+#pragma mark File Helpers
 
 - (NSString *)fullPathForFileControlBlock:(CPMFileControlBlock *)fileControlBlock
 {
@@ -414,86 +414,81 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 	return filename;
 }
 
-- (BOOL)createFileWithParameter:(uint16_t)parameter
+- (void)withFullPathFromParameter:(uint16_t)parameter do:(void (^)(CPMFileControlBlock *fileControlBlock, NSString *path))action
 {
 	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
-	NSString *fullPath = [self fullPathForFileControlBlock:fileControlBlock];
+	action(fileControlBlock, [self fullPathForFileControlBlock:fileControlBlock]);
+}
 
-	[[NSFileManager defaultManager] createFileAtPath:fullPath contents:nil attributes:nil];
-	NSFileHandle *handle = [NSFileHandle fileHandleForWritingAtPath:fullPath];
+- (void)withFileHandleFromParameter:(uint16_t)parameter do:(void (^)(CPMFileControlBlock *fileControlBlock, NSFileHandle *handle))action
+{
+	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
+	action(fileControlBlock, _fileHandlesByControlBlock[fileControlBlock]);
+}
 
-	if(handle)
-	{
-		NSLog(@"Created %@ for record %04x", fileControlBlock, parameter);
+#pragma mark -
+#pragma mark File Open and Close
 
-		[_processor set8bitCPMResult:0];
-		_fileHandlesByControlBlock[fileControlBlock] = handle;
-	}
-	else
-	{
-		NSLog(@"Failed to create %@", fileControlBlock);
-		[_processor set8bitCPMResult:0xff];
-	}
+- (BOOL)establishHandleWithParameter:(uint16_t)parameter creator:(NSFileHandle *(^)(NSString *path))creator
+{
+	[self withFullPathFromParameter:parameter do:^(CPMFileControlBlock *fileControlBlock, NSString *path) {
+
+		NSFileHandle *handle = creator(path);
+
+		if(handle)
+		{
+			[self->_processor set8bitCPMResult:0];
+			self->_fileHandlesByControlBlock[fileControlBlock] = handle;
+		}
+		else
+		{
+			[self->_processor set8bitCPMResult:0xff];
+		}
+	}];
 
 	return NO;
 }
 
+- (void)setStatusWithError:(NSError *)error
+{
+	[_processor set8bitCPMResult:error ? 0xff : 0x00];
+}
+
+- (BOOL)createFileWithParameter:(uint16_t)parameter
+{
+	return [self establishHandleWithParameter:parameter creator:^NSFileHandle *(NSString *path) {
+		return [NSFileHandle fileHandleForWritingAtPath:path];
+	}];
+}
+
 - (BOOL)renameFileWithParameter:(uint16_t)parameter
 {
-	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
-	NSString *fullPath = [self fullPathForFileControlBlock:fileControlBlock];
-	NSString *fullRenamePath = [self fullPathForFileControlBlock:fileControlBlock name:[fileControlBlock renameTargetWithExtension]];
+	[self withFullPathFromParameter:parameter do:^(CPMFileControlBlock *fileControlBlock, NSString *path) {
+		NSString *const renamePath = [self fullPathForFileControlBlock:fileControlBlock name:[fileControlBlock renameTargetWithExtension]];
 
-	NSError *error;
-	[[NSFileManager defaultManager] moveItemAtPath:fullPath toPath:fullRenamePath error:&error];
+		NSError *error;
+		[[NSFileManager defaultManager] moveItemAtPath:path toPath:renamePath error:&error];
+		[self setStatusWithError:error];
 
-	if(error)
-	{
-		NSLog(@"Failed to rename %@ to %@: %@", fileControlBlock, fullRenamePath, error);
-		[_processor set8bitCPMResult:0xff];
-	}
-	else
-	{
-		[_processor set8bitCPMResult:0];
-	}
+	}];
 
 	return NO;
 }
 
 - (BOOL)openFileWithParameter:(uint16_t)parameter
 {
-	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
-
-	NSError *error = nil;
-
-	NSString *fullPath = [self fullPathForFileControlBlock:fileControlBlock];
-	NSFileHandle *handle = [NSFileHandle fileHandleForReadingAtPath:fullPath];
-
-	if(handle && !error)
-	{
-		NSLog(@"Opened %@ for record %04x", fileControlBlock, parameter);
-
-		[_processor set8bitCPMResult:0];
-		_fileHandlesByControlBlock[fileControlBlock] = handle;
-	}
-	else
-	{
-		NSLog(@"Failed to open %@", fileControlBlock);
-		[_processor set8bitCPMResult:0xff];
-	}
-
-	return NO;
+	return [self establishHandleWithParameter:parameter creator:^NSFileHandle *(NSString *path) {
+		return [NSFileHandle fileHandleForUpdatingAtPath:path];
+	}];
 }
 
 - (BOOL)closeFileWithParameter:(uint16_t)parameter
 {
-	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
-	NSFileHandle *fileHandle = _fileHandlesByControlBlock[fileControlBlock];
-
-	NSLog(@"Closing %@", fileControlBlock);
-	[fileHandle closeFile];
-	[_fileHandlesByControlBlock removeObjectForKey:fileControlBlock];
-	[_processor set8bitCPMResult:0];
+	[self withFileHandleFromParameter:parameter do:^(CPMFileControlBlock *fileControlBlock, NSFileHandle *handle) {
+		[handle closeFile];
+		[self->_fileHandlesByControlBlock removeObjectForKey:fileControlBlock];
+		[self->_processor set8bitCPMResult:0];
+	}];
 
 	return NO;
 }
@@ -503,166 +498,128 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 
 - (BOOL)deleteFileWithParameter:(uint16_t)parameter
 {
-	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
-	NSString *fullPath = [self fullPathForFileControlBlock:fileControlBlock];
-
-	NSError *error;
-	[[NSFileManager defaultManager] removeItemAtPath:fullPath error:&error];
-
-	if(error)
-	{
-		[_processor set8bitCPMResult:0xff];
-	}
-	else
-	{
-		[_processor set8bitCPMResult:0];
-	}
+	[self withFullPathFromParameter:parameter do:^(CPMFileControlBlock *fileControlBlock, NSString *path) {
+		NSError *error;
+		[[NSFileManager defaultManager] removeItemAtPath:path error:&error];
+		[self setStatusWithError:error];
+	}];
 
 	return NO;
 }
 
 #pragma mark -
-#pragma mark File Read and Write
+#pragma mark File Write
 
-- (BOOL)writeNextRecordWithParameter:(uint16_t)parameter
+- (void)writeRecordForHandle:(NSFileHandle *)fileHandle fileOffset:(size_t)fileOffset
 {
-	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
-	NSFileHandle *fileHandle = _fileHandlesByControlBlock[fileControlBlock];
-
-	[fileHandle seekToFileOffset:fileControlBlock.linearFileOffset];
-	NSData *outputData = [_memory dataAtAddress:_dmaAddress length:128];
-
 	@try {
-		[fileHandle writeData:outputData];
+		[fileHandle seekToFileOffset:fileOffset];
+		[fileHandle writeData:[_memory dataAtAddress:_dmaAddress length:128]];
 		[_processor set8bitCPMResult:0];
 	}
 	@catch (NSException *exception) {
 		NSLog(@"Exception: %@", exception);
 		[_processor set8bitCPMResult:0xff];
 	}
+}
+
+- (BOOL)writeNextRecordWithParameter:(uint16_t)parameter
+{
+	[self withFileHandleFromParameter:parameter do:^(CPMFileControlBlock *fileControlBlock, NSFileHandle *handle) {
+		[self writeRecordForHandle:handle fileOffset:fileControlBlock.linearFileOffset];
+		fileControlBlock.linearFileOffset += 128;
+	}];
 
 	return NO;
 }
 
 - (BOOL)writeRandomRecordWithParameter:(uint16_t)parameter
 {
-	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
-	NSFileHandle *fileHandle = _fileHandlesByControlBlock[fileControlBlock];
-	
-	@try {
-		[fileHandle seekToFileOffset:fileControlBlock.randomFileOffset];
-		NSData *outputData = [_memory dataAtAddress:_dmaAddress length:128];
-		[fileHandle writeData:outputData];
-		[_processor set8bitCPMResult:0];
-	}
-	@catch (NSException *exception) {
-		NSLog(@"Exception: %@", exception);
-		[_processor set8bitCPMResult:0xff];
-	}
+	[self withFileHandleFromParameter:parameter do:^(CPMFileControlBlock *fileControlBlock, NSFileHandle *handle) {
+		[self writeRecordForHandle:handle fileOffset:fileControlBlock.randomFileOffset];
+	}];
 
 	return NO;
 }
 
-- (void)storeRecordWithData:(NSData *)record atAddress:(uint16_t)address
+#pragma mark -
+#pragma mark File Read
+
+- (void)readRecordForHandle:(NSFileHandle *)fileHandle fileOffset:(size_t)fileOffset
 {
-	[_memory setData:record atAddress:address];
+	[fileHandle seekToFileOffset:fileOffset];
 
-	// OS X allows files that aren't multiples of 128 bytes in length;
-	// CP/M doesn't. So we may need to fill in some extra information
-	if([record length] < 128)
+	NSData *record = [fileHandle readDataOfLength:128];
+	if([record length])
 	{
-		// test: if the data we found didn't end with a CTRL+Z then
-		// we'll insert one...
-		uint16_t trailingAddress = (uint16_t)(address + record.length);
-		if((trailingAddress == address) || ((uint8_t *)[record bytes])[trailingAddress - 1] != '\032')
+		[_memory setData:record atAddress:_dmaAddress];
+
+		// OS X allows files that aren't multiples of 128 bytes in length;
+		// CP/M doesn't. So we may need to fill in some extra information
+		if([record length] < 128)
 		{
-			[_memory setValue:'\032' atAddress:trailingAddress];
-			trailingAddress++;
+			// test: if the data we found didn't end with a CTRL+Z then
+			// we'll insert one...
+			uint16_t trailingAddress = (uint16_t)(_dmaAddress + record.length);
+			if((trailingAddress == _dmaAddress) || ((uint8_t *)[record bytes])[trailingAddress - 1] != '\032')
+			{
+				[_memory setValue:'\032' atAddress:trailingAddress];
+				trailingAddress++;
+			}
+
+			// ... and then pad out the rest of the 128-byte area with 0s
+			while(trailingAddress < _dmaAddress + 128)
+			{
+				[_memory setValue:0 atAddress:trailingAddress];
+				trailingAddress++;
+			}
 		}
 
-		// ... and then pad out the rest of the 128-byte area with 0s
-		while(trailingAddress < address + 128)
-		{
-			[_memory setValue:0 atAddress:trailingAddress];
-			trailingAddress++;
-		}
+		[_processor set8bitCPMResult:0];
+	}
+	else
+	{
+		[_processor set8bitCPMResult:0xff];
 	}
 }
 
 - (BOOL)readNextRecordWithParameter:(uint16_t)parameter
 {
-	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
-	NSFileHandle *fileHandle = _fileHandlesByControlBlock[fileControlBlock];
-
-	[fileHandle seekToFileOffset:fileControlBlock.linearFileOffset];
-	NSData *nextRecord = [fileHandle readDataOfLength:128];
-	if([nextRecord length])
-	{
-		[self storeRecordWithData:nextRecord atAddress:_dmaAddress];
-
-		// sequential reads update the FCB
+	[self withFileHandleFromParameter:parameter do:^(CPMFileControlBlock *fileControlBlock, NSFileHandle *handle) {
+		[self readRecordForHandle:handle fileOffset:fileControlBlock.linearFileOffset];
 		fileControlBlock.linearFileOffset += 128;
-
-		// report success
-		[_processor set8bitCPMResult:0];
-	}
-	else
-	{
-		// set 0xff - end of file
-		[_processor set8bitCPMResult:0xff];
-	}
-
-//	NSLog(@"did read sequential record for %@, offset %zd, DMA address %04x", fileControlBlock, fileControlBlock.linearFileOffset, _dmaAddress);
+	}];
 
 	return NO;
 }
 
 - (BOOL)readRandomRecordWithParameter:(uint16_t)parameter
 {
-	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
-	NSFileHandle *fileHandle = _fileHandlesByControlBlock[fileControlBlock];
-	
-	[fileHandle seekToFileOffset:fileControlBlock.randomFileOffset];
-	NSData *nextRecord = [fileHandle readDataOfLength:128];
-
-	if([nextRecord length])
-	{
-		[self storeRecordWithData:nextRecord atAddress:_dmaAddress];
-
-		// report success
-		[_processor set8bitCPMResult:0];
-	}
-	else
-	{
-		// set error 6 - record number out of range
-		[_processor set8bitCPMResult:0x06];
-	}
-
-//	NSLog(@"did read random record for %@, offset %zd, DMA address %04x", fileControlBlock, fileControlBlock.randomFileOffset, _dmaAddress);
+	[self withFileHandleFromParameter:parameter do:^(CPMFileControlBlock *fileControlBlock, NSFileHandle *handle) {
+		[self readRecordForHandle:handle fileOffset:fileControlBlock.randomFileOffset];
+	}];
 
 	return NO;
 }
 
 - (BOOL)computeFileSizeWithParameter:(uint16_t)parameter
 {
-	CPMFileControlBlock *fileControlBlock = [self fileControlBlockWithParameter:parameter];
-	NSString *fullPath = [self fullPathForFileControlBlock:fileControlBlock];
+	[self withFullPathFromParameter:parameter do:^(CPMFileControlBlock *fileControlBlock, NSString *path) {
 
-	NSError *error;
-	NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:fullPath error:&error];
+		NSError *error;
+		NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:&error];
 
-	if(error)
-	{
-		[_processor set8bitCPMResult:0xff];
-	}
-	else
-	{
-		[_processor set8bitCPMResult:0];
-		size_t size = [fileAttributes[NSFileSize] unsignedIntegerValue];
-		fileControlBlock.randomFileOffset = size >> 7;
-	}
-
-//	NSLog(@"did compute size of random record for %@, size %zd", fileControlBlock, fileControlBlock.randomFileOffset);
+		if(error)
+		{
+			[self->_processor set8bitCPMResult:0xff];
+		}
+		else
+		{
+			[self->_processor set8bitCPMResult:0];
+			size_t size = [fileAttributes[NSFileSize] unsignedIntegerValue];
+			fileControlBlock.randomFileOffset = size >> 7;
+		}
+	}];
 
 	return NO;
 }

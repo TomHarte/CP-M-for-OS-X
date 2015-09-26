@@ -15,7 +15,7 @@
 - (id)initWithAddress:(uint16_t)address inMemory:(CPMRAMModule *)memory;
 
 @property (nonatomic, readonly) uint8_t drive;
-@property (nonatomic, readonly, strong) NSString *fileName;
+@property (nonatomic, readonly, strong) NSString *filename;
 @property (nonatomic, readonly, strong) NSString *fileType;
 
 @property (nonatomic, assign) size_t linearFileOffset;
