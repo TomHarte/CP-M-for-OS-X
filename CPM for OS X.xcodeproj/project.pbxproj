@@ -243,7 +243,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = CPM;
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "Thomas Harte";
 			};
 			buildConfigurationList = 4B58297A160197E0009515A6 /* Build configuration list for PBXProject "CPM for OS X" */;
@@ -370,6 +370,7 @@
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -465,6 +466,7 @@
 				GCC_PREFIX_HEADER = "CPM for OS X/CPM for OS X-Prefix.pch";
 				INFOPLIST_FILE = "CPM for OS X/CPM for OS X-Info.plist";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.clocksignal.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -480,6 +482,7 @@
 				GCC_PREFIX_HEADER = "CPM for OS X/CPM for OS X-Prefix.pch";
 				INFOPLIST_FILE = "CPM for OS X/CPM for OS X-Info.plist";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.clocksignal.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};

@@ -55,7 +55,7 @@
 	<key>CFBundleHelpBookName</key>
 	<string>CPM for OS X Help</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.clocksignal.${PRODUCT_NAME:rfc1034identifier}</string>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
