@@ -15,6 +15,9 @@
 
 const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 
+@interface CPMBDOS () <CPMBIOSDelegate>
+@end
+
 @implementation CPMBDOS
 {
 	/*
@@ -73,6 +76,7 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 		_memory = [[CPMRAMModule alloc] init];
 		_processor = [[CPMProcessor alloc] initWithRAM:_memory];
 		_bios = [[CPMBIOS alloc] initWithTerminalView:terminalView processor:_processor];
+		_bios.delegate = self;
 
 		// copy the executable into memory, set the initial program counter
 		[_memory setData:data atAddress:0x100];
@@ -131,6 +135,17 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 	}
 
 	return self;
+}
+
+- (void)restartWithContentsOfURL:(NSURL *)URL;
+{
+	NSData *data = [NSData dataWithContentsOfURL:URL];
+	if(data)
+	{
+		[_memory setData:data atAddress:0x100];
+		_processor.programCounter = 0x100;
+		[_processor unblock];
+	}
 }
 
 - (void)addAccessToURL:(NSURL *)URL
@@ -768,6 +783,14 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 {
 	_callingDispatchQueue = callingDispatchQueue;
 	_bios.callingDispatchQueue = callingDispatchQueue;
+}
+
+#pragma mark -
+#pragma mark CPMBIOSDelegate
+
+- (void)BIOSProgramDidExit:(CPMBIOS *)bios
+{
+	[self.delegate bdosProgramDidExit:self];
 }
 
 @end

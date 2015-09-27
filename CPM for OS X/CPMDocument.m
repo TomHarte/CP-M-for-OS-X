@@ -81,11 +81,6 @@
 
 	// this isn't entirely honest, but it'll force us to lock the aspect ratio now
 	[self terminalViewDidChangeIdealRect:self.terminalView];
-
-	// were you to want to run the FUSE Z80 conformance tests, you would...
-//	CPMFuseTestRunner *testRunner = [[CPMFuseTestRunner alloc] init];
-//	[testRunner go];
-//	[testRunner release];
 }
 
 - (void)doMoreProcessing:(NSTimer *)timer
@@ -173,8 +168,14 @@
 	});
 }
 
+- (void)bdosProgramDidExit:(CPMBDOS *)bdos
+{
+	// TODO: return to prompt. What prompt?
+}
+
 - (void)beginTimer
 {
+	[self endTimer];
 	_executionTimer = [NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(doMoreProcessing:) userInfo:nil repeats:YES];
 	if([_executionTimer respondsToSelector:@selector(setTolerance:)])
 		[_executionTimer setTolerance:0.01];

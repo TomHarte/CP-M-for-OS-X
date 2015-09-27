@@ -16,6 +16,7 @@
 @protocol CPMBDOSDelegate <NSObject>
 
 - (void)bdosWillUnblock:(CPMBDOS *)bdos;
+- (void)bdosProgramDidExit:(CPMBDOS *)bdos;
 
 @end
 
@@ -25,6 +26,8 @@
 
 - (void)runForTimeInterval:(NSTimeInterval)interval;
 - (void)runForNumberOfInstructions:(NSUInteger)numberOfInstructions;
+
+- (void)restartWithContentsOfURL:(NSURL *)URL;
 
 @property (nonatomic, readonly) BOOL didBlock;
 @property (nonatomic, readonly) BOOL isBlocked;
