@@ -216,7 +216,16 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 		case 0:		shouldBlock = [self exitProgram];								break;
 		case 1:		shouldBlock = [_bios readCharacterAndEcho];						break;
 		case 2:		shouldBlock = [self writeConsoleOutput:parameter];				break;
+		/*
+			case 3: auxiliary (reader) input
+			case 4: auxiliary (punch) output
+			case 5: printer output
+		*/
 		case 6:		shouldBlock = [self directConsoleIOWithParameter:parameter];	break;
+		/*
+			case 7: get i/o byte
+			case 8: set i/o byte
+		*/
 		case 9:		shouldBlock = [self outputStringWithParameter:parameter];		break;
 
 		case 10:	shouldBlock = [self inputStringWithParameter:parameter];		break;
@@ -234,13 +243,28 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 		case 21:	shouldBlock = [self writeNextRecordWithParameter:parameter];	break;
 		case 22:	shouldBlock = [self createFileWithParameter:parameter];			break;
 		case 23:	shouldBlock = [self renameFileWithParameter:parameter];			break;
+		/*
+			case 24: return login vector
+		*/
 		case 25:	shouldBlock = [self getCurrentDrive];							break;
 		case 26:	shouldBlock = [self setDMAAddressWithParameter:parameter];		break;
+		/*
+			case 27: get address of allocation map
+			case 28: software write-protect current disc
+			case 29: return bitmap of software read-only drives
+			case 30: set file attributes
+			case 31: get address of disc parameter block
+		*/
 
 		case 32:	shouldBlock = [self getOrSetUserAreaWithParameter:parameter];	break;
 		case 33:	shouldBlock = [self readRandomRecordWithParameter:parameter];	break;
 		case 34:	shouldBlock = [self writeRandomRecordWithParameter:parameter];	break;
 		case 35:	shouldBlock = [self computeFileSizeWithParameter:parameter];	break;
+		/*
+			case 36: update random access pointer
+			case 37: reset (read-only status) drives
+			case 40: write random with zero fill
+		*/
 
 		default:
 			NSLog(@"!!UNIMPLEMENTED!! BDOS call %d with parameter %04x", call, parameter);
