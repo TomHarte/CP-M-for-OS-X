@@ -503,6 +503,7 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 - (BOOL)createFileWithParameter:(uint16_t)parameter
 {
 	return [self establishHandleWithParameter:parameter creator:^NSFileHandle *(NSString *path) {
+		[[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];
 		return [NSFileHandle fileHandleForWritingAtPath:path];
 	}];
 }
