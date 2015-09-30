@@ -517,7 +517,9 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 - (BOOL)openFileWithParameter:(uint16_t)parameter
 {
 	return [self establishHandleWithParameter:parameter creator:^NSFileHandle *(NSString *path) {
-		return [NSFileHandle fileHandleForUpdatingAtPath:path];
+		NSFileHandle *readWriteHandle = [NSFileHandle fileHandleForUpdatingAtPath:path];
+		if(readWriteHandle) return readWriteHandle;
+		return [NSFileHandle fileHandleForReadingAtPath:path];
 	}];
 }
 
