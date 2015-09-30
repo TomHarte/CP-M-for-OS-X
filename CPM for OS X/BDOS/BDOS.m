@@ -130,6 +130,13 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 		// also set the default DMA address
 		_dmaAddress = 0x80;
 
+		// set no filenames found
+		for(uint16_t c = 0; c < 11; c++)
+		{
+			[_memory setValue:' ' atAddress:0x5d+c];
+			[_memory setValue:' ' atAddress:0x6d+c];
+		}
+
 		// allocate a dictionary to keep track of our open files
 		_fileHandlesByControlBlock = [[NSMutableDictionary alloc] init];
 	}
