@@ -38,6 +38,18 @@ typedef struct
 	__unsafe_unretained dispatch_block_t action;
 } CPMTerminalControlSequenceStruct;
 
+
+typedef struct IntegerPoint {
+    NSUInteger x;
+    NSUInteger y;
+} IntegerPoint;
+
+CG_INLINE IntegerPoint integerPointMake(NSUInteger x, NSUInteger y)
+{
+	IntegerPoint point = {.x = x, .y = y};
+	return point;
+}
+
 /*
 
 	A control set encapsulates the logic for converting a sequence of incoming
@@ -68,7 +80,10 @@ typedef struct
 
 // character buffer will in effect return a C string of the current character output, with
 // newlines and a terminating NULL
-- (char *)characterBuffer;
+- (const char *)characterBuffer;
+
+// the NSString covering any range of the screen is available
+- (const char *)charactersBetweenStart:(IntegerPoint)start end:(IntegerPoint)end length:(size_t *)length;
 
 // attributeBufferForY: returns the C array of attributes for the given scanline; each scanline
 // is linear but they're not necessarily tightly packed
@@ -127,6 +142,8 @@ typedef struct
 #define kCPMTerminalAttributeUnderlinedOn			0x08
 
 #define kCPMTerminalAttributeBackground				0x10
+
+#define kCPMTerminalAttributeSelected				0x80
 
 #import "TerminalControlSet+ADM3A.h"
 #import "TerminalControlSet+Hazeltine1500.h"

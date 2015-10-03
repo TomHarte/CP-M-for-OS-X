@@ -143,10 +143,19 @@
 	});
 }
 
-- (char *)characterBuffer				{	return _characters;	}
+- (const char *)characterBuffer				{	return _characters;	}
 - (uint16_t *)attributeBufferForY:(NSUInteger)y
 {
 	return &_attributes[address(0, y)];
+}
+
+- (const char *)charactersBetweenStart:(IntegerPoint)start end:(IntegerPoint)end length:(size_t *)length
+{
+	const char *charactersStart = &_characters[address(start.x, start.y)];
+	const char *charactersEnd = &_characters[address(end.x, end.y)];
+
+	*length = (size_t)(charactersEnd - charactersStart + 1);
+	return charactersStart;
 }
 
 - (void)setupForWidth:(NSUInteger)width height:(NSUInteger)height

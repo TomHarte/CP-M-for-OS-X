@@ -17,7 +17,9 @@
 	NSMutableAttributedString *_attributedString;
 	NSMutableString *_incomingString;
 
-//	int selectionStartX, selectionStartY, selectionCurrentX, selectionCurrentY;
+	IntegerPoint _selectionStartPoint, _selectionCurrentPoint;
+	NSTimeInterval _selectionStartTimeSinceReferenceDate;
+	BOOL _hasSelection;
 
 	CGFloat _lineHeight, _characterWidth;
 
@@ -198,9 +200,7 @@
 - (void)viewWillDraw
 {
 	// create a string of the ASCII characters first
-
 	NSString *asciiText = @((const char *)_controlSet.characterBuffer);
-	_attributedString = nil;
 	_attributedString = [[NSMutableAttributedString alloc] initWithString:asciiText];
 
 	// establish the whole range as Monaco 12
@@ -280,6 +280,28 @@
 //	[self setNeedsDisplay:YES];
 //}
 
+- (CGFloat)textScale
+{
+	NSRect bounds = [self bounds];
+	CGFloat scalerX = bounds.size.width / _idealSize.width;
+	CGFloat scalerY = bounds.size.height / _idealSize.height;
+	return (scalerX > scalerY) ? scalerY : scalerX;
+}
+
+- (void)getSelectionStart:(IntegerPoint *)startPoint end:(IntegerPoint *)endPoint
+{
+	if(_selectionStartPoint.y < _selectionCurrentPoint.y || (_selectionStartPoint.y == _selectionCurrentPoint.y && _selectionStartPoint.x < _selectionCurrentPoint.x))
+	{
+		*startPoint = _selectionStartPoint;
+		*endPoint = _selectionCurrentPoint;
+	}
+	else
+	{
+		*endPoint = _selectionStartPoint;
+		*startPoint = _selectionCurrentPoint;
+	}
+}
+
 - (void)drawRect:(NSRect)dirtyRect
 {
     // get the view's bounds
@@ -294,10 +316,8 @@
 
 	// work out scaler; get x and y scales separately then pick the smallest —
 	// in effect this is an aspect fit
-	CGFloat scalerX = bounds.size.width / _idealSize.width;
-	CGFloat scalerY = bounds.size.height / _idealSize.height;
-	CGFloat scaler = (scalerX > scalerY) ? scalerY : scalerX;
-	CGContextScaleCTM(context, scaler, scaler);
+	const CGFloat scale = [self textScale];
+	CGContextScaleCTM(context, scale, scale);
 
 	// create a rect describing our entire frame in idealised coordinates
 	CGRect idealRect;
@@ -313,9 +333,15 @@
 	CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)_attributedString);
 	CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, (CFIndex)_attributedString.length), path, NULL);
 
-	// TODO: render any solid areas necessary for inverse video, or for graphics
+	// disable antialiasing in order to draw inverse video and highlighting boxes
 	CGContextSetAllowsAntialiasing(context, false);
 	CGFloat yPosition = (_lineHeight * _controlSet.height) - _lineHeight;
+
+	// get selection area
+	IntegerPoint startPoint;
+	IntegerPoint endPoint;
+	[self getSelectionStart:&startPoint end:&endPoint];
+
 	for(NSUInteger y = 0; y < _controlSet.height; y++)
 	{
 		uint8_t lastAttribute = 0;
@@ -326,6 +352,19 @@
 		for(NSUInteger x = 0; x < _controlSet.width; x++)
 		{
 			uint8_t attribute = attributes[x]&(kCPMTerminalAttributeReducedIntensityOn|kCPMTerminalAttributeInverseVideoOn);
+
+			if(_hasSelection)
+			{
+				if(
+					((y == startPoint.y) && (y < endPoint.y) && (x >= startPoint.x)) ||
+					((y == endPoint.y) && (y > startPoint.y) && (x <= endPoint.x)) ||
+					((y == startPoint.y) && (y == endPoint.y) && (x >= startPoint.x) && (x <= endPoint.x)) ||
+					((y > startPoint.y) && (y < endPoint.y))
+				)
+				{
+					attribute = kCPMTerminalAttributeSelected;
+				}
+			}
 
 			if(attribute != lastAttribute)
 			{
@@ -348,6 +387,9 @@
 					break;
 					case kCPMTerminalAttributeInverseVideoOn | kCPMTerminalAttributeReducedIntensityOn:
 						colour = [self halfIntensityColour];
+					break;
+					case kCPMTerminalAttributeSelected:
+						colour = [NSColor colorWithCalibratedRed:0.0 green:0.0 blue:0.7 alpha:1.0];
 					break;
 				}
 			}
@@ -390,10 +432,26 @@
 - (void)copy:(id)sender
 {
     NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
- 
-    // Telling the pasteboard we'll send a string, and attach the current output
+
     [pasteboard declareTypes:@[NSPasteboardTypeString] owner:self];
-    [pasteboard setString:_attributedString.string forType:NSPasteboardTypeString];
+
+	if(_hasSelection)
+	{
+		IntegerPoint startPoint;
+		IntegerPoint endPoint;
+		size_t length;
+
+		[self getSelectionStart:&startPoint end:&endPoint];
+		const char *bytes = [_controlSet charactersBetweenStart:startPoint end:endPoint length:&length];
+
+		NSString *const output = [[NSString alloc] initWithBytes:bytes length:length encoding:NSASCIIStringEncoding];
+
+		[pasteboard setString:output forType:NSPasteboardTypeString];
+	}
+	else
+	{
+		[pasteboard setString:_attributedString.string forType:NSPasteboardTypeString];
+	}
 }
 
 - (void)paste:(id)sender
@@ -405,31 +463,36 @@
 
 #pragma mark -
 #pragma mark NSResponder
-/*
-
-	TODO:
-		in conjunction with the pasteboard functionality, implement
-		mouse down/up/dragged to allow text selection
-*/
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
-	NSLog(@"down %@", theEvent);
+	_selectionCurrentPoint = _selectionStartPoint = [self textLocationForEvent:theEvent];
+	_hasSelection = YES;
+	_selectionStartTimeSinceReferenceDate = [NSDate timeIntervalSinceReferenceDate];
+	[self setNeedsDisplay:YES];
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
-	NSLog(@"dragged %@", theEvent);
+	_selectionCurrentPoint = [self textLocationForEvent:theEvent];
+	[self setNeedsDisplay:YES];
 }
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-	NSLog(@"up %@", theEvent);
+	if([NSDate timeIntervalSinceReferenceDate] - _selectionStartTimeSinceReferenceDate < 0.5 && _selectionCurrentPoint.x == _selectionStartPoint.x && _selectionCurrentPoint.y == _selectionStartPoint.y)
+	{
+		_hasSelection = NO;
+		[self setNeedsDisplay:YES];
+	}
 }
 
-- (CGPoint)textLocationFromMouseLocation:(CGPoint)mouseLocation
+- (IntegerPoint)textLocationForEvent:(NSEvent *)event
 {
-	return CGPointMake(0, 0);
+	const NSPoint location = [self convertPoint:event.locationInWindow fromView:nil];
+	const CGFloat scale = [self textScale];
+	const CGFloat boundsHeight = self.bounds.size.height;
+	return integerPointMake((NSUInteger)(floor(location.x / (_characterWidth * scale))), (NSUInteger)(floor((boundsHeight - location.y) / (_lineHeight * scale))));
 }
 
 /*
@@ -455,15 +518,6 @@
 		}
 		break;
 	}
-}
-
-#pragma mark -
-#pragma mark NSDraggingDestination
-
-- (NSDragOperation)draggingEntered:(id < NSDraggingInfo >)sender
-{
-	// we'll drag and drop, yeah?
-	return NSDragOperationLink;
 }
 
 #pragma mark -
@@ -539,6 +593,12 @@
 			[self.delegate terminalView:self didReceiveFileAtURL:URL];
 	}
 	return YES;
+}
+
+- (NSDragOperation)draggingEntered:(id < NSDraggingInfo >)sender
+{
+	// we'll drag and drop, yeah?
+	return NSDragOperationLink;
 }
 
 @end
