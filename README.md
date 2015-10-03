@@ -17,4 +17,8 @@ It…
 
 * uses native text rendering for a completely flexible window:
 
-![TurboPascal; resizing](Images/TurboPascal.gif)
+![Turbo Pascal; resizing](Images/TurboPascal.gif)
+
+* multitasks, naturally:
+
+![WordStar, SuperCalc, Zork and Turbo Pascal in harmony](Images/Multitasking.gif)
