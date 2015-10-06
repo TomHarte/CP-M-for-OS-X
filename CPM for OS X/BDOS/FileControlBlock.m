@@ -66,6 +66,11 @@
 		uint8_t *bytes = (uint8_t *)[_sourceData bytes];
 
 		_drive = bytes[0];
+
+		// in CP/M, drive 0 is the default drive; we'll treat that as A, which is drive 1,
+		// because this app always mounts a new program as drive A
+		if(!_drive) _drive++;
+
 		[self nameAndTypeFomData:_sourceData offset:1 name:&_filename type:&_fileType];
 
 		uint8_t record = bytes[0x20]&127;
