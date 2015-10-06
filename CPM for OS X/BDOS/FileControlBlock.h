@@ -12,7 +12,7 @@
 
 @interface CPMFileControlBlock : NSObject <NSCopying>
 
-- (id)initWithAddress:(uint16_t)address inMemory:(CPMRAMModule *)memory;
+- (id)initWithAddress:(uint16_t)address inMemory:(CPMRAMModule *)memory defaultDrive:(uint8_t)defaultDrive;
 
 @property (nonatomic, readonly) uint8_t drive;
 @property (nonatomic, readonly, strong) NSString *filename;

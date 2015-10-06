@@ -385,7 +385,7 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 
 - (CPMFileControlBlock *)fileControlBlockWithParameter:(uint16_t)parameter
 {
-	return [[CPMFileControlBlock alloc] initWithAddress:parameter inMemory:_memory];
+	return [[CPMFileControlBlock alloc] initWithAddress:parameter inMemory:_memory defaultDrive:[_memory valueAtAddress:kCPMBDOSCurrentDriveAddress]];
 }
 
 #pragma mark -

@@ -53,7 +53,7 @@
 	*type = [NSString stringWithFormat:@"%s", fileType];
 }
 
-- (id)initWithAddress:(uint16_t)address inMemory:(CPMRAMModule *)someMemory
+- (id)initWithAddress:(uint16_t)address inMemory:(CPMRAMModule *)someMemory defaultDrive:(uint8_t)defaultDrive
 {
 	self = [super init];
 
@@ -66,10 +66,7 @@
 		uint8_t *bytes = (uint8_t *)[_sourceData bytes];
 
 		_drive = bytes[0];
-
-		// in CP/M, drive 0 is the default drive; we'll treat that as A, which is drive 1,
-		// because this app always mounts a new program as drive A
-		if(!_drive) _drive++;
+        if(!_drive) _drive = defaultDrive;  // CP/M shorthand: drive 0 is whatever is currently set as default
 
 		[self nameAndTypeFomData:_sourceData offset:1 name:&_filename type:&_fileType];
 
