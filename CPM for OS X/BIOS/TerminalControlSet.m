@@ -16,7 +16,6 @@
 	uint16_t *_attributes;
 
 	NSUInteger _inputQueueWritePointer;
-	NSUInteger _longestSequence;
 	CPMTerminalControlSequenceTree *_sequenceTree;
 	NSMutableArray *_allControlSequences;
 
@@ -48,29 +47,18 @@
 	self.inputQueue[_inputQueueWritePointer++] = character;
 	_numberOfCharactersSoFar++;
 
-	// if we've gone beyond the length of things we can match without
-	// matching anything then just pop the first character
-	if(_inputQueueWritePointer > _longestSequence)
-	{
-		// this means we missed a code, probably
-		[(NSMutableSet *)_unrecognisedControlPoints addObject:@(_numberOfCharactersSoFar)];
-
-		// we'll attempt to output the first thing; some terminals (such as the Hazeltine 1500)
-		// use a printable character as the first thing in an escape code...
-		[self writeNormalCharacter:self.inputQueue[0]];
-		_inputQueueWritePointer--;
-		memmove(self.inputQueue, &self.inputQueue[1], _inputQueueWritePointer);
-	}
-
+	// pull recognised sequences as they're found
 	while(_inputQueueWritePointer)
 	{
 		NSString *attemptedString = [[NSString alloc] initWithBytes:self.inputQueue length:_inputQueueWritePointer encoding:NSASCIIStringEncoding];
 
 		CPMTerminalControlSequence *foundMatch = [_sequenceTree sequenceMatchingString:attemptedString];
 
+		// might find => more input needed. So wait.
 		if(foundMatch == [CPMTerminalControlSequenceTree mightFindSentinel])
 			break;
 
+		// can't find => will never match. So output a character
 		if(foundMatch == [CPMTerminalControlSequenceTree cantFindSentinel])
 		{
 			[self writeNormalCharacter:self.inputQueue[0]];
@@ -79,7 +67,7 @@
 		}
 		else
 		{
-			// record that we recognised a control sequence
+			// okay, found something. Record that we recognised a control sequence.
 			[(NSMutableSet *)_recognisedControlPoints addObject:@(_numberOfCharactersSoFar)];
 
 			// perform the sequence and remove the matched characters from the queue
@@ -318,16 +306,14 @@
 
 - (void)finishControlCodes
 {
-	// determine the longest sequence we have, and build the tree
-	// of all control sequence start characters
+	// build a search tree of control sequences
 	_sequenceTree = [[CPMTerminalControlSequenceTree alloc] initWithControlSequences:_allControlSequences];
-	_longestSequence = [[_allControlSequences valueForKeyPath:@"@max.pattern.length"] unsignedIntegerValue];
+
+	// allocate the input queue
+	_inputQueue = (char *)malloc(sizeof(char) * [[_allControlSequences valueForKeyPath:@"@max.pattern.length"] unsignedIntegerValue]);
 
 	// release temporary storage
 	_allControlSequences = nil;
-
-	// hence allocate the input queue
-	_inputQueue = (char *)malloc(sizeof(char) * _longestSequence);
 }
 
 - (void)homeCursor

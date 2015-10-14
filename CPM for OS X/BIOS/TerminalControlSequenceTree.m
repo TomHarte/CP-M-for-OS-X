@@ -81,21 +81,31 @@
 
 - (CPMTerminalControlSequence *)sequenceMatchingString:(NSString *)string depth:(NSUInteger)depth
 {
+	// if there's something at this node, a leaf has been reached so that's the answer;
+	// if we're still looking but the input string isn't long enough to find any more then
+	// indicate that something might be found but isn't yet
 	if(_sequence)				return _sequence;
 	if(depth >= string.length)	return [[self class] mightFindSentinel];
 
+	// otherwise consider both a potential wildcard match and an exact match
 	CPMTerminalControlSequence *wildcardFind = [_treesByFirstCharacter[@('?')] sequenceMatchingString:string depth:depth+1];
 	CPMTerminalControlSequence *directFind = [_treesByFirstCharacter[@([string characterAtIndex:depth])] sequenceMatchingString:string depth:depth+1];
 
+	// if no match was found then that's no match in total
 	if(!wildcardFind && !directFind) return nil;
 
+	// if two matches were found, prefer the shorter
 	if([wildcardFind isKindOfClass:[CPMTerminalControlSequence class]] && [directFind isKindOfClass:[CPMTerminalControlSequence class]])
 	{
 		return wildcardFind.pattern.length < directFind.pattern.length ? wildcardFind : directFind;
 	}
+
+	// if one match was found return it directly
 	if([wildcardFind isKindOfClass:[CPMTerminalControlSequence class]]) return wildcardFind;
 	if([directFind isKindOfClass:[CPMTerminalControlSequence class]]) return directFind;
 
+	// if we got to here then a might find sentinel was returned for one of the searches,
+	// and no actual find improved upon it. So pass the might find upwards.
 	return [[self class] mightFindSentinel];
 }
 
