@@ -33,8 +33,7 @@
 */
 typedef struct
 {
-	__unsafe_unretained NSString *start;
-	NSUInteger requiredLength;
+	__unsafe_unretained NSString *pattern;
 	__unsafe_unretained dispatch_block_t action;
 } CPMTerminalControlSequenceStruct;
 

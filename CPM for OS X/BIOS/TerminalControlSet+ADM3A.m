@@ -24,39 +24,39 @@
 
 	CPMTerminalControlSequenceStruct sequences[] =
 	{
-		{@"\x0b",	0,	^{	[weakSelf upCursor];					}},
-		{@"\x17",	0,	^{	[weakSelf clearToEndOfScreen];			}},
-		{@"\x18",	0,	^{	[weakSelf clearToEndOfLine];			}},
-		{@"\x1a",	0,	^{
+		{@"\x0b",	^{	[weakSelf upCursor];					}},
+		{@"\x17",	^{	[weakSelf clearToEndOfScreen];			}},
+		{@"\x18",	^{	[weakSelf clearToEndOfLine];			}},
+		{@"\x1a",	^{
 							[weakSelf homeCursor];
 							[weakSelf clearToEndOfScreen];
 						}},
-		{@"\x1e",	0,	^{	[weakSelf homeCursor];					}},
-		{@"\x08",	0,	^{	[weakSelf leftCursor];					}},
-		{@"\x0c",	0,	^{	[weakSelf rightCursor];					}},
-		{@"\33=",	4,	^{
+		{@"\x1e",	^{	[weakSelf homeCursor];					}},
+		{@"\x08",	^{	[weakSelf leftCursor];					}},
+		{@"\x0c",	^{	[weakSelf rightCursor];					}},
+		{@"\33=??",	^{
 							[weakSelf
 									setCursorX:(NSUInteger)(weakSelf.inputQueue[3] - 32)%weakSelf.width
 									y:(NSUInteger)(weakSelf.inputQueue[2] - 32)%weakSelf.height];
 						}},
 
-		{@"\33B0",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;		}},
-		{@"\33C0",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;		}},
-		{@"\33B1",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}},
-		{@"\33C1",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}},
-		{@"\33B2",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeBlinkingOn;			}},
-		{@"\33C2",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeBlinkingOn;			}},
-		{@"\33B3",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}},
-		{@"\33C3",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;		}},
+		{@"\33B0",	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;		}},
+		{@"\33C0",	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;		}},
+		{@"\33B1",	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}},
+		{@"\33C1",	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}},
+		{@"\33B2",	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeBlinkingOn;			}},
+		{@"\33C2",	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeBlinkingOn;			}},
+		{@"\33B3",	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}},
+		{@"\33C3",	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;		}},
 
-		{@"\33B4",	0,	^{	weakSelf.cursorIsDisabled = NO;			}},
-		{@"\33C4",	0,	^{	weakSelf.cursorIsDisabled = YES;		}},
+		{@"\33B4",	^{	weakSelf.cursorIsDisabled = NO;			}},
+		{@"\33C4",	^{	weakSelf.cursorIsDisabled = YES;		}},
 
-		{@"\33B6",	0,	^{	[weakSelf saveCursorPosition];			}},
-		{@"\33C6",	0,	^{	[weakSelf restoreCursorPosition];		}},
+		{@"\33B6",	^{	[weakSelf saveCursorPosition];			}},
+		{@"\33C6",	^{	[weakSelf restoreCursorPosition];		}},
 
-		{@"\33R",	0,	^{	[weakSelf deleteLine];	}},
-		{@"\33E",	0,	^{	[weakSelf insertLine];	}},
+		{@"\33R",	^{	[weakSelf deleteLine];	}},
+		{@"\33E",	^{	[weakSelf insertLine];	}},
 		{nil}
 	};
 

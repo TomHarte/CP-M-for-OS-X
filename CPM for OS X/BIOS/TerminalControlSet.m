@@ -8,6 +8,7 @@
 
 #import "TerminalControlSet.h"
 #import "TerminalControlSequence.h"
+#import "TerminalControlSequenceTree.h"
 
 @implementation CPMTerminalControlSet
 {
@@ -16,9 +17,8 @@
 
 	NSUInteger _inputQueueWritePointer;
 	NSUInteger _longestSequence;
-
-	NSMutableDictionary *_sequencesToActions;
-	NSMutableSet *_allSequenceStartCharacters;
+	CPMTerminalControlSequenceTree *_sequenceTree;
+	NSMutableArray *_allControlSequences;
 
 	NSUInteger _backupCursorX, _backupCursorY;
 }
@@ -62,45 +62,30 @@
 		memmove(self.inputQueue, &self.inputQueue[1], _inputQueueWritePointer);
 	}
 
-	// output anything that's not possibly part of a control sequence
-	while(_inputQueueWritePointer && ![_allSequenceStartCharacters containsObject:@(self.inputQueue[0])])
+	while(_inputQueueWritePointer)
 	{
-		[self writeNormalCharacter:self.inputQueue[0]];
-		_inputQueueWritePointer--;
-		memmove(self.inputQueue, &self.inputQueue[1], _inputQueueWritePointer);
-	}
+		NSString *attemptedString = [[NSString alloc] initWithBytes:self.inputQueue length:_inputQueueWritePointer encoding:NSASCIIStringEncoding];
 
-	// have a go at matching what's left, if there is anything
-	if(_inputQueueWritePointer)
-	{
-		while(1)
+		CPMTerminalControlSequence *foundMatch = [_sequenceTree sequenceMatchingString:attemptedString];
+
+		if(foundMatch == [CPMTerminalControlSequenceTree mightFindSentinel])
+			break;
+
+		if(foundMatch == [CPMTerminalControlSequenceTree cantFindSentinel])
 		{
-			NSString *attemptedString = [[NSString alloc] initWithBytes:self.inputQueue length:_inputQueueWritePointer encoding:NSASCIIStringEncoding];
-			CPMTerminalControlSequence *foundMatch = nil;
-
-			while(attemptedString.length)
-			{
-				CPMTerminalControlSequence *potentialMatch =
-					[_sequencesToActions valueForKey:attemptedString];
-
-				if(potentialMatch && potentialMatch.requiredLength <= _inputQueueWritePointer)
-				{
-					foundMatch = potentialMatch;
-					break;
-				}
-
-				attemptedString = [attemptedString substringToIndex:attemptedString.length-1];
-			}
-
-			if(!foundMatch) break;
-
+			[self writeNormalCharacter:self.inputQueue[0]];
+			_inputQueueWritePointer--;
+			memmove(self.inputQueue, &self.inputQueue[1], _inputQueueWritePointer);
+		}
+		else
+		{
 			// record that we recognised a control sequence
 			[(NSMutableSet *)_recognisedControlPoints addObject:@(_numberOfCharactersSoFar)];
 
 			// perform the sequence and remove the matched characters from the queue
 			foundMatch.action();
-			_inputQueueWritePointer -= foundMatch.requiredLength;
-			memmove(self.inputQueue, &self.inputQueue[foundMatch.requiredLength], _inputQueueWritePointer);
+			_inputQueueWritePointer -= foundMatch.pattern.length;
+			memmove(self.inputQueue, &self.inputQueue[foundMatch.pattern.length], _inputQueueWritePointer);
 		}
 	}
 }
@@ -323,28 +308,23 @@
 
 - (void)addControlSequence:(CPMTerminalControlSequence *)controlSequence
 {
-	_sequencesToActions[controlSequence.start] = controlSequence;
+	[_allControlSequences addObject:controlSequence];
 }
 
 - (void)beginControlCodes
 {
-	_sequencesToActions = [[NSMutableDictionary alloc] init];
+	_allControlSequences = [NSMutableArray new];
 }
 
 - (void)finishControlCodes
 {
-	_allSequenceStartCharacters = [[NSMutableSet alloc] init];
-	_longestSequence = 1;
-
-	// determine the longest sequence we have, and build the set
+	// determine the longest sequence we have, and build the tree
 	// of all control sequence start characters
-	for(CPMTerminalControlSequence *controlSequence in [_sequencesToActions allValues])
-	{
-		[_allSequenceStartCharacters addObject:@([controlSequence.start characterAtIndex:0])];
+	_sequenceTree = [[CPMTerminalControlSequenceTree alloc] initWithControlSequences:_allControlSequences];
+	_longestSequence = [[_allControlSequences valueForKeyPath:@"@max.pattern.length"] unsignedIntegerValue];
 
-		if(controlSequence.requiredLength > _longestSequence)
-			_longestSequence = controlSequence.requiredLength;
-	}
+	// release temporary storage
+	_allControlSequences = nil;
 
 	// hence allocate the input queue
 	_inputQueue = (char *)malloc(sizeof(char) * _longestSequence);
@@ -427,23 +407,12 @@
 
 - (void)installControlSequencesFromStructs:(CPMTerminalControlSequenceStruct *)structs
 {
-	while(structs->start)
+	while(structs->pattern)
 	{
-		if(structs->requiredLength)
-		{
-			[self addControlSequence:
-				[[CPMTerminalControlSequence alloc]
-					initWithStart:structs->start
-					requiredLength:structs->requiredLength
-					action:structs->action]];
-		}
-		else
-		{
-			[self addControlSequence:
-				[[CPMTerminalControlSequence alloc]
-					initWithStart:structs->start
-					action:structs->action]];
-		}
+		[self addControlSequence:
+			[[CPMTerminalControlSequence alloc]
+				initWithPattern:structs->pattern
+				action:structs->action]];
 
 		structs++;
 	}
@@ -455,9 +424,9 @@
 
 	CPMTerminalControlSequenceStruct sequences[] =
 	{
-		{@"\n",	0,	^{	[weakSelf incrementY];						}},
-		{@"\r",	0,	^{	[weakSelf setCursorX:0 y:weakSelf.cursorY];	}},
-		{@"\a",	0,	^{	NSBeep();									}},
+		{@"\n",	^{	[weakSelf incrementY];						}},
+		{@"\r",	^{	[weakSelf setCursorX:0 y:weakSelf.cursorY];	}},
+		{@"\a",	^{	NSBeep();									}},
 		{nil}
 	};
 

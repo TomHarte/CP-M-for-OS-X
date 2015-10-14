@@ -18,35 +18,35 @@
 
 	CPMTerminalControlSequenceStruct sequences[] =
 	{
-		{@"~\5",	0,	^{
-							dispatch_sync(dispatch_get_main_queue(),
-							^{
-								[weakSelf.delegate
-									terminalViewControlSet:weakSelf
-									addStringToInput:
-										[NSString stringWithFormat:@"%c%c",
-												(uint8_t)weakSelf.cursorX,
-												(uint8_t)weakSelf.cursorY]];
-							});
-						}},
-		{@"~\13",	0,	^{	[weakSelf downCursor];	}},
-		{@"~\14",	0,	^{	[weakSelf upCursor];	}},
-		{@"~\17",	0,	^{	[weakSelf clearToEndOfLine];	}},
-		{@"~\21",	4,	^{
-							[weakSelf
-								setCursorX:(NSUInteger)weakSelf.inputQueue[2]%weakSelf.width
-								y:(NSUInteger)weakSelf.inputQueue[3]%weakSelf.height];
-						}},
-		{@"~\22",	0,	^{	[weakSelf homeCursor];	}},
-		{@"~\23",	0,	^{	[weakSelf deleteLine];			}},
-		{@"~\30",	0,	^{	[weakSelf clearToEndOfScreen];	}},
-		{@"~\31",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeBackground;	}},
-		{@"~\32",	0,	^{	[weakSelf insertLine];			}},
-		{@"~\34",	0,	^{
-							[weakSelf homeCursor];
-							[weakSelf clearToEndOfScreen];
-						}},
-		{@"~\37",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeBackground;	}},
+		{@"~\5",	^{
+						dispatch_sync(dispatch_get_main_queue(),
+						^{
+							[weakSelf.delegate
+								terminalViewControlSet:weakSelf
+								addStringToInput:
+									[NSString stringWithFormat:@"%c%c",
+											(uint8_t)weakSelf.cursorX,
+											(uint8_t)weakSelf.cursorY]];
+						});
+					}},
+		{@"~\13",	^{	[weakSelf downCursor];	}},
+		{@"~\14",	^{	[weakSelf upCursor];	}},
+		{@"~\17",	^{	[weakSelf clearToEndOfLine];	}},
+		{@"~\21??",	^{
+						[weakSelf
+							setCursorX:(NSUInteger)weakSelf.inputQueue[2]%weakSelf.width
+							y:(NSUInteger)weakSelf.inputQueue[3]%weakSelf.height];
+					}},
+		{@"~\22",	^{	[weakSelf homeCursor];	}},
+		{@"~\23",	^{	[weakSelf deleteLine];			}},
+		{@"~\30",	^{	[weakSelf clearToEndOfScreen];	}},
+		{@"~\31",	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeBackground;	}},
+		{@"~\32",	^{	[weakSelf insertLine];			}},
+		{@"~\34",	^{
+						[weakSelf homeCursor];
+						[weakSelf clearToEndOfScreen];
+					}},
+		{@"~\37",	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeBackground;	}},
 		{nil}
 	};
 

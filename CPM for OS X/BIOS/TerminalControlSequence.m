@@ -10,19 +10,13 @@
 
 @implementation CPMTerminalControlSequence
 
-- (id)initWithStart:(NSString *)start action:(dispatch_block_t)action
-{
-	return [self initWithStart:start requiredLength:[start length] action:action];
-}
-
-- (id)initWithStart:(NSString *)start requiredLength:(NSUInteger)requiredLength action:(dispatch_block_t)action
+- (id)initWithPattern:(NSString *)pattern action:(dispatch_block_t)action
 {
 	self = [super init];
 
 	if(self)
 	{
-		_start = start;
-		_requiredLength = requiredLength;
+		_pattern = [pattern copy];
 		_action = [action copy];
 	}
 
@@ -31,23 +25,18 @@
 
 - (NSUInteger)hash
 {
-	return [self.start hash];
+	return [self.pattern hash];
 }
 
 - (id)copyWithZone:(NSZone *)zone
 {
-	CPMTerminalControlSequence *copy = [[CPMTerminalControlSequence allocWithZone:zone] init];
-	copy->_start = self.start;
-	copy->_requiredLength = self.requiredLength;
-	copy->_action = self.action;
-	
-	return copy;
+	return self;
 }
 
 - (BOOL)isEqual:(CPMTerminalControlSequence *)otherSequence
 {
 	if(![otherSequence isKindOfClass:[self class]]) return NO;
-	return [self.start isEqualToString:otherSequence.start];
+	return [self.pattern isEqualToString:otherSequence.pattern];
 }
 
 @end

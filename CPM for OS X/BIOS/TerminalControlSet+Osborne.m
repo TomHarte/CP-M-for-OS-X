@@ -18,30 +18,30 @@
 
 	CPMTerminalControlSequenceStruct sequences[] =
 	{
-		{@"\x07",	0,	^{	NSBeep();				}}, // i.e. ^G
+		{@"\x07",	^{	NSBeep();				}}, // i.e. ^G
 
-		{@"\x08",	0,	^{	[weakSelf leftCursor];	}},	// i.e. ^H
-		{@"\x0c",	0,	^{	[weakSelf rightCursor];	}},	// i.e. ^L
-		{@"\x0b",	0,	^{	[weakSelf upCursor];	}},	// i.e. ^K
-		{@"\x1a",	0,	^{
-							[weakSelf homeCursor];
-							[weakSelf clearToEndOfScreen];
-						}},								// i.e. ^Z
-		{@"\x1e",	0,	^{	[weakSelf homeCursor];	}},
-		{@"\33=",	4,	^{
-							[weakSelf
-									setCursorX:(NSUInteger)(weakSelf.inputQueue[3] - 32)%weakSelf.width
-									y:(NSUInteger)(weakSelf.inputQueue[2] - 32)%weakSelf.height];
-						}},
-		{@"\33T",	0,	^{	[weakSelf clearToEndOfLine];	}},
+		{@"\x08",	^{	[weakSelf leftCursor];	}},	// i.e. ^H
+		{@"\x0c",	^{	[weakSelf rightCursor];	}},	// i.e. ^L
+		{@"\x0b",	^{	[weakSelf upCursor];	}},	// i.e. ^K
+		{@"\x1a",	^{
+						[weakSelf homeCursor];
+						[weakSelf clearToEndOfScreen];
+					}},								// i.e. ^Z
+		{@"\x1e",	^{	[weakSelf homeCursor];	}},
+		{@"\33=??",	^{
+						[weakSelf
+								setCursorX:(NSUInteger)(weakSelf.inputQueue[3] - 32)%weakSelf.width
+								y:(NSUInteger)(weakSelf.inputQueue[2] - 32)%weakSelf.height];
+					}},
+		{@"\33T",	^{	[weakSelf clearToEndOfLine];	}},
 
-		{@"\33)",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}},
-		{@"\33(",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}},
-		{@"\33L",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}},
-		{@"\33M",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;		}},
+		{@"\33)",	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}},
+		{@"\33(",	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}},
+		{@"\33L",	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}},
+		{@"\33M",	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;		}},
 
-		{@"\33E",	0,	^{	[weakSelf insertLine];			}},
-		{@"\33R",	0,	^{	[weakSelf deleteLine];			}},
+		{@"\33E",	^{	[weakSelf insertLine];			}},
+		{@"\33R",	^{	[weakSelf deleteLine];			}},
 
 		{nil}
 	};
