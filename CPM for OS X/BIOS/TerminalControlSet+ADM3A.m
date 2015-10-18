@@ -10,9 +10,7 @@
 
 @implementation CPMTerminalControlSet (ADM3A)
 
-+ (instancetype)ADM3AControlSet			{	return [[self alloc] initWithControlSet:@selector(installADM3AControlCodes) width:80 height:24];			}
-
-- (void)installADM3AControlCodes
++ (instancetype)ADM3AControlSet
 {
 	/*
 		This is actually the pure ADM3A with some Kaypro extensions thrown
@@ -20,45 +18,43 @@
 		
 		Update! This may well just be the Kaypro. I'll need to look into this.
 	*/
-	__weak __block typeof(self) weakSelf = self;
+	return [[self alloc] initWithControlSequences:@[
+			TCSMake(@"\x0b",	CPMTerminalAction(	[controlSet upCursor];					)),
+			TCSMake(@"\x17",	CPMTerminalAction(	[controlSet clearToEndOfScreen];		)),
+			TCSMake(@"\x18",	CPMTerminalAction(	[controlSet clearToEndOfLine];			)),
+			TCSMake(@"\x1a",	CPMTerminalAction(
+													[controlSet homeCursor];
+													[controlSet clearToEndOfScreen];
+												)),
+			TCSMake(@"\x1e",	CPMTerminalAction(	[controlSet homeCursor];					)),
+			TCSMake(@"\x08",	CPMTerminalAction(	[controlSet leftCursor];					)),
+			TCSMake(@"\x0c",	CPMTerminalAction(	[controlSet rightCursor];					)),
+			TCSMake(@"\33=??",	CPMTerminalAction(
+													[controlSet
+															setCursorX:(NSUInteger)(inputQueue[3] - 32)%controlSet.width
+															y:(NSUInteger)(inputQueue[2] - 32)%controlSet.height];
+												)),
 
-	CPMTerminalControlSequenceStruct sequences[] =
-	{
-		{@"\x0b",	^{	[weakSelf upCursor];					}},
-		{@"\x17",	^{	[weakSelf clearToEndOfScreen];			}},
-		{@"\x18",	^{	[weakSelf clearToEndOfLine];			}},
-		{@"\x1a",	^{
-							[weakSelf homeCursor];
-							[weakSelf clearToEndOfScreen];
-						}},
-		{@"\x1e",	^{	[weakSelf homeCursor];					}},
-		{@"\x08",	^{	[weakSelf leftCursor];					}},
-		{@"\x0c",	^{	[weakSelf rightCursor];					}},
-		{@"\33=??",	^{
-							[weakSelf
-									setCursorX:(NSUInteger)(weakSelf.inputQueue[3] - 32)%weakSelf.width
-									y:(NSUInteger)(weakSelf.inputQueue[2] - 32)%weakSelf.height];
-						}},
+			TCSMake(@"\33B0",	CPMTerminalAction(	controlSet.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;			)),
+			TCSMake(@"\33C0",	CPMTerminalAction(	controlSet.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;		)),
+			TCSMake(@"\33B1",	CPMTerminalAction(	controlSet.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;		)),
+			TCSMake(@"\33C1",	CPMTerminalAction(	controlSet.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	)),
+			TCSMake(@"\33B2",	CPMTerminalAction(	controlSet.currentAttribute |= kCPMTerminalAttributeBlinkingOn;				)),
+			TCSMake(@"\33C2",	CPMTerminalAction(	controlSet.currentAttribute &= ~kCPMTerminalAttributeBlinkingOn;			)),
+			TCSMake(@"\33B3",	CPMTerminalAction(	controlSet.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			)),
+			TCSMake(@"\33C3",	CPMTerminalAction(	controlSet.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;			)),
 
-		{@"\33B0",	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;		}},
-		{@"\33C0",	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;		}},
-		{@"\33B1",	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}},
-		{@"\33C1",	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}},
-		{@"\33B2",	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeBlinkingOn;			}},
-		{@"\33C2",	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeBlinkingOn;			}},
-		{@"\33B3",	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}},
-		{@"\33C3",	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;		}},
+			TCSMake(@"\33B4",	CPMTerminalAction(	controlSet.cursorIsDisabled = NO;		)),
+			TCSMake(@"\33C4",	CPMTerminalAction(	controlSet.cursorIsDisabled = YES;		)),
 
-		{@"\33B4",	^{	weakSelf.cursorIsDisabled = NO;			}},
-		{@"\33C4",	^{	weakSelf.cursorIsDisabled = YES;		}},
+			TCSMake(@"\33B6",	CPMTerminalAction(	[controlSet saveCursorPosition];		)),
+			TCSMake(@"\33C6",	CPMTerminalAction(	[controlSet restoreCursorPosition];		)),
 
-		{@"\33B6",	^{	[weakSelf saveCursorPosition];			}},
-		{@"\33C6",	^{	[weakSelf restoreCursorPosition];		}},
-
-		{@"\33R",	^{	[weakSelf deleteLine];	}},
-		{@"\33E",	^{	[weakSelf insertLine];	}},
-		{nil}
-	};
+			TCSMake(@"\33R",	CPMTerminalAction(	[controlSet deleteLine];	)),
+			TCSMake(@"\33E",	CPMTerminalAction(	[controlSet insertLine];	)),
+		]
+		width:80
+		height:24];
 
 	/*
 		Unimplemented at present:
@@ -76,8 +72,6 @@
 			Stop cursor blinking     OUT 28, 10: OUT 29, 0
 			Turn cursor to underline OUT 28, 10: OUT 29, 15* 
 	*/
-
-	[self installControlSequencesFromStructs:sequences];
 }
 
 @end

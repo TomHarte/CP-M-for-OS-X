@@ -10,74 +10,30 @@
 
 @implementation CPMTerminalControlSet (ANSI)
 
-+ (instancetype)ANSIControlSet			{	return [[self alloc] initWithControlSet:@selector(installANSIControlCodes) width:80 height:24];			}
-
-- (void)installANSIControlCodes
++ (instancetype)ANSIControlSet
 {
-	/*
-		This is actually the pure ADM3A with some Kaypro extensions thrown
-		in, I believe...
-		
-		Update! This may well just be the Kaypro. I'll need to look into this.
-	*/
-	__weak __block typeof(self) weakSelf = self;
-
-	CPMTerminalControlSequenceStruct sequences[] =
-	{
-//		{@"\x0b",	0,	^{	[weakSelf upCursor];					}},
-//		{@"\x17",	0,	^{	[weakSelf clearToEndOfScreen];			}},
-		{@"\33[K",	^{	[weakSelf clearToEndOfLine];			}},
-//		{@"\x1a",	0,	^{
-//							[weakSelf homeCursor];
-//							[weakSelf clearToEndOfScreen];
-//						}},
-//		{@"\x1e",	0,	^{	[weakSelf homeCursor];					}},
-//		{@"\x08",	0,	^{	[weakSelf leftCursor];					}},
-//		{@"\x0c",	0,	^{	[weakSelf rightCursor];					}},
-//		{@"\33[",	4,	^{
-//							[weakSelf
-//									setCursorX:(NSUInteger)(weakSelf.inputQueue[3] - 32)%weakSelf.width
-//									y:(NSUInteger)(weakSelf.inputQueue[2] - 32)%weakSelf.height];
-//						}},
-//
-//		{@"\33B0",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;		}},
-//		{@"\33C0",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;		}},
-//		{@"\33B1",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}},
-//		{@"\33C1",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}},
-//		{@"\33B2",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeBlinkingOn;			}},
-//		{@"\33C2",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeBlinkingOn;			}},
-//		{@"\33B3",	0,	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}},
-//		{@"\33C3",	0,	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;		}},
-//
-//		{@"\33B4",	0,	^{	weakSelf.cursorIsDisabled = NO;			}},
-//		{@"\33C4",	0,	^{	weakSelf.cursorIsDisabled = YES;		}},
-
-		{@"\33[s",	^{	[weakSelf saveCursorPosition];			}},
-		{@"\33[u",	^{	[weakSelf restoreCursorPosition];		}},
-
-//		{@"\33R",	0,	^{	[weakSelf deleteLine];	}},
-//		{@"\33E",	0,	^{	[weakSelf insertLine];	}},
-		{nil}
-	};
-
-	/*
-		Unimplemented at present:
-
-			(the graphics characters, 128–255)
-
-			Video mode on/off                  B5/C5
-			Status line preservation on/off    B7/C7
-
-			Print pixel            *, row + 31, col + 31
-			Erase pixel            #32 (space), row + 31, col + 31
-			Print line             L, row1 + 31, col1 + 31, row2 + 31, col2 + 31
-			Erase line             D, row1 + 31, col1 + 31, row2 + 31, col2 + 31
-
-			Stop cursor blinking     OUT 28, 10: OUT 29, 0
-			Turn cursor to underline OUT 28, 10: OUT 29, 15* 
-	*/
-
-	[self installControlSequencesFromStructs:sequences];
+	return [[self alloc] initWithControlSequences:@[
+			TCSMake(@"\33[K",	CPMTerminalAction(	[controlSet clearToEndOfLine];			)),
+			TCSMake(@"\33[1K",	CPMTerminalAction(	[controlSet clearFromStartOfLine];		)),
+			TCSMake(@"\33[2K",	CPMTerminalAction(
+													[controlSet clearToEndOfLine];
+													[controlSet clearFromStartOfLine];
+												)),
+			TCSMake(@"\33[??;??H",	CPMTerminalAction(
+													NSUInteger row = (NSUInteger)(((inputQueue[2] - '0') * 10) + (inputQueue[3] - '0'));
+													NSUInteger column = (NSUInteger)(((inputQueue[5] - '0') * 10) + (inputQueue[6] - '0'));
+													[controlSet
+														setCursorX:column%controlSet.width
+														y:row%controlSet.height];
+												)),
+			TCSMake(@"\33[H",	CPMTerminalAction(
+													[controlSet setCursorX:0 y:0];
+												)),
+			TCSMake(@"\33[s",	CPMTerminalAction(	[controlSet saveCursorPosition];		)),
+			TCSMake(@"\33[u",	CPMTerminalAction(	[controlSet restoreCursorPosition];		)),
+		]
+		width:80
+		height:24];
 }
 
 @end

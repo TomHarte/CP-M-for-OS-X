@@ -10,41 +10,36 @@
 
 @implementation CPMTerminalControlSet (Osborne)
 
-+ (instancetype)osborneControlSet			{	return [[self alloc] initWithControlSet:@selector(installOsborneControlCodes) width:80 height:24];		}
-
-- (void)installOsborneControlCodes
++ (instancetype)osborneControlSet
 {
-	__weak __block typeof(self) weakSelf = self;
+	return [[self alloc] initWithControlSequences:@[
+			TCSMake(@"\x07",	CPMTerminalAction(	NSBeep();					)), // i.e. ^G
 
-	CPMTerminalControlSequenceStruct sequences[] =
-	{
-		{@"\x07",	^{	NSBeep();				}}, // i.e. ^G
+			TCSMake(@"\x08",	CPMTerminalAction(	[controlSet leftCursor];	)),	// i.e. ^H
+			TCSMake(@"\x0c",	CPMTerminalAction(	[controlSet rightCursor];	)),	// i.e. ^L
+			TCSMake(@"\x0b",	CPMTerminalAction(	[controlSet upCursor];		)),	// i.e. ^K
+			TCSMake(@"\x1a",	CPMTerminalAction(
+													[controlSet homeCursor];
+													[controlSet clearToEndOfScreen];
+												)),								// i.e. ^Z
+			TCSMake(@"\x1e",	CPMTerminalAction(	[controlSet homeCursor];	)),
+			TCSMake(@"\33=??",	CPMTerminalAction(
+													[controlSet
+															setCursorX:(NSUInteger)(inputQueue[3] - 32)%controlSet.width
+															y:(NSUInteger)(inputQueue[2] - 32)%controlSet.height];
+												)),
+			TCSMake(@"\33T",	CPMTerminalAction(	[controlSet clearToEndOfLine];	)),
 
-		{@"\x08",	^{	[weakSelf leftCursor];	}},	// i.e. ^H
-		{@"\x0c",	^{	[weakSelf rightCursor];	}},	// i.e. ^L
-		{@"\x0b",	^{	[weakSelf upCursor];	}},	// i.e. ^K
-		{@"\x1a",	^{
-						[weakSelf homeCursor];
-						[weakSelf clearToEndOfScreen];
-					}},								// i.e. ^Z
-		{@"\x1e",	^{	[weakSelf homeCursor];	}},
-		{@"\33=??",	^{
-						[weakSelf
-								setCursorX:(NSUInteger)(weakSelf.inputQueue[3] - 32)%weakSelf.width
-								y:(NSUInteger)(weakSelf.inputQueue[2] - 32)%weakSelf.height];
-					}},
-		{@"\33T",	^{	[weakSelf clearToEndOfLine];	}},
+			TCSMake(@"\33)",	CPMTerminalAction(	controlSet.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;		)),
+			TCSMake(@"\33(",	CPMTerminalAction(	controlSet.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	)),
+			TCSMake(@"\33L",	CPMTerminalAction(	controlSet.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			)),
+			TCSMake(@"\33M",	CPMTerminalAction(	controlSet.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;			)),
 
-		{@"\33)",	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;	}},
-		{@"\33(",	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	}},
-		{@"\33L",	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			}},
-		{@"\33M",	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;		}},
-
-		{@"\33E",	^{	[weakSelf insertLine];			}},
-		{@"\33R",	^{	[weakSelf deleteLine];			}},
-
-		{nil}
-	};
+			TCSMake(@"\33E",	CPMTerminalAction(	[controlSet insertLine];	)),
+			TCSMake(@"\33R",	CPMTerminalAction(	[controlSet deleteLine];	)),
+		]
+		width:80
+		height:24];
 
 	/*
 		Unimplemented at present:
@@ -58,8 +53,6 @@
 			1b 47	ESC G	end graphics display
 			1b 5b	ESC [	homes screen
 	*/
-
-	[self installControlSequencesFromStructs:sequences];
 }
 
 @end

@@ -10,45 +10,41 @@
 
 @implementation CPMTerminalControlSet (Hazeltine1500)
 
-+ (instancetype)hazeltine1500ControlSet	{	return [[self alloc] initWithControlSet:@selector(installHazeltine1500ControlCodes) width:80 height:24];	}
-
-- (void)installHazeltine1500ControlCodes
++ (instancetype)hazeltine1500ControlSet
 {
-	__weak __block typeof(self) weakSelf = self;
-
-	CPMTerminalControlSequenceStruct sequences[] =
-	{
-		{@"~\5",	^{
-						dispatch_sync(dispatch_get_main_queue(),
-						^{
-							[weakSelf.delegate
-								terminalViewControlSet:weakSelf
-								addStringToInput:
-									[NSString stringWithFormat:@"%c%c",
-											(uint8_t)weakSelf.cursorX,
-											(uint8_t)weakSelf.cursorY]];
-						});
-					}},
-		{@"~\13",	^{	[weakSelf downCursor];	}},
-		{@"~\14",	^{	[weakSelf upCursor];	}},
-		{@"~\17",	^{	[weakSelf clearToEndOfLine];	}},
-		{@"~\21??",	^{
-						[weakSelf
-							setCursorX:(NSUInteger)weakSelf.inputQueue[2]%weakSelf.width
-							y:(NSUInteger)weakSelf.inputQueue[3]%weakSelf.height];
-					}},
-		{@"~\22",	^{	[weakSelf homeCursor];	}},
-		{@"~\23",	^{	[weakSelf deleteLine];			}},
-		{@"~\30",	^{	[weakSelf clearToEndOfScreen];	}},
-		{@"~\31",	^{	weakSelf.currentAttribute |= kCPMTerminalAttributeBackground;	}},
-		{@"~\32",	^{	[weakSelf insertLine];			}},
-		{@"~\34",	^{
-						[weakSelf homeCursor];
-						[weakSelf clearToEndOfScreen];
-					}},
-		{@"~\37",	^{	weakSelf.currentAttribute &= ~kCPMTerminalAttributeBackground;	}},
-		{nil}
-	};
+	return [[self alloc] initWithControlSequences:@[
+			TCSMake(@"~\5",		CPMTerminalAction(
+													dispatch_sync(dispatch_get_main_queue(),
+													^{
+														[controlSet.delegate
+															terminalViewControlSet:controlSet
+															addStringToInput:
+																[NSString stringWithFormat:@"%c%c",
+																		(uint8_t)controlSet.cursorX,
+																		(uint8_t)controlSet.cursorY]];
+													});
+												)),
+			TCSMake(@"~\13",	CPMTerminalAction(	[controlSet downCursor];		)),
+			TCSMake(@"~\14",	CPMTerminalAction(	[controlSet upCursor];			)),
+			TCSMake(@"~\17",	CPMTerminalAction(	[controlSet clearToEndOfLine];	)),
+			TCSMake(@"~\21??",	CPMTerminalAction(
+													[controlSet
+														setCursorX:(NSUInteger)inputQueue[2]%controlSet.width
+														y:(NSUInteger)inputQueue[3]%controlSet.height];
+												)),
+			TCSMake(@"~\22",	CPMTerminalAction(	[controlSet homeCursor];			)),
+			TCSMake(@"~\23",	CPMTerminalAction(	[controlSet deleteLine];			)),
+			TCSMake(@"~\30",	CPMTerminalAction(	[controlSet clearToEndOfScreen];	)),
+			TCSMake(@"~\31",	CPMTerminalAction(	controlSet.currentAttribute |= kCPMTerminalAttributeBackground;		)),
+			TCSMake(@"~\32",	CPMTerminalAction(	[controlSet insertLine];			)),
+			TCSMake(@"~\34",	CPMTerminalAction(
+													[controlSet homeCursor];
+													[controlSet clearToEndOfScreen];
+												)),
+			TCSMake(@"~\37",	CPMTerminalAction(	controlSet.currentAttribute &= ~kCPMTerminalAttributeBackground;	)),
+		]
+		width:80
+		height:24];
 
 	/*
 		Unimplemented:
@@ -61,8 +57,6 @@
 			(...and tab)
 
 	*/
-
-	[self installControlSequencesFromStructs:sequences];
 }
 
 @end

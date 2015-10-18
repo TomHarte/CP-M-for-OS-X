@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "TerminalControlSequence.h"
 @class CPMTerminalControlSet;
 
 /*
@@ -26,16 +27,6 @@
 - (void)terminalViewControlSet:(CPMTerminalControlSet *)controlSet addStringToInput:(NSString *)string;
 
 @end
-
-/*
-	This is strictly for the various categories; it's to allow them
-	to dictate the mapping from codes to actions
-*/
-typedef struct
-{
-	__unsafe_unretained NSString *pattern;
-	__unsafe_unretained dispatch_block_t action;
-} CPMTerminalControlSequenceStruct;
 
 
 typedef struct IntegerPoint {
@@ -95,8 +86,7 @@ CG_INLINE IntegerPoint integerPointMake(NSUInteger x, NSUInteger y)
 /*
 	STRICTLY FOR CATEGORIES. Leave alone.
 */
-- (id)initWithControlSet:(SEL)selectorForControlSet width:(NSUInteger)width height:(NSUInteger)height;
-- (void)installControlSequencesFromStructs:(CPMTerminalControlSequenceStruct *)structs;
+- (id)initWithControlSequences:(NSArray<CPMTerminalControlSequence *> *)sequences width:(NSUInteger)width height:(NSUInteger)height;
 - (void)setCursorIsDisabled:(BOOL)cursorIsDisabled;
 
 @property (nonatomic, assign) uint16_t currentAttribute;
@@ -148,3 +138,4 @@ CG_INLINE IntegerPoint integerPointMake(NSUInteger x, NSUInteger y)
 #import "TerminalControlSet+Hazeltine1500.h"
 #import "TerminalControlSet+VT52.h"
 #import "TerminalControlSet+Osborne.h"
+#import "TerminalControlSet+ANSI.h"

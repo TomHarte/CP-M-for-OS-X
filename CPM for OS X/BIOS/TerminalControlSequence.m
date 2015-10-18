@@ -10,7 +10,7 @@
 
 @implementation CPMTerminalControlSequence
 
-- (id)initWithPattern:(NSString *)pattern action:(dispatch_block_t)action
+- (id)initWithPattern:(NSString *)pattern action:(CPMTerminalControlSequenceAction)action
 {
 	self = [super init];
 
@@ -40,3 +40,10 @@
 }
 
 @end
+
+CPMTerminalControlSequence *TCSMake(NSString *pattern, CPMTerminalControlSequenceAction action)
+{
+	return [[CPMTerminalControlSequence alloc]
+				initWithPattern:pattern
+				action:action];
+}

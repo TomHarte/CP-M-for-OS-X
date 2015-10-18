@@ -39,6 +39,7 @@
 	[_candidateControlSets addObject:[CPMTerminalControlSet osborneControlSet]];
 	[_candidateControlSets addObject:[CPMTerminalControlSet hazeltine1500ControlSet]];
 	[_candidateControlSets addObject:[CPMTerminalControlSet VT52ControlSet]];
+	[_candidateControlSets addObject:[CPMTerminalControlSet ANSIControlSet]];
 
 	for(CPMTerminalControlSet *set in _candidateControlSets)
 	{

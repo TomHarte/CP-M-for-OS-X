@@ -15,6 +15,6 @@
 + (CPMTerminalControlSequence *)mightFindSentinel;
 
 - (instancetype)initWithControlSequences:(NSArray<CPMTerminalControlSequence *>*)sequences;
-- (CPMTerminalControlSequence *)sequenceMatchingString:(NSString *)string;
+- (CPMTerminalControlSequence *)sequenceMatchingBytes:(const uint8_t *)bytes length:(NSUInteger)length;
 
 @end

@@ -10,7 +10,7 @@
 
 @implementation CPMTerminalControlSequenceTree
 {
-	NSDictionary *_treesByFirstCharacter;
+	CPMTerminalControlSequenceTree *_treesByFirstCharacter[256];
 	CPMTerminalControlSequence *_sequence;
 }
 
@@ -60,36 +60,33 @@
 
 		if(!_sequence)
 		{
-			NSMutableDictionary *treesByFirstCharacter = [NSMutableDictionary dictionaryWithCapacity:sequencesByCharacter.count];
 			for(NSNumber *character in [sequencesByCharacter allKeys])
 			{
 				NSArray *const childSequences = sequencesByCharacter[character];
-				treesByFirstCharacter[character] = [[[self class] alloc] initWithControlSequences:childSequences depth:depth+1];
+				_treesByFirstCharacter[[character unsignedIntegerValue]] = [[[self class] alloc] initWithControlSequences:childSequences depth:depth+1];
 			}
-
-			_treesByFirstCharacter = [treesByFirstCharacter copy];
 		}
 	}
 
 	return self;
 }
 
-- (CPMTerminalControlSequence *)sequenceMatchingString:(NSString *)string
+- (CPMTerminalControlSequence *)sequenceMatchingBytes:(const uint8_t *)bytes length:(NSUInteger)length
 {
-	return [self sequenceMatchingString:string depth:0];
+	return [self sequenceMatchingBytes:bytes length:length depth:0];
 }
 
-- (CPMTerminalControlSequence *)sequenceMatchingString:(NSString *)string depth:(NSUInteger)depth
+- (CPMTerminalControlSequence *)sequenceMatchingBytes:(const uint8_t *)bytes length:(NSUInteger)length depth:(NSUInteger)depth
 {
 	// if there's something at this node, a leaf has been reached so that's the answer;
 	// if we're still looking but the input string isn't long enough to find any more then
 	// indicate that something might be found but isn't yet
 	if(_sequence)				return _sequence;
-	if(depth >= string.length)	return [[self class] mightFindSentinel];
+	if(!length)					return [[self class] mightFindSentinel];
 
 	// otherwise consider both a potential wildcard match and an exact match
-	CPMTerminalControlSequence *wildcardFind = [_treesByFirstCharacter[@('?')] sequenceMatchingString:string depth:depth+1];
-	CPMTerminalControlSequence *directFind = [_treesByFirstCharacter[@([string characterAtIndex:depth])] sequenceMatchingString:string depth:depth+1];
+	CPMTerminalControlSequence *wildcardFind	= [_treesByFirstCharacter['?']		sequenceMatchingBytes:bytes+1 length:length-1 depth:depth+1];
+	CPMTerminalControlSequence *directFind		= [_treesByFirstCharacter[*bytes]	sequenceMatchingBytes:bytes+1 length:length-1 depth:depth+1];
 
 	// if no match was found then that's no match in total
 	if(!wildcardFind && !directFind) return nil;
@@ -111,7 +108,16 @@
 
 - (NSString *)description
 {
-	return [[super description] stringByAppendingFormat:@"; subtrees: %@", _treesByFirstCharacter];
+	NSMutableDictionary *treesByFirstCharacter = [NSMutableDictionary new];
+	for(int c = 0; c < 256; c++)
+	{
+		CPMTerminalControlSequenceTree *const sequence = _treesByFirstCharacter[c];
+		if(sequence)
+		{
+			treesByFirstCharacter[@(c)] = sequence;
+		}
+	}
+	return [[super description] stringByAppendingFormat:@"; subtrees: %@", treesByFirstCharacter];
 }
 
 @end

@@ -17,7 +17,6 @@
 
 	NSUInteger _inputQueueWritePointer;
 	CPMTerminalControlSequenceTree *_sequenceTree;
-	NSMutableArray *_allControlSequences;
 
 	NSUInteger _backupCursorX, _backupCursorY;
 }
@@ -50,9 +49,7 @@
 	// pull recognised sequences as they're found
 	while(_inputQueueWritePointer)
 	{
-		NSString *attemptedString = [[NSString alloc] initWithBytes:self.inputQueue length:_inputQueueWritePointer encoding:NSASCIIStringEncoding];
-
-		CPMTerminalControlSequence *foundMatch = [_sequenceTree sequenceMatchingString:attemptedString];
+		CPMTerminalControlSequence *foundMatch = [_sequenceTree sequenceMatchingBytes:(const uint8_t *)self.inputQueue length:_inputQueueWritePointer];
 
 		// might find => more input needed. So wait.
 		if(foundMatch == [CPMTerminalControlSequenceTree mightFindSentinel])
@@ -71,7 +68,7 @@
 			[(NSMutableSet *)_recognisedControlPoints addObject:@(_numberOfCharactersSoFar)];
 
 			// perform the sequence and remove the matched characters from the queue
-			foundMatch.action();
+			foundMatch.action(self, _inputQueue);
 			_inputQueueWritePointer -= foundMatch.pattern.length;
 			memmove(self.inputQueue, &self.inputQueue[foundMatch.pattern.length], _inputQueueWritePointer);
 		}
@@ -131,48 +128,45 @@
 	return charactersStart;
 }
 
-- (void)setupForWidth:(NSUInteger)width height:(NSUInteger)height
-{
-	// store width and height
-	_width = width;
-	_height = height;
 
-	// allocate storage area for the display
-	_characters = (char *)calloc((width+1)*height, sizeof(char));
-	_attributes = (uint16_t *)calloc((width+1)*height, sizeof(uint16_t));
-
-	// set everything to spaces, initially
-	memset(_characters, ' ', (width+1)*height);
-
-	// write in new lines
-	for(NSUInteger y = 0; y < height; y++)
-	{
-		_characters[address(self.width, y)] = '\n';
-	}
-
-	// write in NULL terminator
-	_characters[address(self.width, self.height-1)] = '\0';
-}
-
-
-- (id)initWithControlSet:(SEL)selectorForControlSet width:(NSUInteger)width height:(NSUInteger)height
+- (id)initWithControlSequences:(NSArray<CPMTerminalControlSequence *> *)sequences width:(NSUInteger)width height:(NSUInteger)height
 {
 	self = [super init];
 
 	if(self)
 	{
-		[self setupForWidth:width height:height];
+		// store width and height
+		_width = width;
+		_height = height;
 
-		[self beginControlCodes];
+		// allocate storage area for the display
+		_characters = (char *)calloc((width+1)*height, sizeof(char));
+		_attributes = (uint16_t *)calloc((width+1)*height, sizeof(uint16_t));
 
-			[self installASCIIControlCharacters];
+		// set everything to spaces, initially
+		memset(_characters, ' ', (width+1)*height);
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-			[self performSelector:selectorForControlSet];
-#pragma clang diagnostic pop
+		// write in new lines
+		for(NSUInteger y = 0; y < height; y++)
+		{
+			_characters[address(self.width, y)] = '\n';
+		}
 
-		[self finishControlCodes];
+		// write in NULL terminator
+		_characters[address(self.width, self.height-1)] = '\0';
+
+		// augment sequences with newline, character return and beep
+		sequences = [sequences arrayByAddingObjectsFromArray:@[
+			TCSMake(@"\n",	CPMTerminalAction(	[controlSet incrementY];						)),
+			TCSMake(@"\r",	CPMTerminalAction(	[controlSet setCursorX:0 y:controlSet.cursorY];	)),
+			TCSMake(@"\a",	CPMTerminalAction(	NSBeep();										)),
+		]];
+
+		// build a search tree of control sequences
+		_sequenceTree = [[CPMTerminalControlSequenceTree alloc] initWithControlSequences:sequences];
+
+		// allocate the input queue
+		_inputQueue = (char *)malloc(sizeof(char) * [[sequences valueForKeyPath:@"@max.pattern.length"] unsignedIntegerValue]);
 	}
 
 	return self;
@@ -294,28 +288,6 @@
 	});
 }
 
-- (void)addControlSequence:(CPMTerminalControlSequence *)controlSequence
-{
-	[_allControlSequences addObject:controlSequence];
-}
-
-- (void)beginControlCodes
-{
-	_allControlSequences = [NSMutableArray new];
-}
-
-- (void)finishControlCodes
-{
-	// build a search tree of control sequences
-	_sequenceTree = [[CPMTerminalControlSequenceTree alloc] initWithControlSequences:_allControlSequences];
-
-	// allocate the input queue
-	_inputQueue = (char *)malloc(sizeof(char) * [[_allControlSequences valueForKeyPath:@"@max.pattern.length"] unsignedIntegerValue]);
-
-	// release temporary storage
-	_allControlSequences = nil;
-}
-
 - (void)homeCursor
 {
 	[self setCursorX:0 y:0];
@@ -389,34 +361,6 @@
 	^{
 		[self.delegate terminalViewControlSetDidChangeOutput:self];
 	});
-}
-
-- (void)installControlSequencesFromStructs:(CPMTerminalControlSequenceStruct *)structs
-{
-	while(structs->pattern)
-	{
-		[self addControlSequence:
-			[[CPMTerminalControlSequence alloc]
-				initWithPattern:structs->pattern
-				action:structs->action]];
-
-		structs++;
-	}
-}
-
-- (void)installASCIIControlCharacters
-{
-	__weak __block typeof(self) weakSelf = self;
-
-	CPMTerminalControlSequenceStruct sequences[] =
-	{
-		{@"\n",	^{	[weakSelf incrementY];						}},
-		{@"\r",	^{	[weakSelf setCursorX:0 y:weakSelf.cursorY];	}},
-		{@"\a",	^{	NSBeep();									}},
-		{nil}
-	};
-
-	[self installControlSequencesFromStructs:sequences];
 }
 
 @end
