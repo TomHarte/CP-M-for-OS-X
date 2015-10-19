@@ -29,8 +29,8 @@
 			TCSMake(@"~\14",	CPMTerminalAction(	[controlSet upCursor];			)),
 			TCSMake(@"~\17",	CPMTerminalAction(	[controlSet clearToEndOfLine];	)),
 			TCSMake(@"~\21??",	CPMTerminalAction(
-													NSUInteger cursorX = MAX(inputQueue[2] % 96, 79);
-													NSUInteger cursorY = MAX(inputQueue[3] % 32, 23);
+													NSUInteger cursorX = MIN(inputQueue[2] % 96, 79);
+													NSUInteger cursorY = MIN(inputQueue[3] % 32, 23);
 													[controlSet
 														setCursorX:cursorX
 														y:cursorY];
