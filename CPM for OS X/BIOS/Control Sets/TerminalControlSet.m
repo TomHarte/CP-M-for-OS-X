@@ -14,6 +14,8 @@
 @implementation CPMTerminalControlSet
 {
 	uint8_t *_inputQueue;
+	uint16_t _currentAttribute;
+
 	char *_characters;
 	uint16_t *_attributes;
 
@@ -85,7 +87,7 @@
 
 	// write the character, with the current attribute
 	_characters[address(_cursorX, _cursorY)] = character;
-	_attributes[address(_cursorX, _cursorY)] = self.currentAttribute;
+	_attributes[address(_cursorX, _cursorY)] = _currentAttribute;
 
 	// increment x and increment y if necessary
 	_cursorX++;
@@ -363,6 +365,16 @@
 	^{
 		[self.delegate terminalViewControlSetDidChangeOutput:self];
 	});
+}
+
+- (void)setAttribute:(CPMTerminalAttribute)attribute
+{
+	_currentAttribute |= attribute;
+}
+
+- (void)resetAttribute:(CPMTerminalAttribute)attribute
+{
+	_currentAttribute &= ~attribute;
 }
 
 @end

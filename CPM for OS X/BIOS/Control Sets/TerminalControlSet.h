@@ -83,6 +83,4 @@ CG_INLINE IntegerPoint integerPointMake(NSUInteger x, NSUInteger y)
 @property (nonatomic, readonly) NSUInteger cursorX, cursorY;
 @property (nonatomic, readonly) BOOL cursorIsDisabled;
 
-@property (nonatomic, assign) uint16_t currentAttribute;
-
 @end

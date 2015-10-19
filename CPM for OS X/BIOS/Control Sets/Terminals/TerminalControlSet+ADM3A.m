@@ -36,14 +36,14 @@
 															y:(NSUInteger)(inputQueue[2] - 32)%controlSet.height];
 												)),
 
-			TCSMake(@"\33B0",	CPMTerminalAction(	controlSet.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;			)),
-			TCSMake(@"\33C0",	CPMTerminalAction(	controlSet.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;		)),
-			TCSMake(@"\33B1",	CPMTerminalAction(	controlSet.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;		)),
-			TCSMake(@"\33C1",	CPMTerminalAction(	controlSet.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	)),
-			TCSMake(@"\33B2",	CPMTerminalAction(	controlSet.currentAttribute |= kCPMTerminalAttributeBlinkingOn;				)),
-			TCSMake(@"\33C2",	CPMTerminalAction(	controlSet.currentAttribute &= ~kCPMTerminalAttributeBlinkingOn;			)),
-			TCSMake(@"\33B3",	CPMTerminalAction(	controlSet.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			)),
-			TCSMake(@"\33C3",	CPMTerminalAction(	controlSet.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;			)),
+			TCSMake(@"\33B0",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeInverseVideo];		)),
+			TCSMake(@"\33C0",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeInverseVideo];		)),
+			TCSMake(@"\33B1",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeReducedIntensity];	)),
+			TCSMake(@"\33C1",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeReducedIntensity];	)),
+			TCSMake(@"\33B2",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeBlinking];			)),
+			TCSMake(@"\33C2",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeBlinking];			)),
+			TCSMake(@"\33B3",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeUnderlined];			)),
+			TCSMake(@"\33C3",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeUnderlined];		)),
 
 			TCSMake(@"\33B4",	CPMTerminalAction(	controlSet.cursorIsDisabled = NO;		)),
 			TCSMake(@"\33C4",	CPMTerminalAction(	controlSet.cursorIsDisabled = YES;		)),

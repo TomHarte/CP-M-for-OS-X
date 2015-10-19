@@ -237,31 +237,31 @@
 				lastAttribute = attribute;
 
 				if(
-					attributeChanges & (kCPMTerminalAttributeReducedIntensityOn|kCPMTerminalAttributeInverseVideoOn)
+					attributeChanges & (CPMTerminalAttributeReducedIntensity | CPMTerminalAttributeInverseVideo)
 				)
 				{
 					NSColor *textColour = nil;
-					switch(attribute & (kCPMTerminalAttributeReducedIntensityOn | kCPMTerminalAttributeInverseVideoOn))
+					switch(attribute & (CPMTerminalAttributeReducedIntensity | CPMTerminalAttributeInverseVideo))
 					{
 						default:
 							textColour = [self fullIntensityColour];
 						break;
-						case kCPMTerminalAttributeReducedIntensityOn:
+						case CPMTerminalAttributeReducedIntensity:
 							textColour = [self halfIntensityColour];
 						break;
-						case kCPMTerminalAttributeInverseVideoOn:
+						case CPMTerminalAttributeInverseVideo:
 							textColour = [self zeroIntensityColour];
 						break;
-						case kCPMTerminalAttributeInverseVideoOn | kCPMTerminalAttributeReducedIntensityOn:
+						case CPMTerminalAttributeInverseVideo | CPMTerminalAttributeReducedIntensity:
 							textColour = [self zeroIntensityColour];
 						break;
 					}
 					[newAttributes setValue:(id)[textColour CGColor] forKey:(id)kCTForegroundColorAttributeName];
 				}
 
-				if(attributeChanges&kCPMTerminalAttributeUnderlinedOn)
+				if(attributeChanges & CPMTerminalAttributeUnderlined)
 				{
-					if(attribute & kCPMTerminalAttributeUnderlinedOn)
+					if(attribute & CPMTerminalAttributeUnderlined)
 						[newAttributes setValue:@(kCTUnderlineStyleSingle) forKey:(id)kCTUnderlineStyleAttributeName];
 					else
 						[newAttributes setValue:@(kCTUnderlineStyleNone) forKey:(id)kCTUnderlineStyleAttributeName];
@@ -359,7 +359,7 @@
 
 		for(NSUInteger x = 0; x < _controlSet.width; x++)
 		{
-			uint8_t attribute = attributes[x]&(kCPMTerminalAttributeReducedIntensityOn|kCPMTerminalAttributeInverseVideoOn);
+			uint8_t attribute = attributes[x]&(CPMTerminalAttributeReducedIntensity | CPMTerminalAttributeInverseVideo);
 
 			if(_hasSelection)
 			{
@@ -370,7 +370,7 @@
 					((y > startPoint.y) && (y < endPoint.y))
 				)
 				{
-					attribute = kCPMTerminalAttributeSelected;
+					attribute = CPMTerminalAttributeSelected;
 				}
 			}
 
@@ -387,16 +387,16 @@
 				switch(attribute)
 				{
 					default:
-					case kCPMTerminalAttributeReducedIntensityOn:
+					case CPMTerminalAttributeReducedIntensity:
 						colour = nil;
 					break;
-					case kCPMTerminalAttributeInverseVideoOn:
+					case CPMTerminalAttributeInverseVideo:
 						colour = [self fullIntensityColour];
 					break;
-					case kCPMTerminalAttributeInverseVideoOn | kCPMTerminalAttributeReducedIntensityOn:
+					case CPMTerminalAttributeInverseVideo | CPMTerminalAttributeReducedIntensity:
 						colour = [self halfIntensityColour];
 					break;
-					case kCPMTerminalAttributeSelected:
+					case CPMTerminalAttributeSelected:
 						colour = [NSColor selectedTextBackgroundColor];
 					break;
 				}

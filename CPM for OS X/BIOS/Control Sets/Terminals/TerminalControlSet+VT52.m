@@ -46,11 +46,11 @@
 							)),
 			TCSMake(@"\33o",	CPMTerminalAction(	[controlSet clearFromStartOfLine];		)),
 
-			TCSMake(@"\33p",	CPMTerminalAction(	controlSet.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;		)),
-			TCSMake(@"\33q",	CPMTerminalAction(	controlSet.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;	)),
+			TCSMake(@"\33p",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeInverseVideo];		)),
+			TCSMake(@"\33q",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeInverseVideo];	)),
 
-			TCSMake(@"\0334",	CPMTerminalAction(	controlSet.currentAttribute |= kCPMTerminalAttributeInverseVideoOn;		)),
-			TCSMake(@"\0333",	CPMTerminalAction(	controlSet.currentAttribute &= ~kCPMTerminalAttributeInverseVideoOn;	)),
+			TCSMake(@"\0334",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeInverseVideo];		)),
+			TCSMake(@"\0333",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeInverseVideo];	)),
 			// ESC v - automatic overflow on
 			// ESC w - automatic overflow off
 		]

@@ -31,10 +31,10 @@
 												)),
 			TCSMake(@"\33T",	CPMTerminalAction(	[controlSet clearToEndOfLine];	)),
 
-			TCSMake(@"\33)",	CPMTerminalAction(	controlSet.currentAttribute |= kCPMTerminalAttributeReducedIntensityOn;		)),
-			TCSMake(@"\33(",	CPMTerminalAction(	controlSet.currentAttribute &= ~kCPMTerminalAttributeReducedIntensityOn;	)),
-			TCSMake(@"\33L",	CPMTerminalAction(	controlSet.currentAttribute |= kCPMTerminalAttributeUnderlinedOn;			)),
-			TCSMake(@"\33M",	CPMTerminalAction(	controlSet.currentAttribute &= ~kCPMTerminalAttributeUnderlinedOn;			)),
+			TCSMake(@"\33)",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeReducedIntensity];		)),
+			TCSMake(@"\33(",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeReducedIntensity];	)),
+			TCSMake(@"\33L",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeUnderlined];			)),
+			TCSMake(@"\33M",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeUnderlined];			)),
 
 			TCSMake(@"\33E",	CPMTerminalAction(	[controlSet insertLine];	)),
 			TCSMake(@"\33R",	CPMTerminalAction(	[controlSet deleteLine];	)),

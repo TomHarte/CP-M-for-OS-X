@@ -6,6 +6,16 @@
 //  Copyright © 2015 Thomas Harte. All rights reserved.
 //
 
+typedef NS_OPTIONS(uint8_t, CPMTerminalAttribute)
+{
+	CPMTerminalAttributeInverseVideo		= 1 << 0,
+	CPMTerminalAttributeReducedIntensity	= 1 << 1,
+	CPMTerminalAttributeBlinking			= 1 << 2,
+	CPMTerminalAttributeUnderlined			= 1 << 3,
+
+	CPMTerminalAttributeSelected			= 1 << 5
+};
+
 @interface CPMTerminalControlSet (Actions)
 
 - (id)initWithControlSequences:(NSArray<CPMTerminalControlSequence *> *)sequences width:(NSUInteger)width height:(NSUInteger)height;
@@ -33,22 +43,7 @@
 - (void)decrementY;
 - (void)incrementY;
 
+- (void)setAttribute:(CPMTerminalAttribute)attribute;
+- (void)resetAttribute:(CPMTerminalAttribute)attribute;
+
 @end
-
-/*
-
-	These are the currently defined attributes. The attribute values you'll get back per
-	character are 16-bit quantities since it'll likely become necessary to store 4-bit colours
-	in there too for some terminal emulations; effectively I'm asserting that 16 bits is
-	enough to store the union of all character attributes for all terminals — the internal
-	attribute layout is fixed, it's not per terminal.
-
-*/
-#define kCPMTerminalAttributeInverseVideoOn			0x01
-#define kCPMTerminalAttributeReducedIntensityOn		0x02
-#define kCPMTerminalAttributeBlinkingOn				0x04
-#define kCPMTerminalAttributeUnderlinedOn			0x08
-
-#define kCPMTerminalAttributeBackground				0x10
-
-#define kCPMTerminalAttributeSelected				0x80

@@ -36,13 +36,13 @@
 			TCSMake(@"~\22",	CPMTerminalAction(	[controlSet homeCursor];			)),
 			TCSMake(@"~\23",	CPMTerminalAction(	[controlSet deleteLine];			)),
 			TCSMake(@"~\30",	CPMTerminalAction(	[controlSet clearToEndOfScreen];	)),
-			TCSMake(@"~\31",	CPMTerminalAction(	controlSet.currentAttribute |= kCPMTerminalAttributeBackground;		)),
+			TCSMake(@"~\31",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeReducedIntensity];		)),
 			TCSMake(@"~\32",	CPMTerminalAction(	[controlSet insertLine];			)),
 			TCSMake(@"~\34",	CPMTerminalAction(
 													[controlSet homeCursor];
 													[controlSet clearToEndOfScreen];
 												)),
-			TCSMake(@"~\37",	CPMTerminalAction(	controlSet.currentAttribute &= ~kCPMTerminalAttributeBackground;	)),
+			TCSMake(@"~\37",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeReducedIntensity];	)),
 		]
 		width:80
 		height:24];
