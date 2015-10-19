@@ -109,12 +109,13 @@
 	_cursorX = newCursorX;
 	_cursorY = newCursorY;
 
-	// tell the delegate that the output has changed; TODO: check
-	// that the cursor is currently enabled before doing this
-	dispatch_async(dispatch_get_main_queue(),
-	^{
-		[self.delegate terminalViewControlSetDidChangeOutput:self];
-	});
+	if(!self.cursorIsDisabled)
+	{
+		dispatch_async(dispatch_get_main_queue(),
+		^{
+			[self.delegate terminalViewControlSetDidChangeOutput:self];
+		});
+	}
 }
 
 - (const char *)characterBuffer				{	return _characters;	}
