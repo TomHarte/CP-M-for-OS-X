@@ -14,10 +14,10 @@
 @implementation CPMTerminalControlSet
 {
 	uint8_t *_inputQueue;
-	uint16_t _currentAttribute;
+	CPMTerminalAttribute _currentAttribute;
 
 	char *_characters;
-	uint16_t *_attributes;
+	CPMTerminalAttribute *_attributes;
 
 	NSUInteger _inputQueueWritePointer;
 	CPMTerminalControlSequenceTree *_sequenceTree;
@@ -119,7 +119,7 @@
 }
 
 - (const char *)characterBuffer				{	return _characters;	}
-- (uint16_t *)attributeBufferForY:(NSUInteger)y
+- (const CPMTerminalAttribute *)attributeBufferForY:(NSUInteger)y
 {
 	return &_attributes[address(0, y)];
 }
@@ -146,7 +146,7 @@
 
 		// allocate storage area for the display
 		_characters = (char *)calloc((width+1)*height, sizeof(char));
-		_attributes = (uint16_t *)calloc((width+1)*height, sizeof(uint16_t));
+		_attributes = (CPMTerminalAttribute *)calloc((width+1)*height, sizeof(CPMTerminalAttribute));
 
 		// set everything to spaces, initially
 		memset(_characters, ' ', (width+1)*height);
@@ -211,7 +211,7 @@
 
 		// blank out the new bottom line
 		memset(&_characters[address(0, _cursorY)], 32, sizeof(uint8_t)*self.width);
-		memset(&_attributes[address(0, _cursorY)], 0, sizeof(uint16_t)*self.width);
+		memset(&_attributes[address(0, _cursorY)], 0, sizeof(CPMTerminalAttribute)*self.width);
 
 		// remove the terminating NULL that just ascended a position
 		_characters[address(self.width, self.height-2)] = '\n';
@@ -230,7 +230,7 @@
 
 		// blank out the new top line
 		memset(&_characters[address(0, 0)], 32, sizeof(uint8_t)*self.width);
-		memset(&_attributes[address(0, 0)], 0, sizeof(uint16_t)*self.width);
+		memset(&_attributes[address(0, 0)], 0, sizeof(CPMTerminalAttribute)*self.width);
 
 		// add a terminating NULL at the end
 		_characters[address(self.width, self.height-2)] = '\n';
@@ -251,7 +251,7 @@
 
 	// blank out the new bottom line
 	memset(&_characters[address(0, self.height-1)], 32, sizeof(uint8_t)*self.width);
-	memset(&_attributes[address(0, self.height-1)], 0, sizeof(uint16_t)*self.width);
+	memset(&_attributes[address(0, self.height-1)], 0, sizeof(CPMTerminalAttribute)*self.width);
 }
 
 - (void)insertLine
@@ -268,14 +268,14 @@
 
 	// blank out this line
 	memset(&_characters[address(0, _cursorY)], 32, sizeof(uint8_t)*self.width);
-	memset(&_attributes[address(0, _cursorY)], 0, sizeof(uint16_t)*self.width);
+	memset(&_attributes[address(0, _cursorY)], 0, sizeof(CPMTerminalAttribute)*self.width);
 }
 
 - (void)clearFrom:(size_t)start to:(size_t)end
 {
 	// write out spaces and zero attributes
 	memset(&_characters[start], 32, sizeof(uint8_t)*(end-start));
-	memset(&_attributes[start], 0, sizeof(uint16_t)*(end-start));
+	memset(&_attributes[start], 0, sizeof(CPMTerminalAttribute)*(end-start));
 
 	// put end-of-line markers back in
 	size_t startLine = start / (self.width+1);

@@ -40,6 +40,16 @@ CG_INLINE IntegerPoint integerPointMake(NSUInteger x, NSUInteger y)
 	return point;
 }
 
+typedef NS_OPTIONS(uint8_t, CPMTerminalAttribute)
+{
+	CPMTerminalAttributeInverseVideo		= 1 << 0,
+	CPMTerminalAttributeReducedIntensity	= 1 << 1,
+	CPMTerminalAttributeBlinking			= 1 << 2,
+	CPMTerminalAttributeUnderlined			= 1 << 3,
+
+	CPMTerminalAttributeSelected			= 1 << 5
+};
+
 /*
 
 	A control set encapsulates the logic for converting a sequence of incoming
@@ -77,7 +87,7 @@ CG_INLINE IntegerPoint integerPointMake(NSUInteger x, NSUInteger y)
 
 // attributeBufferForY: returns the C array of attributes for the given scanline; each scanline
 // is linear but they're not necessarily tightly packed
-- (uint16_t *)attributeBufferForY:(NSUInteger)y;
+- (const CPMTerminalAttribute *)attributeBufferForY:(NSUInteger)y;
 
 // the current cursor position, in character coordinates; (0, 0) is the top left
 @property (nonatomic, readonly) NSUInteger cursorX, cursorY;

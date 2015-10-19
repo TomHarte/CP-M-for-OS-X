@@ -51,7 +51,7 @@
 
 			TCSMake(@"~\35",	CPMTerminalAction(
 													[controlSet homeCursor];
-													[controlSet mapCharactersFromCursorUsingMapper:^(char *input, uint16_t *attribute) {
+													[controlSet mapCharactersFromCursorUsingMapper:^(char *input, CPMTerminalAttribute *attribute) {
 														if(!(*attribute & CPMTerminalAttributeReducedIntensity))
 														{
 															*input = ' ';
@@ -60,7 +60,7 @@
 												)),
 
 			TCSMake(@"~\27",	CPMTerminalAction(
-													[controlSet mapCharactersFromCursorUsingMapper:^(char *input, uint16_t *attribute) {
+													[controlSet mapCharactersFromCursorUsingMapper:^(char *input, CPMTerminalAttribute *attribute) {
 														*input = ' ';
 														*attribute = CPMTerminalAttributeReducedIntensity;
 													}];

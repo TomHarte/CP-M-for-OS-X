@@ -6,17 +6,7 @@
 //  Copyright © 2015 Thomas Harte. All rights reserved.
 //
 
-typedef NS_OPTIONS(uint8_t, CPMTerminalAttribute)
-{
-	CPMTerminalAttributeInverseVideo		= 1 << 0,
-	CPMTerminalAttributeReducedIntensity	= 1 << 1,
-	CPMTerminalAttributeBlinking			= 1 << 2,
-	CPMTerminalAttributeUnderlined			= 1 << 3,
-
-	CPMTerminalAttributeSelected			= 1 << 5
-};
-
-typedef void (^ CPMTerminalControlCharacterMapper)(char *input, uint16_t *attribute);
+typedef void (^ CPMTerminalControlCharacterMapper)(char *input, CPMTerminalAttribute *attribute);
 
 @interface CPMTerminalControlSet (Actions)
 

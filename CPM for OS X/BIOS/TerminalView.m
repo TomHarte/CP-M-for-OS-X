@@ -222,18 +222,18 @@
 		range:NSMakeRange(0, _attributedString.length)];
 	CFRelease(monaco);
 
-	uint16_t lastAttribute = 0;
+	CPMTerminalAttribute lastAttribute = 0;
 	for(NSUInteger y = 0; y < _controlSet.height; y++)
 	{
-		uint16_t *attributes = [_controlSet attributeBufferForY:y];
+		const CPMTerminalAttribute *attributes = [_controlSet attributeBufferForY:y];
 		for(NSUInteger x = 0; x < _controlSet.width; x++)
 		{
-			uint16_t attribute = attributes[x];
+			CPMTerminalAttribute attribute = attributes[x];
 
 			if(attribute != lastAttribute)
 			{
 				NSMutableDictionary *newAttributes = [NSMutableDictionary dictionary];
-				uint16_t attributeChanges = attribute^lastAttribute;
+				CPMTerminalAttribute attributeChanges = attribute^lastAttribute;
 				lastAttribute = attribute;
 
 				if(
@@ -355,7 +355,7 @@
 		uint8_t lastAttribute = 0;
 		NSUInteger startingColumn = 0;
 		NSColor *colour = nil;
-		uint16_t *attributes = [_controlSet attributeBufferForY:y];
+		const CPMTerminalAttribute *attributes = [_controlSet attributeBufferForY:y];
 
 		for(NSUInteger x = 0; x < _controlSet.width; x++)
 		{
