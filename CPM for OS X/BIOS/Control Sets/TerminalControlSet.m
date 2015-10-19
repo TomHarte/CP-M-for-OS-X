@@ -377,4 +377,15 @@
 	_currentAttribute &= ~attribute;
 }
 
+- (void)mapCharactersFromCursorUsingMapper:(CPMTerminalControlCharacterMapper)mapper
+{
+	for(NSUInteger y = self.cursorY; y < self.height; y++)
+	{
+		for(NSUInteger x = (y == self.cursorY) ? self.cursorX : 0; x < self.width; x++)
+		{
+			mapper(&_characters[address(x, y)], &_attributes[address(x, y)]);
+		}
+	}
+}
+
 @end

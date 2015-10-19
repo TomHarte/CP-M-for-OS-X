@@ -16,6 +16,8 @@ typedef NS_OPTIONS(uint8_t, CPMTerminalAttribute)
 	CPMTerminalAttributeSelected			= 1 << 5
 };
 
+typedef void (^ CPMTerminalControlCharacterMapper)(char *input, uint16_t *attribute);
+
 @interface CPMTerminalControlSet (Actions)
 
 - (id)initWithControlSequences:(NSArray<CPMTerminalControlSequence *> *)sequences width:(NSUInteger)width height:(NSUInteger)height;
@@ -45,5 +47,7 @@ typedef NS_OPTIONS(uint8_t, CPMTerminalAttribute)
 
 - (void)setAttribute:(CPMTerminalAttribute)attribute;
 - (void)resetAttribute:(CPMTerminalAttribute)attribute;
+
+- (void)mapCharactersFromCursorUsingMapper:(CPMTerminalControlCharacterMapper)mapper;
 
 @end

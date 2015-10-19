@@ -20,18 +20,20 @@
 														[controlSet.delegate
 															terminalViewControlSet:controlSet
 															addStringToInput:
-																[NSString stringWithFormat:@"%c%c",
-																		(uint8_t)controlSet.cursorX,
-																		(uint8_t)controlSet.cursorY]];
+																[NSString stringWithFormat:@"%c%c\r",
+																		(uint8_t)(controlSet.cursorX + ((controlSet.cursorX < 32) ? 96 : 0)),
+																		96 + (uint8_t)controlSet.cursorY]];
 													});
 												)),
 			TCSMake(@"~\13",	CPMTerminalAction(	[controlSet downCursor];		)),
 			TCSMake(@"~\14",	CPMTerminalAction(	[controlSet upCursor];			)),
 			TCSMake(@"~\17",	CPMTerminalAction(	[controlSet clearToEndOfLine];	)),
 			TCSMake(@"~\21??",	CPMTerminalAction(
+													NSUInteger cursorX = MAX(inputQueue[2] % 96, 79);
+													NSUInteger cursorY = MAX(inputQueue[3] % 32, 23);
 													[controlSet
-														setCursorX:(NSUInteger)inputQueue[2]%controlSet.width
-														y:(NSUInteger)inputQueue[3]%controlSet.height];
+														setCursorX:cursorX
+														y:cursorY];
 												)),
 			TCSMake(@"~\22",	CPMTerminalAction(	[controlSet homeCursor];			)),
 			TCSMake(@"~\23",	CPMTerminalAction(	[controlSet deleteLine];			)),
@@ -43,6 +45,26 @@
 													[controlSet clearToEndOfScreen];
 												)),
 			TCSMake(@"~\37",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeReducedIntensity];	)),
+
+			TCSMake(@"\10",		CPMTerminalAction(	[controlSet leftCursor];	)),
+			TCSMake(@"\20",		CPMTerminalAction(	[controlSet rightCursor];	)),
+
+			TCSMake(@"~\35",	CPMTerminalAction(
+													[controlSet homeCursor];
+													[controlSet mapCharactersFromCursorUsingMapper:^(char *input, uint16_t *attribute) {
+														if(!(*attribute & CPMTerminalAttributeReducedIntensity))
+														{
+															*input = ' ';
+														}
+													}];
+												)),
+
+			TCSMake(@"~\27",	CPMTerminalAction(
+													[controlSet mapCharactersFromCursorUsingMapper:^(char *input, uint16_t *attribute) {
+														*input = ' ';
+														*attribute = CPMTerminalAttributeReducedIntensity;
+													}];
+												)),
 		]
 		width:80
 		height:24];
@@ -50,9 +72,6 @@
 	/*
 		Unimplemented:
 
-			right cursor		dec 16
-			clear foreground	~ dec 29
-			clear to end-of-screen - background spaces	~ dec 23
 			keyboard lock		~ dec 21
 			keyboard unlock		~ dec 6
 			(...and tab)
