@@ -7,6 +7,7 @@
 //
 
 #import "TerminalControlSet+VT52.h"
+#import "TerminalControlSet+Actions.h"
 
 @implementation CPMTerminalControlSet (VT52)
 

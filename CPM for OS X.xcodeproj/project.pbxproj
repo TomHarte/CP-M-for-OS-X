@@ -7,8 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4B029E81160C18050014F528 /* TerminalControlSequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B029E80160C18050014F528 /* TerminalControlSequence.m */; };
 		4B1681C9193E8F75006341D9 /* Help in Resources */ = {isa = PBXBuildFile; fileRef = 4B1681C7193E8F75006341D9 /* Help */; };
+		4B1A945F1BD4667F001088E6 /* TerminalControlSequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B1A944F1BD4667F001088E6 /* TerminalControlSequence.m */; settings = {ASSET_TAGS = (); }; };
+		4B1A94601BD4667F001088E6 /* TerminalControlSequenceTree.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B1A94511BD4667F001088E6 /* TerminalControlSequenceTree.m */; settings = {ASSET_TAGS = (); }; };
+		4B1A94611BD4667F001088E6 /* TerminalControlSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B1A94531BD4667F001088E6 /* TerminalControlSet.m */; settings = {ASSET_TAGS = (); }; };
+		4B1A94621BD4667F001088E6 /* TerminalControlSet+ADM3A.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B1A94561BD4667F001088E6 /* TerminalControlSet+ADM3A.m */; settings = {ASSET_TAGS = (); }; };
+		4B1A94631BD4667F001088E6 /* TerminalControlSet+ANSI.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B1A94581BD4667F001088E6 /* TerminalControlSet+ANSI.m */; settings = {ASSET_TAGS = (); }; };
+		4B1A94641BD4667F001088E6 /* TerminalControlSet+Hazeltine1500.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B1A945A1BD4667F001088E6 /* TerminalControlSet+Hazeltine1500.m */; settings = {ASSET_TAGS = (); }; };
+		4B1A94651BD4667F001088E6 /* TerminalControlSet+Osborne.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B1A945C1BD4667F001088E6 /* TerminalControlSet+Osborne.m */; settings = {ASSET_TAGS = (); }; };
+		4B1A94661BD4667F001088E6 /* TerminalControlSet+VT52.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B1A945E1BD4667F001088E6 /* TerminalControlSet+VT52.m */; settings = {ASSET_TAGS = (); }; };
 		4B42CAAB193D812000E92BEE /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4B42CAAA193D812000E92BEE /* Images.xcassets */; };
 		4B582985160197E0009515A6 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B582984160197E0009515A6 /* Cocoa.framework */; };
 		4B58298F160197E0009515A6 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4B58298D160197E0009515A6 /* InfoPlist.strings */; };
@@ -24,19 +31,27 @@
 		4B5829BA16019899009515A6 /* FuseTestRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829B016019899009515A6 /* FuseTestRunner.m */; };
 		4B5829BB16019899009515A6 /* Processor.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829B216019899009515A6 /* Processor.m */; };
 		4B5829BC16019899009515A6 /* RAMModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829B516019899009515A6 /* RAMModule.m */; };
-		4B5CDF8E1BCDB1640031FDC5 /* TerminalControlSet+ANSI.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5CDF8D1BCDB1640031FDC5 /* TerminalControlSet+ANSI.m */; settings = {ASSET_TAGS = (); }; };
-		4B5CDF911BCDBD070031FDC5 /* TerminalControlSequenceTree.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5CDF901BCDBD070031FDC5 /* TerminalControlSequenceTree.m */; settings = {ASSET_TAGS = (); }; };
-		4B8B14A7193AD066000BF24F /* TerminalControlSet+ADM3A.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B8B14A6193AD066000BF24F /* TerminalControlSet+ADM3A.m */; };
-		4B8B14AA193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B8B14A9193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.m */; };
-		4B8B14AD193AD2F3000BF24F /* TerminalControlSet+VT52.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B8B14AC193AD2F3000BF24F /* TerminalControlSet+VT52.m */; };
-		4B8B14B0193AD35B000BF24F /* TerminalControlSet+Osborne.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B8B14AF193AD35B000BF24F /* TerminalControlSet+Osborne.m */; };
-		4B98BA03160E693D00685DAD /* TerminalControlSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B98BA02160E693D00685DAD /* TerminalControlSet.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4B029E7F160C18040014F528 /* TerminalControlSequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalControlSequence.h; sourceTree = "<group>"; };
-		4B029E80160C18050014F528 /* TerminalControlSequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalControlSequence.m; sourceTree = "<group>"; };
 		4B1681C8193E8F75006341D9 /* en */ = {isa = PBXFileReference; lastKnownFileType = folder; name = en; path = en.lproj/Help; sourceTree = "<group>"; };
+		4B1A944E1BD4667F001088E6 /* TerminalControlSequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalControlSequence.h; sourceTree = "<group>"; };
+		4B1A944F1BD4667F001088E6 /* TerminalControlSequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalControlSequence.m; sourceTree = "<group>"; };
+		4B1A94501BD4667F001088E6 /* TerminalControlSequenceTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalControlSequenceTree.h; sourceTree = "<group>"; };
+		4B1A94511BD4667F001088E6 /* TerminalControlSequenceTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalControlSequenceTree.m; sourceTree = "<group>"; };
+		4B1A94521BD4667F001088E6 /* TerminalControlSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalControlSet.h; sourceTree = "<group>"; };
+		4B1A94531BD4667F001088E6 /* TerminalControlSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalControlSet.m; sourceTree = "<group>"; };
+		4B1A94551BD4667F001088E6 /* TerminalControlSet+ADM3A.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+ADM3A.h"; sourceTree = "<group>"; };
+		4B1A94561BD4667F001088E6 /* TerminalControlSet+ADM3A.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+ADM3A.m"; sourceTree = "<group>"; };
+		4B1A94571BD4667F001088E6 /* TerminalControlSet+ANSI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+ANSI.h"; sourceTree = "<group>"; };
+		4B1A94581BD4667F001088E6 /* TerminalControlSet+ANSI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+ANSI.m"; sourceTree = "<group>"; };
+		4B1A94591BD4667F001088E6 /* TerminalControlSet+Hazeltine1500.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+Hazeltine1500.h"; sourceTree = "<group>"; };
+		4B1A945A1BD4667F001088E6 /* TerminalControlSet+Hazeltine1500.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+Hazeltine1500.m"; sourceTree = "<group>"; };
+		4B1A945B1BD4667F001088E6 /* TerminalControlSet+Osborne.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+Osborne.h"; sourceTree = "<group>"; };
+		4B1A945C1BD4667F001088E6 /* TerminalControlSet+Osborne.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+Osborne.m"; sourceTree = "<group>"; };
+		4B1A945D1BD4667F001088E6 /* TerminalControlSet+VT52.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+VT52.h"; sourceTree = "<group>"; };
+		4B1A945E1BD4667F001088E6 /* TerminalControlSet+VT52.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+VT52.m"; sourceTree = "<group>"; };
+		4B1A94671BD466AD001088E6 /* TerminalControlSet+Actions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+Actions.h"; sourceTree = "<group>"; };
 		4B42CAAA193D812000E92BEE /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		4B582980160197E0009515A6 /* CPM for OS X.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CPM for OS X.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4B582984160197E0009515A6 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -66,20 +81,6 @@
 		4B5829B216019899009515A6 /* Processor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Processor.m; sourceTree = "<group>"; };
 		4B5829B416019899009515A6 /* RAMModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RAMModule.h; sourceTree = "<group>"; };
 		4B5829B516019899009515A6 /* RAMModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RAMModule.m; sourceTree = "<group>"; };
-		4B5CDF8C1BCDB1640031FDC5 /* TerminalControlSet+ANSI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+ANSI.h"; sourceTree = "<group>"; };
-		4B5CDF8D1BCDB1640031FDC5 /* TerminalControlSet+ANSI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+ANSI.m"; sourceTree = "<group>"; };
-		4B5CDF8F1BCDBD070031FDC5 /* TerminalControlSequenceTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalControlSequenceTree.h; sourceTree = "<group>"; };
-		4B5CDF901BCDBD070031FDC5 /* TerminalControlSequenceTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalControlSequenceTree.m; sourceTree = "<group>"; };
-		4B8B14A5193AD066000BF24F /* TerminalControlSet+ADM3A.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+ADM3A.h"; sourceTree = "<group>"; };
-		4B8B14A6193AD066000BF24F /* TerminalControlSet+ADM3A.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+ADM3A.m"; sourceTree = "<group>"; };
-		4B8B14A8193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+Hazeltine1500.h"; sourceTree = "<group>"; };
-		4B8B14A9193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+Hazeltine1500.m"; sourceTree = "<group>"; };
-		4B8B14AB193AD2F3000BF24F /* TerminalControlSet+VT52.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+VT52.h"; sourceTree = "<group>"; };
-		4B8B14AC193AD2F3000BF24F /* TerminalControlSet+VT52.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+VT52.m"; sourceTree = "<group>"; };
-		4B8B14AE193AD35B000BF24F /* TerminalControlSet+Osborne.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+Osborne.h"; sourceTree = "<group>"; };
-		4B8B14AF193AD35B000BF24F /* TerminalControlSet+Osborne.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+Osborne.m"; sourceTree = "<group>"; };
-		4B98BA01160E693D00685DAD /* TerminalControlSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalControlSet.h; sourceTree = "<group>"; };
-		4B98BA02160E693D00685DAD /* TerminalControlSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalControlSet.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +95,46 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4B1A944C1BD4667F001088E6 /* Control Sets */ = {
+			isa = PBXGroup;
+			children = (
+				4B1A944D1BD4667F001088E6 /* Sequence Tree */,
+				4B1A94541BD4667F001088E6 /* Terminals */,
+				4B1A94521BD4667F001088E6 /* TerminalControlSet.h */,
+				4B1A94531BD4667F001088E6 /* TerminalControlSet.m */,
+				4B1A94671BD466AD001088E6 /* TerminalControlSet+Actions.h */,
+			);
+			path = "Control Sets";
+			sourceTree = "<group>";
+		};
+		4B1A944D1BD4667F001088E6 /* Sequence Tree */ = {
+			isa = PBXGroup;
+			children = (
+				4B1A944E1BD4667F001088E6 /* TerminalControlSequence.h */,
+				4B1A944F1BD4667F001088E6 /* TerminalControlSequence.m */,
+				4B1A94501BD4667F001088E6 /* TerminalControlSequenceTree.h */,
+				4B1A94511BD4667F001088E6 /* TerminalControlSequenceTree.m */,
+			);
+			path = "Sequence Tree";
+			sourceTree = "<group>";
+		};
+		4B1A94541BD4667F001088E6 /* Terminals */ = {
+			isa = PBXGroup;
+			children = (
+				4B1A94551BD4667F001088E6 /* TerminalControlSet+ADM3A.h */,
+				4B1A94561BD4667F001088E6 /* TerminalControlSet+ADM3A.m */,
+				4B1A94571BD4667F001088E6 /* TerminalControlSet+ANSI.h */,
+				4B1A94581BD4667F001088E6 /* TerminalControlSet+ANSI.m */,
+				4B1A94591BD4667F001088E6 /* TerminalControlSet+Hazeltine1500.h */,
+				4B1A945A1BD4667F001088E6 /* TerminalControlSet+Hazeltine1500.m */,
+				4B1A945B1BD4667F001088E6 /* TerminalControlSet+Osborne.h */,
+				4B1A945C1BD4667F001088E6 /* TerminalControlSet+Osborne.m */,
+				4B1A945D1BD4667F001088E6 /* TerminalControlSet+VT52.h */,
+				4B1A945E1BD4667F001088E6 /* TerminalControlSet+VT52.m */,
+			);
+			path = Terminals;
+			sourceTree = "<group>";
+		};
 		4B582975160197E0009515A6 = {
 			isa = PBXGroup;
 			children = (
@@ -204,24 +245,9 @@
 		4B98B9FF160E690F00685DAD /* Terminal View */ = {
 			isa = PBXGroup;
 			children = (
-				4B029E7F160C18040014F528 /* TerminalControlSequence.h */,
-				4B029E80160C18050014F528 /* TerminalControlSequence.m */,
-				4B98BA01160E693D00685DAD /* TerminalControlSet.h */,
-				4B98BA02160E693D00685DAD /* TerminalControlSet.m */,
-				4B8B14A5193AD066000BF24F /* TerminalControlSet+ADM3A.h */,
-				4B8B14A6193AD066000BF24F /* TerminalControlSet+ADM3A.m */,
-				4B5CDF8C1BCDB1640031FDC5 /* TerminalControlSet+ANSI.h */,
-				4B5CDF8D1BCDB1640031FDC5 /* TerminalControlSet+ANSI.m */,
-				4B8B14A8193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.h */,
-				4B8B14A9193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.m */,
-				4B8B14AE193AD35B000BF24F /* TerminalControlSet+Osborne.h */,
-				4B8B14AF193AD35B000BF24F /* TerminalControlSet+Osborne.m */,
-				4B8B14AB193AD2F3000BF24F /* TerminalControlSet+VT52.h */,
-				4B8B14AC193AD2F3000BF24F /* TerminalControlSet+VT52.m */,
+				4B1A944C1BD4667F001088E6 /* Control Sets */,
 				4B5829AC16019899009515A6 /* TerminalView.h */,
 				4B5829AD16019899009515A6 /* TerminalView.m */,
-				4B5CDF8F1BCDBD070031FDC5 /* TerminalControlSequenceTree.h */,
-				4B5CDF901BCDBD070031FDC5 /* TerminalControlSequenceTree.m */,
 			);
 			name = "Terminal View";
 			sourceTree = "<group>";
@@ -294,23 +320,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B1A945F1BD4667F001088E6 /* TerminalControlSequence.m in Sources */,
+				4B1A94631BD4667F001088E6 /* TerminalControlSet+ANSI.m in Sources */,
 				4B582991160197E0009515A6 /* main.m in Sources */,
+				4B1A94651BD4667F001088E6 /* TerminalControlSet+Osborne.m in Sources */,
 				4B582998160197E0009515A6 /* CPMDocument.m in Sources */,
-				4B5CDF911BCDBD070031FDC5 /* TerminalControlSequenceTree.m in Sources */,
-				4B8B14AD193AD2F3000BF24F /* TerminalControlSet+VT52.m in Sources */,
-				4B5CDF8E1BCDB1640031FDC5 /* TerminalControlSet+ANSI.m in Sources */,
 				4B5829B616019899009515A6 /* BDOS.m in Sources */,
-				4B8B14B0193AD35B000BF24F /* TerminalControlSet+Osborne.m in Sources */,
-				4B8B14AA193AD2AC000BF24F /* TerminalControlSet+Hazeltine1500.m in Sources */,
+				4B1A94601BD4667F001088E6 /* TerminalControlSequenceTree.m in Sources */,
 				4B5829B716019899009515A6 /* FileControlBlock.m in Sources */,
 				4B5829B816019899009515A6 /* BIOS.m in Sources */,
 				4B5829B916019899009515A6 /* TerminalView.m in Sources */,
-				4B8B14A7193AD066000BF24F /* TerminalControlSet+ADM3A.m in Sources */,
+				4B1A94611BD4667F001088E6 /* TerminalControlSet.m in Sources */,
+				4B1A94621BD4667F001088E6 /* TerminalControlSet+ADM3A.m in Sources */,
+				4B1A94641BD4667F001088E6 /* TerminalControlSet+Hazeltine1500.m in Sources */,
 				4B5829BA16019899009515A6 /* FuseTestRunner.m in Sources */,
 				4B5829BB16019899009515A6 /* Processor.m in Sources */,
+				4B1A94661BD4667F001088E6 /* TerminalControlSet+VT52.m in Sources */,
 				4B5829BC16019899009515A6 /* RAMModule.m in Sources */,
-				4B029E81160C18050014F528 /* TerminalControlSequence.m in Sources */,
-				4B98BA03160E693D00685DAD /* TerminalControlSet.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

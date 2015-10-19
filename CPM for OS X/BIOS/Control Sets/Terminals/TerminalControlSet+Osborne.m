@@ -7,6 +7,7 @@
 //
 
 #import "TerminalControlSet+Osborne.h"
+#import "TerminalControlSet+Actions.h"
 
 @implementation CPMTerminalControlSet (Osborne)
 

@@ -83,59 +83,6 @@ CG_INLINE IntegerPoint integerPointMake(NSUInteger x, NSUInteger y)
 @property (nonatomic, readonly) NSUInteger cursorX, cursorY;
 @property (nonatomic, readonly) BOOL cursorIsDisabled;
 
-/*
-	STRICTLY FOR CATEGORIES. Leave alone.
-*/
-- (id)initWithControlSequences:(NSArray<CPMTerminalControlSequence *> *)sequences width:(NSUInteger)width height:(NSUInteger)height;
-- (void)setCursorIsDisabled:(BOOL)cursorIsDisabled;
-
 @property (nonatomic, assign) uint16_t currentAttribute;
-@property (nonatomic, assign) char *inputQueue;
-
-- (void)homeCursor;
-
-- (void)upCursor;
-- (void)downCursor;
-- (void)leftCursor;
-- (void)rightCursor;
-
-- (void)clearToEndOfScreen;
-- (void)clearFromStartOfScreen;
-- (void)clearToEndOfLine;
-- (void)clearFromStartOfLine;
-
-- (void)saveCursorPosition;
-- (void)restoreCursorPosition;
-- (void)setCursorX:(NSUInteger)newCursorX y:(NSUInteger)newCursorY;
-
-- (void)deleteLine;
-- (void)insertLine;
-
-- (void)decrementY;
-- (void)incrementY;
 
 @end
-
-/*
-
-	These are the currently defined attributes. The attribute values you'll get back per
-	character are 16-bit quantities since it'll likely become necessary to store 4-bit colours
-	in there too for some terminal emulations; effectively I'm asserting that 16 bits is
-	enough to store the union of all character attributes for all terminals — the internal
-	attribute layout is fixed, it's not per terminal.
-
-*/
-#define kCPMTerminalAttributeInverseVideoOn			0x01
-#define kCPMTerminalAttributeReducedIntensityOn		0x02
-#define kCPMTerminalAttributeBlinkingOn				0x04
-#define kCPMTerminalAttributeUnderlinedOn			0x08
-
-#define kCPMTerminalAttributeBackground				0x10
-
-#define kCPMTerminalAttributeSelected				0x80
-
-#import "TerminalControlSet+ADM3A.h"
-#import "TerminalControlSet+Hazeltine1500.h"
-#import "TerminalControlSet+VT52.h"
-#import "TerminalControlSet+Osborne.h"
-#import "TerminalControlSet+ANSI.h"

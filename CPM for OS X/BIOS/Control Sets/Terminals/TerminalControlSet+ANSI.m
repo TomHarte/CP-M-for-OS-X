@@ -7,6 +7,7 @@
 //
 
 #import "TerminalControlSet+ANSI.h"
+#import "TerminalControlSet+Actions.h"
 
 @implementation CPMTerminalControlSet (ANSI)
 

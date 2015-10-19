@@ -7,6 +7,7 @@
 //
 
 #import "TerminalControlSet+Hazeltine1500.h"
+#import "TerminalControlSet+Actions.h"
 
 @implementation CPMTerminalControlSet (Hazeltine1500)
 

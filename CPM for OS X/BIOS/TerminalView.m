@@ -8,6 +8,13 @@
 
 #import "TerminalView.h"
 #import "TerminalControlSequence.h"
+#import "TerminalControlSet+Actions.h"
+
+#import "TerminalControlSet+ADM3A.h"
+#import "TerminalControlSet+Hazeltine1500.h"
+#import "TerminalControlSet+VT52.h"
+#import "TerminalControlSet+Osborne.h"
+#import "TerminalControlSet+ANSI.h"
 
 @interface CPMTerminalView () <NSDraggingDestination>
 @end

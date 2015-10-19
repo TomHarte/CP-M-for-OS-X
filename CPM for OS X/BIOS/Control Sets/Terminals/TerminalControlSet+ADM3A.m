@@ -7,6 +7,7 @@
 //
 
 #import "TerminalControlSet+ADM3A.h"
+#import "TerminalControlSet+Actions.h"
 
 @implementation CPMTerminalControlSet (ADM3A)
 
