@@ -11,7 +11,7 @@
 @implementation CPMTerminalControlSequenceTree
 {
 	CPMTerminalControlSequenceTree *_treesByFirstCharacter[256];
-	CPMTerminalControlSequence *_sequence;
+	CPMTerminalControlSequenceAction _action;
 }
 
 + (CPMTerminalControlSequence *)cantFindSentinel
@@ -24,86 +24,59 @@
 	return (CPMTerminalControlSequence *)@NO;
 }
 
-- (instancetype)initWithControlSequences:(NSArray<CPMTerminalControlSequence *>*)sequences
-{
-	return [self initWithControlSequences:sequences depth:0];
-}
-
-- (instancetype)initWithControlSequences:(NSArray<CPMTerminalControlSequence *>*)sequences depth:(NSUInteger)depth
+- (instancetype)initWithAction:(CPMTerminalControlSequenceAction)action
 {
 	self = [super init];
 
 	if(self)
 	{
-		NSMutableDictionary *sequencesByCharacter = [NSMutableDictionary new];
-
-		for(CPMTerminalControlSequence *sequence in sequences)
-		{
-			NSString *const pattern = sequence.pattern;
-
-			if(pattern.length == depth)
-			{
-				_sequence = sequence;
-				break;
-			}
-
-			NSNumber *const character = @([pattern characterAtIndex:depth]);
-
-			NSMutableArray *childSequences = sequencesByCharacter[character];
-			if(!childSequences)
-			{
-				childSequences = [NSMutableArray new];
-				sequencesByCharacter[character] = childSequences;
-			}
-			[childSequences addObject:sequence];
-		}
-
-		if(!_sequence)
-		{
-			for(NSNumber *character in [sequencesByCharacter allKeys])
-			{
-				NSArray *const childSequences = sequencesByCharacter[character];
-				_treesByFirstCharacter[[character unsignedIntegerValue]] = [[[self class] alloc] initWithControlSequences:childSequences depth:depth+1];
-			}
-		}
+		_action = action;
 	}
 
 	return self;
 }
 
-- (CPMTerminalControlSequence *)sequenceMatchingBytes:(const uint8_t *)bytes length:(NSUInteger)length
+- (void)insertSubtree:(CPMTerminalControlSequenceTree *)subtree forBytes:(const uint8_t *)bytes
 {
-	return [self sequenceMatchingBytes:bytes length:length depth:0];
+	if(!bytes[1])
+	{
+		_treesByFirstCharacter[bytes[0]] = subtree;
+		return;
+	}
+
+	if(!_treesByFirstCharacter[bytes[0]])
+	{
+		_treesByFirstCharacter[bytes[0]] = [[CPMTerminalControlSequenceTree alloc] init];
+	}
+	[_treesByFirstCharacter[bytes[0]] insertSubtree:subtree forBytes:bytes+1];
 }
 
-- (CPMTerminalControlSequence *)sequenceMatchingBytes:(const uint8_t *)bytes length:(NSUInteger)length depth:(NSUInteger)depth
+- (NSInteger)matchBytes:(const uint8_t *)bytes length:(NSInteger)length controlSet:(CPMTerminalControlSet *)controlSet
+{
+	return [self sequenceMatchingBytes:bytes length:length depth:0 controlSet:controlSet];
+}
+
+- (NSInteger)sequenceMatchingBytes:(const uint8_t *)bytes length:(NSInteger)length depth:(NSInteger)depth controlSet:(CPMTerminalControlSet *)controlSet
 {
 	// if there's something at this node, a leaf has been reached so that's the answer;
 	// if we're still looking but the input string isn't long enough to find any more then
 	// indicate that something might be found but isn't yet
-	if(_sequence)				return _sequence;
-	if(!length)					return [[self class] mightFindSentinel];
-
-	// otherwise consider both a potential wildcard match and an exact match
-	CPMTerminalControlSequence *wildcardFind	= [_treesByFirstCharacter['?']		sequenceMatchingBytes:bytes+1 length:length-1 depth:depth+1];
-	CPMTerminalControlSequence *directFind		= [_treesByFirstCharacter[*bytes]	sequenceMatchingBytes:bytes+1 length:length-1 depth:depth+1];
-
-	// if no match was found then that's no match in total
-	if(!wildcardFind && !directFind) return nil;
-
-	// if two matches were found, prefer the shorter
-	if([wildcardFind isKindOfClass:[CPMTerminalControlSequence class]] && [directFind isKindOfClass:[CPMTerminalControlSequence class]])
+	if(_action)
 	{
-		return wildcardFind.pattern.length < directFind.pattern.length ? wildcardFind : directFind;
+		_action(controlSet, (char *)bytes);
+		return -depth;
 	}
 
-	// if one match was found return it directly
-	if([wildcardFind isKindOfClass:[CPMTerminalControlSequence class]]) return wildcardFind;
-	if([directFind isKindOfClass:[CPMTerminalControlSequence class]]) return directFind;
+	if(!length)
+		return 0;
 
-	// if we got to here then a might find sentinel was returned for one of the searches,
-	// and no actual find improved upon it. So pass the might find upwards.
-	return [[self class] mightFindSentinel];
+	CPMTerminalControlSequenceTree *nextSequence = _treesByFirstCharacter[bytes[depth]];
+	if(!nextSequence) nextSequence = _treesByFirstCharacter['?'];
+
+	if(!nextSequence)
+		return 1;
+
+	return [nextSequence sequenceMatchingBytes:bytes length:length-1 depth:depth+1 controlSet:controlSet];
 }
 
 - (NSString *)description

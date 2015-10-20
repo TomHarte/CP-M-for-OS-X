@@ -19,7 +19,7 @@
 	char *_characters;
 	CPMTerminalAttribute *_attributes;
 
-	NSUInteger _inputQueueWritePointer;
+	NSInteger _inputQueueWritePointer;
 	CPMTerminalControlSequenceTree *_sequenceTree;
 
 	NSUInteger _backupCursorX, _backupCursorY;
@@ -53,29 +53,28 @@
 	// pull recognised sequences as they're found
 	while(_inputQueueWritePointer)
 	{
-		CPMTerminalControlSequence *foundMatch = [_sequenceTree sequenceMatchingBytes:_inputQueue length:_inputQueueWritePointer];
+		NSInteger foundMatch = [_sequenceTree matchBytes:_inputQueue length:_inputQueueWritePointer controlSet:self];
 
 		// might find => more input needed. So wait.
-		if(foundMatch == [CPMTerminalControlSequenceTree mightFindSentinel])
+		if(!foundMatch)
 			break;
 
-		// can't find => will never match. So output a character
-		if(foundMatch == [CPMTerminalControlSequenceTree cantFindSentinel])
+		// if this was a negative number then there was a match here,
+		// if it's a positive then we should output that many characters
+		if(foundMatch > 0)
 		{
-			[self writeNormalCharacter:(char)_inputQueue[0]];
-			_inputQueueWritePointer--;
-			memmove(_inputQueue, &_inputQueue[1], _inputQueueWritePointer);
+			for(NSInteger position = 0; position < foundMatch; position++)
+				[self writeNormalCharacter:(char)_inputQueue[position]];
 		}
 		else
 		{
 			// okay, found something. Record that we recognised a control sequence.
 			[(NSMutableSet *)_recognisedControlPoints addObject:@(_numberOfCharactersSoFar)];
-
-			// perform the sequence and remove the matched characters from the queue
-			foundMatch.action(self, (char *)_inputQueue);
-			_inputQueueWritePointer -= foundMatch.pattern.length;
-			memmove(_inputQueue, &_inputQueue[foundMatch.pattern.length], _inputQueueWritePointer);
+			foundMatch = -foundMatch;
 		}
+
+		_inputQueueWritePointer -= foundMatch;
+		memmove(_inputQueue, &_inputQueue[foundMatch], _inputQueueWritePointer);
 	}
 }
 
@@ -168,7 +167,11 @@
 		]];
 
 		// build a search tree of control sequences
-		_sequenceTree = [[CPMTerminalControlSequenceTree alloc] initWithControlSequences:sequences];
+		_sequenceTree = [[CPMTerminalControlSequenceTree alloc] init];
+		for(CPMTerminalControlSequence *sequence in sequences)
+		{
+			[_sequenceTree insertSubtree:[[CPMTerminalControlSequenceTree alloc] initWithAction:sequence.action] forBytes:(uint8_t *)[sequence.pattern UTF8String]];
+		}
 
 		// allocate the input queue
 		_inputQueue = (uint8_t *)malloc(sizeof(uint8_t) * [[sequences valueForKeyPath:@"@max.pattern.length"] unsignedIntegerValue]);

@@ -11,10 +11,10 @@
 
 @interface CPMTerminalControlSequenceTree : NSObject
 
-+ (CPMTerminalControlSequence *)cantFindSentinel;
-+ (CPMTerminalControlSequence *)mightFindSentinel;
+- (instancetype)initWithAction:(CPMTerminalControlSequenceAction)action;
 
-- (instancetype)initWithControlSequences:(NSArray<CPMTerminalControlSequence *>*)sequences;
-- (CPMTerminalControlSequence *)sequenceMatchingBytes:(const uint8_t *)bytes length:(NSUInteger)length;
+- (void)insertSubtree:(CPMTerminalControlSequenceTree *)subtree forBytes:(const uint8_t *)bytes;
+
+- (NSInteger)matchBytes:(const uint8_t *)bytes length:(NSInteger)length controlSet:(CPMTerminalControlSet *)controlSet;
 
 @end
