@@ -6,7 +6,7 @@
 //  Copyright © 2015 Thomas Harte. All rights reserved.
 //
 
-typedef void (^ CPMTerminalControlCharacterMapper)(char *input, CPMTerminalAttribute *attribute);
+typedef void (^ CPMTerminalControlCharacterMapper)(unichar *input, CPMTerminalAttribute *attribute);
 
 @interface CPMTerminalControlSet (Actions)
 
@@ -39,5 +39,8 @@ typedef void (^ CPMTerminalControlCharacterMapper)(char *input, CPMTerminalAttri
 - (void)resetAttribute:(CPMTerminalAttribute)attribute;
 
 - (void)mapCharactersFromCursorUsingMapper:(CPMTerminalControlCharacterMapper)mapper;
+
+- (void)outputCharacter:(unichar)character;
+- (void)recordRecognisedControlCode;
 
 @end

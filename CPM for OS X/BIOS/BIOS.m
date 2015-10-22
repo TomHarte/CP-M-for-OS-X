@@ -100,7 +100,7 @@
 
 - (void)writeConsoleOutput:(uint8_t)characer
 {
-	[_terminalView writeCharacter:(char)characer];
+	[_terminalView writeByte:characer];
 }
 
 - (void)terminalViewDidAddCharactersToBuffer:(CPMTerminalView *)terminalView

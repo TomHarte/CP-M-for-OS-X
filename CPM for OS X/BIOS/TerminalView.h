@@ -29,7 +29,7 @@
 /*
 	These three are thread safe.
 */
-- (void)writeCharacter:(char)character;
+- (void)writeByte:(uint8_t)character;
 
 - (BOOL)hasCharacterToDequeue;
 - (unichar)dequeueBufferedCharacter;

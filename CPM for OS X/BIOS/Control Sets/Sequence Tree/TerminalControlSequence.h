@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 @class CPMTerminalControlSet;
-typedef void (^ CPMTerminalControlSequenceAction)(CPMTerminalControlSet *controlSet, const char *const inputQueue);
+typedef void (^ CPMTerminalControlSequenceAction)(CPMTerminalControlSet *controlSet, const uint8_t *const inputQueue);
 
 @interface CPMTerminalControlSequence : NSObject <NSCopying>
 
@@ -22,4 +22,4 @@ typedef void (^ CPMTerminalControlSequenceAction)(CPMTerminalControlSet *control
 
 extern CPMTerminalControlSequence *TCSMake(NSString *pattern, CPMTerminalControlSequenceAction action);
 
-#define CPMTerminalAction(...) ^(CPMTerminalControlSet *controlSet, const char *const inputQueue) { __VA_ARGS__ }
+#define CPMTerminalAction(...) ^(CPMTerminalControlSet *controlSet, const uint8_t *const inputQueue) { __VA_ARGS__ }

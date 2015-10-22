@@ -15,6 +15,6 @@
 
 - (void)insertSubtree:(CPMTerminalControlSequenceTree *)subtree forBytes:(const uint8_t *)bytes;
 
-- (NSInteger)matchBytes:(const uint8_t *)bytes length:(NSInteger)length controlSet:(CPMTerminalControlSet *)controlSet;
+- (NSUInteger)matchBytes:(const uint8_t *)bytes length:(NSUInteger)length controlSet:(CPMTerminalControlSet *)controlSet;
 
 @end

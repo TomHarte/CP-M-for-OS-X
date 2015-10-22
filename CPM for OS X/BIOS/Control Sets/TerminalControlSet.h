@@ -75,15 +75,16 @@ typedef NS_OPTIONS(uint8_t, CPMTerminalAttribute)
 
 @property (atomic, weak) id <CPMTerminalControlSetDelegate> delegate;
 
-// write character is the single entry point for updating state; post all output characters here
-- (void)writeCharacter:(char)character;
+// write byte is the single entry point for updating state; post all output values here
+- (void)writeByte:(uint8_t)byte;
 
 // character buffer will in effect return a C string of the current character output, with
 // newlines and a terminating NULL
-- (const char *)characterBuffer;
+- (const unichar *)characterBuffer;
+- (NSUInteger)characterBufferLength;
 
 // the NSString covering any range of the screen is available
-- (const char *)charactersBetweenStart:(IntegerPoint)start end:(IntegerPoint)end length:(size_t *)length;
+- (const unichar *)charactersBetweenStart:(IntegerPoint)start end:(IntegerPoint)end length:(size_t *)length;
 
 // attributeBufferForY: returns the C array of attributes for the given scanline; each scanline
 // is linear but they're not necessarily tightly packed

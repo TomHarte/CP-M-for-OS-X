@@ -16,10 +16,10 @@
 	uint8_t *_inputQueue;
 	CPMTerminalAttribute _currentAttribute;
 
-	char *_characters;
+	unichar *_characters;
 	CPMTerminalAttribute *_attributes;
 
-	NSInteger _inputQueueWritePointer;
+	NSUInteger _inputQueueWritePointer;
 	CPMTerminalControlSequenceTree *_sequenceTree;
 
 	NSUInteger _backupCursorX, _backupCursorY;
@@ -44,45 +44,36 @@
 	return _recognisedControlPoints ? YES : NO;
 }
 
-- (void)writeCharacter:(char)character
+- (void)writeByte:(uint8_t)character
 {
 	// this enqueuing process has a quick safeguard against overflow
-	_inputQueue[_inputQueueWritePointer++] = (uint8_t)character;
+	_inputQueue[_inputQueueWritePointer++] = character;
 	_numberOfCharactersSoFar++;
 
 	// pull recognised sequences as they're found
 	while(_inputQueueWritePointer)
 	{
-		NSInteger foundMatch = [_sequenceTree matchBytes:_inputQueue length:_inputQueueWritePointer controlSet:self];
+		NSUInteger foundMatch = [_sequenceTree matchBytes:_inputQueue length:_inputQueueWritePointer controlSet:self];
 
 		// might find => more input needed. So wait.
 		if(!foundMatch)
 			break;
 
-		// if this was a negative number then there was a match here,
-		// if it's a positive then we should output that many characters
-		if(foundMatch > 0)
-		{
-			for(NSInteger position = 0; position < foundMatch; position++)
-				[self writeNormalCharacter:(char)_inputQueue[position]];
-		}
-		else
-		{
-			// okay, found something. Record that we recognised a control sequence.
-			[(NSMutableSet *)_recognisedControlPoints addObject:@(_numberOfCharactersSoFar)];
-			foundMatch = -foundMatch;
-		}
-
 		_inputQueueWritePointer -= foundMatch;
-		memmove(_inputQueue, &_inputQueue[foundMatch], _inputQueueWritePointer);
+		memmove(_inputQueue, &_inputQueue[foundMatch], _inputQueueWritePointer * sizeof(unichar));
 	}
 }
 
-- (void)writeNormalCharacter:(char)character
+- (void)recordRecognisedControlCode
+{
+	[(NSMutableSet *)_recognisedControlPoints addObject:@(_numberOfCharactersSoFar)];
+}
+
+- (void)outputCharacter:(unichar)character;
 {
 	// if it's not one of the ASCII printables then, for now, render it as a space
 	// (TODO: put these somewhere else so that we can do graphics output)
-	if(character < 0x20 || character > 0x7e) character = ' ';
+//	if(character < 0x20 || character > 0x7e) character = ' ';
 
 	// write the character, with the current attribute
 	_characters[address(_cursorX, _cursorY)] = character;
@@ -117,16 +108,17 @@
 	}
 }
 
-- (const char *)characterBuffer				{	return _characters;	}
+- (const unichar *)characterBuffer				{	return _characters;						}
+- (NSUInteger)characterBufferLength				{	return (self.width+1)*self.height - 1;	}
 - (const CPMTerminalAttribute *)attributeBufferForY:(NSUInteger)y
 {
 	return &_attributes[address(0, y)];
 }
 
-- (const char *)charactersBetweenStart:(IntegerPoint)start end:(IntegerPoint)end length:(size_t *)length
+- (const unichar *)charactersBetweenStart:(IntegerPoint)start end:(IntegerPoint)end length:(size_t *)length
 {
-	const char *charactersStart = &_characters[address(start.x, start.y)];
-	const char *charactersEnd = &_characters[address(end.x, end.y)];
+	const unichar *charactersStart = &_characters[address(start.x, start.y)];
+	const unichar *charactersEnd = &_characters[address(end.x, end.y)];
 
 	*length = (size_t)(charactersEnd - charactersStart + 1);
 	return charactersStart;
@@ -144,20 +136,9 @@
 		_height = height;
 
 		// allocate storage area for the display
-		_characters = (char *)calloc((width+1)*height, sizeof(char));
-		_attributes = (CPMTerminalAttribute *)calloc((width+1)*height, sizeof(CPMTerminalAttribute));
-
-		// set everything to spaces, initially
-		memset(_characters, ' ', (width+1)*height);
-
-		// write in new lines
-		for(NSUInteger y = 0; y < height; y++)
-		{
-			_characters[address(self.width, y)] = '\n';
-		}
-
-		// write in NULL terminator
-		_characters[address(self.width, self.height-1)] = '\0';
+		_characters = (unichar *)malloc((width+1)*height*sizeof(unichar));
+		_attributes = (CPMTerminalAttribute *)malloc((width+1)*height*sizeof(CPMTerminalAttribute));
+		[self clearFrom:0 to:(width+1)*height];
 
 		// augment sequences with newline, character return and beep
 		sequences = [sequences arrayByAddingObjectsFromArray:@[
@@ -199,85 +180,24 @@
 	}
 }
 
-- (void)incrementY
+- (void)moveFrom:(NSUInteger)source to:(NSUInteger)destination length:(NSUInteger)length
 {
-	_cursorY++;
-
-	if(_cursorY == self.height)
-	{
-		// scroll all contents up a line
-		memmove(_characters, &_characters[self.width+1], (self.height-1)*(self.width+1));
-		memmove(_attributes, &_attributes[self.width+1], (self.height-1)*(self.width+1));
-
-		// move the cursor back onto the screen
-		_cursorY --;
-
-		// blank out the new bottom line
-		memset(&_characters[address(0, _cursorY)], 32, sizeof(uint8_t)*self.width);
-		memset(&_attributes[address(0, _cursorY)], 0, sizeof(CPMTerminalAttribute)*self.width);
-
-		// remove the terminating NULL that just ascended a position
-		_characters[address(self.width, self.height-2)] = '\n';
-	}
+	memmove(&_characters[destination], &_characters[source], length*sizeof(unichar));
+	memmove(&_attributes[destination], &_attributes[source], length*sizeof(CPMTerminalAttribute));
 }
 
-- (void)decrementY
+- (void)clearFrom:(NSUInteger)destination length:(NSUInteger)length
 {
-	if(_cursorY)
-		_cursorY--;
-	else
-	{
-		// scroll all contents down a line
-		memmove(&_characters[self.width+1], _characters, (self.height-1)*(self.width+1));
-		memmove(&_attributes[self.width+1], _attributes, (self.height-1)*(self.width+1));
-
-		// blank out the new top line
-		memset(&_characters[address(0, 0)], 32, sizeof(uint8_t)*self.width);
-		memset(&_attributes[address(0, 0)], 0, sizeof(CPMTerminalAttribute)*self.width);
-
-		// add a terminating NULL at the end
-		_characters[address(self.width, self.height-2)] = '\n';
-	}
+	[self clearFrom:destination to:destination+length];
 }
 
-- (void)deleteLine
-{
-	if(_cursorY < self.height-1)
-	{
-		// scroll all contents up a line
-		memmove(&_characters[address(0, _cursorY)], &_characters[address(0, _cursorY+1)], (self.height-1-_cursorY)*(self.width+1));
-		memmove(&_attributes[address(0, _cursorY)], &_attributes[address(0, _cursorY+1)], (self.height-1-_cursorY)*(self.width+1));
-
-		// fix the terminating NULL that just ascended a position
-		_characters[address(self.width, self.height-2)] = '\n';
-	}
-
-	// blank out the new bottom line
-	memset(&_characters[address(0, self.height-1)], 32, sizeof(uint8_t)*self.width);
-	memset(&_attributes[address(0, self.height-1)], 0, sizeof(CPMTerminalAttribute)*self.width);
-}
-
-- (void)insertLine
-{
-	if(_cursorY < self.height-1)
-	{
-		// scroll all contents down a line
-		memmove(&_characters[address(0, _cursorY+1)], &_characters[address(0, _cursorY)], (self.height-1-_cursorY)*(self.width+1));
-		memmove(&_attributes[address(0, _cursorY+1)], &_attributes[address(0, _cursorY)], (self.height-1-_cursorY)*(self.width+1));
-
-		// fix the newline just descended a position
-		_characters[address(self.width, self.height-1)] = '\0';
-	}
-
-	// blank out this line
-	memset(&_characters[address(0, _cursorY)], 32, sizeof(uint8_t)*self.width);
-	memset(&_attributes[address(0, _cursorY)], 0, sizeof(CPMTerminalAttribute)*self.width);
-}
-
-- (void)clearFrom:(size_t)start to:(size_t)end
+- (void)clearFrom:(NSUInteger)start to:(NSUInteger)end
 {
 	// write out spaces and zero attributes
-	memset(&_characters[start], 32, sizeof(uint8_t)*(end-start));
+	for(NSUInteger position = start; position < end; position++)
+	{
+		_characters[position] = ' ';
+	}
 	memset(&_attributes[start], 0, sizeof(CPMTerminalAttribute)*(end-start));
 
 	// put end-of-line markers back in
@@ -294,6 +214,73 @@
 	^{
 		[self.delegate terminalViewControlSetDidChangeOutput:self];
 	});
+}
+
+- (void)incrementY
+{
+	_cursorY++;
+
+	if(_cursorY == self.height)
+	{
+		// scroll all contents up a line
+		[self moveFrom:self.width+1 to:0 length:(self.height-1)*(self.width+1)];
+
+		// move the cursor back onto the screen
+		_cursorY--;
+
+		// blank out the new bottom line
+		[self clearFrom:address(0, _cursorY) length:self.width];
+
+		// remove the terminating NULL that just ascended a position
+		_characters[address(self.width, self.height-2)] = '\n';
+	}
+}
+
+- (void)decrementY
+{
+	if(_cursorY)
+		_cursorY--;
+	else
+	{
+		// scroll all contents down a line
+		[self moveFrom:0 to:self.width+1 length:(self.height-1)*(self.width+1)];
+
+		// blank out the new top line
+		[self clearFrom:0 length:self.width];
+
+		// add a terminating NULL at the end
+		_characters[address(self.width, self.height-2)] = '\n';
+	}
+}
+
+- (void)deleteLine
+{
+	if(_cursorY < self.height-1)
+	{
+		// scroll all contents up a line
+		[self moveFrom:address(0, _cursorY+1) to:address(0, _cursorY) length:(self.height-1-_cursorY)*(self.width+1)];
+
+		// fix the terminating NULL that just ascended a position
+		_characters[address(self.width, self.height-2)] = '\n';
+	}
+
+	// blank out the new bottom line
+	[self clearFrom:address(0, self.height-1) length:self.width];
+}
+
+- (void)insertLine
+{
+	if(_cursorY < self.height-1)
+	{
+		// scroll all contents down a line
+		[self moveFrom:address(0, _cursorY) to:address(0, _cursorY+1) length:(self.height-1-_cursorY)*(self.width+1)];
+
+		// fix the newline just descended a position
+		_characters[address(self.width, self.height-1)] = '\0';
+	}
+
+	// blank out this line
+	[self clearFrom:address(0, _cursorY) length:self.width];
 }
 
 - (void)homeCursor

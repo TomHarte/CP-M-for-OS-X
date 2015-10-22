@@ -114,14 +114,14 @@
 //	[_flashTimer invalidate], _flashTimer = nil;
 }
 
-- (void)writeCharacter:(char)character
+- (void)writeByte:(uint8_t)character
 {
 	// perform accounting to decide who's ahead
 	if([_candidateControlSets count])
 	{
 		// send the character to all control sets
 		for(CPMTerminalControlSet *set in _candidateControlSets)
-			[set writeCharacter:character];
+			[set writeByte:character];
 
 		// sort by recognised percentage
 		[_candidateControlSets sortUsingComparator:
@@ -172,7 +172,7 @@
 	}
 	else
 	{
-		[_controlSet writeCharacter:character];
+		[_controlSet writeByte:character];
 	}
 }
 
@@ -207,8 +207,8 @@
 
 - (void)viewWillDraw
 {
-	// create a string of the ASCII characters first
-	NSString *asciiText = @((const char *)_controlSet.characterBuffer);
+	// create a string of the characters first
+	NSString *asciiText = [NSString stringWithCharacters:_controlSet.characterBuffer length:_controlSet.characterBufferLength];
 	_attributedString = [[NSMutableAttributedString alloc] initWithString:asciiText];
 
 	// establish the whole range as Monaco 12
@@ -450,9 +450,9 @@
 		size_t length;
 
 		[self getSelectionStart:&startPoint end:&endPoint];
-		const char *bytes = [_controlSet charactersBetweenStart:startPoint end:endPoint length:&length];
+		const unichar *characters = [_controlSet charactersBetweenStart:startPoint end:endPoint length:&length];
 
-		NSString *const output = [[NSString alloc] initWithBytes:bytes length:length encoding:NSASCIIStringEncoding];
+		NSString *const output = [[NSString alloc] initWithCharacters:characters length:length];
 
 		[pasteboard setString:output forType:NSPasteboardTypeString];
 	}
