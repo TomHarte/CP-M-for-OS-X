@@ -19,43 +19,46 @@
 		
 		Update! This may well just be the Kaypro. I'll need to look into this.
 	*/
-	return [[self alloc] initWithControlSequences:@[
-			TCSMake(@"\x0b",	CPMTerminalAction(	[controlSet upCursor];					)),
-			TCSMake(@"\x17",	CPMTerminalAction(	[controlSet clearToEndOfScreen];		)),
-			TCSMake(@"\x18",	CPMTerminalAction(	[controlSet clearToEndOfLine];			)),
-			TCSMake(@"\x1a",	CPMTerminalAction(
-													[controlSet homeCursor];
-													[controlSet clearToEndOfScreen];
-												)),
-			TCSMake(@"\x1e",	CPMTerminalAction(	[controlSet homeCursor];					)),
-			TCSMake(@"\x08",	CPMTerminalAction(	[controlSet leftCursor];					)),
-			TCSMake(@"\x0c",	CPMTerminalAction(	[controlSet rightCursor];					)),
-			TCSMake(@"\33=??",	CPMTerminalAction(
-													[controlSet
-															setCursorX:(NSUInteger)(inputQueue[3] - 32)%controlSet.width
-															y:(NSUInteger)(inputQueue[2] - 32)%controlSet.height];
-												)),
+	CPMTerminalControlSet *const set = [[self alloc] initWithWidth:80 height:24 isColour:NO];
 
-			TCSMake(@"\33B0",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeInverseVideo];		)),
-			TCSMake(@"\33C0",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeInverseVideo];		)),
-			TCSMake(@"\33B1",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeReducedIntensity];	)),
-			TCSMake(@"\33C1",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeReducedIntensity];	)),
-			TCSMake(@"\33B2",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeBlinking];			)),
-			TCSMake(@"\33C2",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeBlinking];			)),
-			TCSMake(@"\33B3",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeUnderlined];			)),
-			TCSMake(@"\33C3",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeUnderlined];		)),
+	NSDictionary *const actions = @{
+		@"\x0b":	CPMTerminalAction(	[controlSet upCursor];					),
+		@"\x17":	CPMTerminalAction(	[controlSet clearToEndOfScreen];		),
+		@"\x18":	CPMTerminalAction(	[controlSet clearToEndOfLine];			),
+		@"\x1a":	CPMTerminalAction(
+										[controlSet homeCursor];
+										[controlSet clearToEndOfScreen];
+									),
+		@"\x1e":	CPMTerminalAction(	[controlSet homeCursor];					),
+		@"\x08":	CPMTerminalAction(	[controlSet leftCursor];					),
+		@"\x0c":	CPMTerminalAction(	[controlSet rightCursor];					),
+		@"\33=??":	CPMTerminalAction(
+										[controlSet
+												setCursorX:(NSUInteger)(inputQueue[3] - 32)%controlSet.width
+												y:(NSUInteger)(inputQueue[2] - 32)%controlSet.height];
+									),
 
-			TCSMake(@"\33B4",	CPMTerminalAction(	controlSet.cursorIsDisabled = NO;		)),
-			TCSMake(@"\33C4",	CPMTerminalAction(	controlSet.cursorIsDisabled = YES;		)),
+		@"\33B0":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeInverseVideo];		),
+		@"\33C0":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeInverseVideo];	),
+		@"\33B1":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeReducedIntensity];	),
+		@"\33C1":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeReducedIntensity];),
+		@"\33B2":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeBlinking];			),
+		@"\33C2":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeBlinking];		),
+		@"\33B3":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeUnderlined];		),
+		@"\33C3":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeUnderlined];		),
 
-			TCSMake(@"\33B6",	CPMTerminalAction(	[controlSet saveCursorPosition];		)),
-			TCSMake(@"\33C6",	CPMTerminalAction(	[controlSet restoreCursorPosition];		)),
+		@"\33B4":	CPMTerminalAction(	controlSet.cursorIsDisabled = NO;		),
+		@"\33C4":	CPMTerminalAction(	controlSet.cursorIsDisabled = YES;		),
 
-			TCSMake(@"\33R",	CPMTerminalAction(	[controlSet deleteLine];	)),
-			TCSMake(@"\33E",	CPMTerminalAction(	[controlSet insertLine];	)),
-		]
-		width:80
-		height:24];
+		@"\33B6":	CPMTerminalAction(	[controlSet saveCursorPosition];		),
+		@"\33C6":	CPMTerminalAction(	[controlSet restoreCursorPosition];		),
+
+		@"\33E":	CPMTerminalAction(	[controlSet deleteLine];	),
+		@"\33R":	CPMTerminalAction(	[controlSet insertLine];	),
+	};
+
+	[set registerActionsByPrefix:actions];
+	return set;
 
 	/*
 		Unimplemented at present:

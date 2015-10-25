@@ -13,61 +13,63 @@
 
 + (instancetype)hazeltine1500ControlSet
 {
-	return [[self alloc] initWithControlSequences:@[
-			TCSMake(@"~\5",		CPMTerminalAction(
-													dispatch_sync(dispatch_get_main_queue(),
-													^{
-														[controlSet.delegate
-															terminalViewControlSet:controlSet
-															addStringToInput:
-																[NSString stringWithFormat:@"%c%c\r",
-																		(uint8_t)(controlSet.cursorX + ((controlSet.cursorX < 32) ? 96 : 0)),
-																		96 + (uint8_t)controlSet.cursorY]];
-													});
-												)),
-			TCSMake(@"~\13",	CPMTerminalAction(	[controlSet downCursor];		)),
-			TCSMake(@"~\14",	CPMTerminalAction(	[controlSet upCursor];			)),
-			TCSMake(@"~\17",	CPMTerminalAction(	[controlSet clearToEndOfLine];	)),
-			TCSMake(@"~\21??",	CPMTerminalAction(
-													NSUInteger cursorX = MIN(inputQueue[2] % 96, 79);
-													NSUInteger cursorY = MIN(inputQueue[3] % 32, 23);
-													[controlSet
-														setCursorX:cursorX
-														y:cursorY];
-												)),
-			TCSMake(@"~\22",	CPMTerminalAction(	[controlSet homeCursor];			)),
-			TCSMake(@"~\23",	CPMTerminalAction(	[controlSet deleteLine];			)),
-			TCSMake(@"~\30",	CPMTerminalAction(	[controlSet clearToEndOfScreen];	)),
-			TCSMake(@"~\31",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeReducedIntensity];		)),
-			TCSMake(@"~\32",	CPMTerminalAction(	[controlSet insertLine];			)),
-			TCSMake(@"~\34",	CPMTerminalAction(
-													[controlSet homeCursor];
-													[controlSet clearToEndOfScreen];
-												)),
-			TCSMake(@"~\37",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeReducedIntensity];	)),
+	CPMTerminalControlSet *const set = [[self alloc] initWithWidth:80 height:24 isColour:NO];
 
-			TCSMake(@"\10",		CPMTerminalAction(	[controlSet leftCursor];	)),
-			TCSMake(@"\20",		CPMTerminalAction(	[controlSet rightCursor];	)),
+	NSDictionary *const actions = @{
+		@"~\5":		CPMTerminalAction(
+										dispatch_sync(dispatch_get_main_queue(),
+										^{
+											[controlSet.delegate
+												terminalViewControlSet:controlSet
+												addStringToInput:
+													[NSString stringWithFormat:@"%c%c\r",
+															(uint8_t)(controlSet.cursorX + ((controlSet.cursorX < 32) ? 96 : 0)),
+															96 + (uint8_t)controlSet.cursorY]];
+										});
+									),
+		@"~\13":	CPMTerminalAction(	[controlSet downCursor];		),
+		@"~\14":	CPMTerminalAction(	[controlSet upCursor];			),
+		@"~\17":	CPMTerminalAction(	[controlSet clearToEndOfLine];	),
+		@"~\21??":	CPMTerminalAction(
+										NSUInteger cursorX = MIN(inputQueue[2] % 96, 79);
+										NSUInteger cursorY = MIN(inputQueue[3] % 32, 23);
+										[controlSet
+											setCursorX:cursorX
+											y:cursorY];
+									),
+		@"~\22":	CPMTerminalAction(	[controlSet homeCursor];			),
+		@"~\23":	CPMTerminalAction(	[controlSet deleteLine];			),
+		@"~\30":	CPMTerminalAction(	[controlSet clearToEndOfScreen];	),
+		@"~\31":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeReducedIntensity];		),
+		@"~\32":	CPMTerminalAction(	[controlSet insertLine];			),
+		@"~\34":	CPMTerminalAction(
+										[controlSet homeCursor];
+										[controlSet clearToEndOfScreen];
+									),
+		@"~\37":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeReducedIntensity];	),
 
-			TCSMake(@"~\35",	CPMTerminalAction(
-													[controlSet homeCursor];
-													[controlSet mapCharactersFromCursorUsingMapper:^(unichar *input, CPMTerminalAttribute *attribute) {
-														if(!(*attribute & CPMTerminalAttributeReducedIntensity))
-														{
-															*input = ' ';
-														}
-													}];
-												)),
+		@"\10":		CPMTerminalAction(	[controlSet leftCursor];	),
+		@"\20":		CPMTerminalAction(	[controlSet rightCursor];	),
 
-			TCSMake(@"~\27",	CPMTerminalAction(
-													[controlSet mapCharactersFromCursorUsingMapper:^(unichar *input, CPMTerminalAttribute *attribute) {
-														*input = ' ';
-														*attribute = CPMTerminalAttributeReducedIntensity;
-													}];
-												)),
-		]
-		width:80
-		height:24];
+		@"~\35":	CPMTerminalAction(
+										[controlSet homeCursor];
+										[controlSet mapCharactersFromCursorUsingMapper:^(unichar *input, CPMTerminalAttribute *attribute) {
+											if(!(*attribute & CPMTerminalAttributeReducedIntensity))
+											{
+												*input = ' ';
+											}
+										}];
+									),
+
+		@"~\27":	CPMTerminalAction(
+										[controlSet mapCharactersFromCursorUsingMapper:^(unichar *input, CPMTerminalAttribute *attribute) {
+											*input = ' ';
+											*attribute = CPMTerminalAttributeReducedIntensity;
+										}];
+									),
+	};
+	[set registerActionsByPrefix:actions];
+	return set;
 
 	/*
 		Unimplemented:

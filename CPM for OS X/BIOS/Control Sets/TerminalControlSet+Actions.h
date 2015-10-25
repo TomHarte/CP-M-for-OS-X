@@ -6,11 +6,13 @@
 //  Copyright © 2015 Thomas Harte. All rights reserved.
 //
 
+#import "TerminalControlSequenceTree.h"
+
 typedef void (^ CPMTerminalControlCharacterMapper)(unichar *input, CPMTerminalAttribute *attribute);
 
 @interface CPMTerminalControlSet (Actions)
 
-- (id)initWithControlSequences:(NSArray<CPMTerminalControlSequence *> *)sequences width:(NSUInteger)width height:(NSUInteger)height;
+- (id)initWithWidth:(NSUInteger)width height:(NSUInteger)height isColour:(BOOL)isColour;
 - (void)setCursorIsDisabled:(BOOL)cursorIsDisabled;
 
 - (void)homeCursor;
@@ -43,4 +45,8 @@ typedef void (^ CPMTerminalControlCharacterMapper)(unichar *input, CPMTerminalAt
 - (void)outputCharacter:(unichar)character;
 - (void)recordRecognisedControlCode;
 
+- (void)registerActionsByPrefix:(NSDictionary *)actionsByPrefix;
+
 @end
+
+

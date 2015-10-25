@@ -28,7 +28,7 @@
 	return self;
 }
 
-- (void)insertSubtree:(CPMTerminalControlSequenceTree *)subtree forBytes:(const uint8_t *)bytes
+- (void)insertSubtree:(CPMTerminalControlSequenceTree *)subtree forPrefix:(const uint8_t *)bytes
 {
 	if(!bytes[1])
 	{
@@ -40,7 +40,12 @@
 	{
 		_treesByFirstCharacter[bytes[0]] = [[CPMTerminalControlSequenceTree alloc] init];
 	}
-	[_treesByFirstCharacter[bytes[0]] insertSubtree:subtree forBytes:bytes+1];
+	[_treesByFirstCharacter[bytes[0]] insertSubtree:subtree forPrefix:bytes+1];
+}
+
+- (void)insertAction:(CPMTerminalControlSequenceAction)action forPrefix:(const uint8_t *)bytes
+{
+	[self insertSubtree:[[CPMTerminalControlSequenceTree alloc] initWithAction:action] forPrefix:bytes];
 }
 
 - (NSUInteger)matchBytes:(const uint8_t *)bytes length:(NSUInteger)length controlSet:(CPMTerminalControlSet *)controlSet

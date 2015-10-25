@@ -13,34 +13,37 @@
 
 + (instancetype)osborneControlSet
 {
-	return [[self alloc] initWithControlSequences:@[
-			TCSMake(@"\x07",	CPMTerminalAction(	NSBeep();					)), // i.e. ^G
+	CPMTerminalControlSet *const set = [[self alloc] initWithWidth:80 height:24 isColour:NO];
 
-			TCSMake(@"\x08",	CPMTerminalAction(	[controlSet leftCursor];	)),	// i.e. ^H
-			TCSMake(@"\x0c",	CPMTerminalAction(	[controlSet rightCursor];	)),	// i.e. ^L
-			TCSMake(@"\x0b",	CPMTerminalAction(	[controlSet upCursor];		)),	// i.e. ^K
-			TCSMake(@"\x1a",	CPMTerminalAction(
-													[controlSet homeCursor];
-													[controlSet clearToEndOfScreen];
-												)),								// i.e. ^Z
-			TCSMake(@"\x1e",	CPMTerminalAction(	[controlSet homeCursor];	)),
-			TCSMake(@"\33=??",	CPMTerminalAction(
-													[controlSet
-															setCursorX:(NSUInteger)(inputQueue[3] - 32)%controlSet.width
-															y:(NSUInteger)(inputQueue[2] - 32)%controlSet.height];
-												)),
-			TCSMake(@"\33T",	CPMTerminalAction(	[controlSet clearToEndOfLine];	)),
+	NSDictionary *const actions = @{
+		@"\x07":	CPMTerminalAction(	NSBeep();					), // i.e. ^G
 
-			TCSMake(@"\33)",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeReducedIntensity];		)),
-			TCSMake(@"\33(",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeReducedIntensity];	)),
-			TCSMake(@"\33L",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeUnderlined];			)),
-			TCSMake(@"\33M",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeUnderlined];			)),
+		@"\x08":	CPMTerminalAction(	[controlSet leftCursor];	),	// i.e. ^H
+		@"\x0c":	CPMTerminalAction(	[controlSet rightCursor];	),	// i.e. ^L
+		@"\x0b":	CPMTerminalAction(	[controlSet upCursor];		),	// i.e. ^K
+		@"\x1a":	CPMTerminalAction(
+										[controlSet homeCursor];
+										[controlSet clearToEndOfScreen];
+									),								// i.e. ^Z
+		@"\x1e":	CPMTerminalAction(	[controlSet homeCursor];	),
+		@"\33=??":	CPMTerminalAction(
+										[controlSet
+												setCursorX:(NSUInteger)(inputQueue[3] - 32)%controlSet.width
+												y:(NSUInteger)(inputQueue[2] - 32)%controlSet.height];
+									),
+		@"\33T":	CPMTerminalAction(	[controlSet clearToEndOfLine];	),
 
-			TCSMake(@"\33E",	CPMTerminalAction(	[controlSet insertLine];	)),
-			TCSMake(@"\33R",	CPMTerminalAction(	[controlSet deleteLine];	)),
-		]
-		width:80
-		height:24];
+		@"\33)":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeReducedIntensity];		),
+		@"\33(":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeReducedIntensity];	),
+		@"\33L":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeUnderlined];			),
+		@"\33M":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeUnderlined];			),
+
+		@"\33E":	CPMTerminalAction(	[controlSet insertLine];	),
+		@"\33R":	CPMTerminalAction(	[controlSet deleteLine];	),
+	};
+
+	[set registerActionsByPrefix:actions];
+	return set;
 
 	/*
 		Unimplemented at present:

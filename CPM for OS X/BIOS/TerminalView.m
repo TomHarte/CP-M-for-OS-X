@@ -7,7 +7,6 @@
 //
 
 #import "TerminalView.h"
-#import "TerminalControlSequence.h"
 #import "TerminalControlSet+Actions.h"
 
 #import "TerminalControlSet+ADM3A.h"

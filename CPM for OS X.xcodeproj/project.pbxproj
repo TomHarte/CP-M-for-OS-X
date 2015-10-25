@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		4B1681C9193E8F75006341D9 /* Help in Resources */ = {isa = PBXBuildFile; fileRef = 4B1681C7193E8F75006341D9 /* Help */; };
-		4B1A945F1BD4667F001088E6 /* TerminalControlSequence.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B1A944F1BD4667F001088E6 /* TerminalControlSequence.m */; settings = {ASSET_TAGS = (); }; };
 		4B1A94601BD4667F001088E6 /* TerminalControlSequenceTree.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B1A94511BD4667F001088E6 /* TerminalControlSequenceTree.m */; settings = {ASSET_TAGS = (); }; };
 		4B1A94611BD4667F001088E6 /* TerminalControlSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B1A94531BD4667F001088E6 /* TerminalControlSet.m */; settings = {ASSET_TAGS = (); }; };
 		4B1A94621BD4667F001088E6 /* TerminalControlSet+ADM3A.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B1A94561BD4667F001088E6 /* TerminalControlSet+ADM3A.m */; settings = {ASSET_TAGS = (); }; };
@@ -35,8 +34,6 @@
 
 /* Begin PBXFileReference section */
 		4B1681C8193E8F75006341D9 /* en */ = {isa = PBXFileReference; lastKnownFileType = folder; name = en; path = en.lproj/Help; sourceTree = "<group>"; };
-		4B1A944E1BD4667F001088E6 /* TerminalControlSequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalControlSequence.h; sourceTree = "<group>"; };
-		4B1A944F1BD4667F001088E6 /* TerminalControlSequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalControlSequence.m; sourceTree = "<group>"; };
 		4B1A94501BD4667F001088E6 /* TerminalControlSequenceTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalControlSequenceTree.h; sourceTree = "<group>"; };
 		4B1A94511BD4667F001088E6 /* TerminalControlSequenceTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalControlSequenceTree.m; sourceTree = "<group>"; };
 		4B1A94521BD4667F001088E6 /* TerminalControlSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalControlSet.h; sourceTree = "<group>"; };
@@ -110,8 +107,6 @@
 		4B1A944D1BD4667F001088E6 /* Sequence Tree */ = {
 			isa = PBXGroup;
 			children = (
-				4B1A944E1BD4667F001088E6 /* TerminalControlSequence.h */,
-				4B1A944F1BD4667F001088E6 /* TerminalControlSequence.m */,
 				4B1A94501BD4667F001088E6 /* TerminalControlSequenceTree.h */,
 				4B1A94511BD4667F001088E6 /* TerminalControlSequenceTree.m */,
 			);
@@ -320,7 +315,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4B1A945F1BD4667F001088E6 /* TerminalControlSequence.m in Sources */,
 				4B1A94631BD4667F001088E6 /* TerminalControlSet+ANSI.m in Sources */,
 				4B582991160197E0009515A6 /* main.m in Sources */,
 				4B1A94651BD4667F001088E6 /* TerminalControlSet+Osborne.m in Sources */,

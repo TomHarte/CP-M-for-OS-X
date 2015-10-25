@@ -13,49 +13,52 @@
 
 + (instancetype)VT52ControlSet
 {
-	return [[self alloc] initWithControlSequences:@[
-			TCSMake(@"\33A",	CPMTerminalAction(	[controlSet upCursor];		)),
-			TCSMake(@"\33B",	CPMTerminalAction(	[controlSet downCursor];	)),
-			TCSMake(@"\33C",	CPMTerminalAction(	[controlSet rightCursor];	)),
-			TCSMake(@"\33D",	CPMTerminalAction(	[controlSet leftCursor];	)),
-			TCSMake(@"\33E",	CPMTerminalAction(
-													[controlSet homeCursor];
-													[controlSet clearToEndOfScreen];
-												)),
-			TCSMake(@"\33H",	CPMTerminalAction(	[controlSet homeCursor];			)),
-			TCSMake(@"\33I",	CPMTerminalAction(	[controlSet decrementY];			)),
-			TCSMake(@"\33J",	CPMTerminalAction(	[controlSet clearToEndOfScreen];	)),
-			TCSMake(@"\33K",	CPMTerminalAction(	[controlSet clearToEndOfLine];		)),
-			TCSMake(@"\33L",	CPMTerminalAction(	[controlSet insertLine];			)),
-			TCSMake(@"\33M",	CPMTerminalAction(	[controlSet deleteLine];			)),
-			TCSMake(@"\33Y??",	CPMTerminalAction(
-													[controlSet
-															setCursorX:(NSUInteger)(inputQueue[3] - 32)%controlSet.width
-															y:(NSUInteger)(inputQueue[2] - 32)%controlSet.height];
-												)),
-			// ESC b — select font colour
-			// ESC c — select background colour
-			TCSMake(@"\33d",	CPMTerminalAction(	[controlSet clearFromStartOfScreen];	)),
-			TCSMake(@"\33e",	CPMTerminalAction(	controlSet.cursorIsDisabled = NO;		)),
-			TCSMake(@"\33f",	CPMTerminalAction(	controlSet.cursorIsDisabled = YES;		)),
-			TCSMake(@"\33j",	CPMTerminalAction(	[controlSet saveCursorPosition];		)),
-			TCSMake(@"\33k",	CPMTerminalAction(	[controlSet restoreCursorPosition];		)),
-			TCSMake(@"\33l",	CPMTerminalAction(
-								[controlSet setCursorX:0 y:controlSet.cursorY];
-								[controlSet clearToEndOfLine];
-							)),
-			TCSMake(@"\33o",	CPMTerminalAction(	[controlSet clearFromStartOfLine];		)),
+	CPMTerminalControlSet *const set = [[self alloc] initWithWidth:80 height:25 isColour:NO];
 
-			TCSMake(@"\33p",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeInverseVideo];		)),
-			TCSMake(@"\33q",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeInverseVideo];	)),
+	NSDictionary *const actions = @{
+		@"\33A":	CPMTerminalAction(	[controlSet upCursor];		),
+		@"\33B":	CPMTerminalAction(	[controlSet downCursor];	),
+		@"\33C":	CPMTerminalAction(	[controlSet rightCursor];	),
+		@"\33D":	CPMTerminalAction(	[controlSet leftCursor];	),
+		@"\33E":	CPMTerminalAction(
+										[controlSet homeCursor];
+										[controlSet clearToEndOfScreen];
+									),
+		@"\33H":	CPMTerminalAction(	[controlSet homeCursor];			),
+		@"\33I":	CPMTerminalAction(	[controlSet decrementY];			),
+		@"\33J":	CPMTerminalAction(	[controlSet clearToEndOfScreen];	),
+		@"\33K":	CPMTerminalAction(	[controlSet clearToEndOfLine];		),
+		@"\33L":	CPMTerminalAction(	[controlSet insertLine];			),
+		@"\33M":	CPMTerminalAction(	[controlSet deleteLine];			),
+		@"\33Y??":	CPMTerminalAction(
+										[controlSet
+												setCursorX:(NSUInteger)(inputQueue[3] - 32)%controlSet.width
+												y:(NSUInteger)(inputQueue[2] - 32)%controlSet.height];
+									),
+		// ESC b — select font colour
+		// ESC c — select background colour
+		@"\33d":	CPMTerminalAction(	[controlSet clearFromStartOfScreen];	),
+		@"\33e":	CPMTerminalAction(	controlSet.cursorIsDisabled = NO;		),
+		@"\33f":	CPMTerminalAction(	controlSet.cursorIsDisabled = YES;		),
+		@"\33j":	CPMTerminalAction(	[controlSet saveCursorPosition];		),
+		@"\33k":	CPMTerminalAction(	[controlSet restoreCursorPosition];		),
+		@"\33l":	CPMTerminalAction(
+										[controlSet setCursorX:0 y:controlSet.cursorY];
+										[controlSet clearToEndOfLine];
+									),
+		@"\33o":	CPMTerminalAction(	[controlSet clearFromStartOfLine];		),
 
-			TCSMake(@"\0334",	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeInverseVideo];		)),
-			TCSMake(@"\0333",	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeInverseVideo];	)),
-			// ESC v - automatic overflow on
-			// ESC w - automatic overflow off
-		]
-		width:80
-		height:25];
+		@"\33p":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeInverseVideo];		),
+		@"\33q":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeInverseVideo];	),
+
+		@"\0334":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeInverseVideo];		),
+		@"\0333":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeInverseVideo];	),
+		// ESC v - automatic overflow on
+		// ESC w - automatic overflow off
+	};
+
+	[set registerActionsByPrefix:actions];
+	return set;
 }
 
 @end

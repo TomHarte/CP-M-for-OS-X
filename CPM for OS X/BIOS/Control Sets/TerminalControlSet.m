@@ -7,7 +7,6 @@
 //
 
 #import "TerminalControlSet.h"
-#import "TerminalControlSequence.h"
 #import "TerminalControlSequenceTree.h"
 #import "TerminalControlSet+Actions.h"
 
@@ -124,8 +123,16 @@
 	return charactersStart;
 }
 
+- (void)registerActionsByPrefix:(NSDictionary *)actionsByPrefix
+{
+	for(NSString *prefix in [actionsByPrefix allKeys])
+	{
+		CPMTerminalControlSequenceAction action = actionsByPrefix[prefix];
+		[_sequenceTree insertAction:action forPrefix:(uint8_t *)[prefix UTF8String]];
+	}
+}
 
-- (id)initWithControlSequences:(NSArray<CPMTerminalControlSequence *> *)sequences width:(NSUInteger)width height:(NSUInteger)height
+- (id)initWithWidth:(NSUInteger)width height:(NSUInteger)height isColour:(BOOL)isColour
 {
 	self = [super init];
 
@@ -140,22 +147,18 @@
 		_attributes = (CPMTerminalAttribute *)malloc((width+1)*height*sizeof(CPMTerminalAttribute));
 		[self clearFrom:0 to:(width+1)*height];
 
-		// augment sequences with newline, character return and beep
-		sequences = [sequences arrayByAddingObjectsFromArray:@[
-			TCSMake(@"\n",	CPMTerminalAction(	[controlSet incrementY];						)),
-			TCSMake(@"\r",	CPMTerminalAction(	[controlSet setCursorX:0 y:controlSet.cursorY];	)),
-			TCSMake(@"\a",	CPMTerminalAction(	NSBeep();										)),
-		]];
-
 		// build a search tree of control sequences
 		_sequenceTree = [[CPMTerminalControlSequenceTree alloc] init];
-		for(CPMTerminalControlSequence *sequence in sequences)
-		{
-			[_sequenceTree insertSubtree:[[CPMTerminalControlSequenceTree alloc] initWithAction:sequence.action] forBytes:(uint8_t *)[sequence.pattern UTF8String]];
-		}
+
+		[self registerActionsByPrefix:
+			@{
+				@"\n":	CPMTerminalAction(	[controlSet incrementY];						),
+				@"\r":	CPMTerminalAction(	[controlSet setCursorX:0 y:controlSet.cursorY];	),
+				@"\a":	CPMTerminalAction(	NSBeep();										),
+			}];
 
 		// allocate the input queue
-		_inputQueue = (uint8_t *)malloc(sizeof(uint8_t) * [[sequences valueForKeyPath:@"@max.pattern.length"] unsignedIntegerValue]);
+		_inputQueue = (uint8_t *)malloc(sizeof(uint8_t) * 256);
 	}
 
 	return self;
