@@ -50,6 +50,15 @@
 		// this is an ADM-5 addition; attributes are inline
 		@"\eG":		CPMTerminalAction(	[controlSet outputInlineAttribute:CPMTerminalAttributeToggle | CPMTerminalAttributeInverseVideo];	),
 
+		// ADM-21
+		// \eG8 = underline on
+		// \eG4 = reverse video on
+		// \eG0 = underline, reverse video off
+		// \eT = clear to end of line
+		// \eY = clear rows from current
+		// \eQ = insert one character position at cursor
+		// \eW = delete one character
+
 		@"\eB4":	CPMTerminalAction(	controlSet.cursorIsDisabled = NO;		),
 		@"\eC4":	CPMTerminalAction(	controlSet.cursorIsDisabled = YES;		),
 
