@@ -68,7 +68,17 @@
 	[(NSMutableSet *)_recognisedControlPoints addObject:@(_numberOfCharactersSoFar)];
 }
 
-- (void)outputCharacter:(unichar)character;
+- (void)outputInlineAttribute:(CPMTerminalAttribute)attribute
+{
+	[self outputCharacter:' ' attribute:attribute];
+}
+
+- (void)outputCharacter:(unichar)character
+{
+	[self outputCharacter:character attribute:_currentAttribute];
+}
+
+- (void)outputCharacter:(unichar)character attribute:(CPMTerminalAttribute)attribute
 {
 	// if it's not one of the ASCII printables then, for now, render it as a space
 	// (TODO: put these somewhere else so that we can do graphics output)
@@ -76,7 +86,7 @@
 
 	// write the character, with the current attribute
 	_characters[address(_cursorX, _cursorY)] = character;
-	_attributes[address(_cursorX, _cursorY)] = _currentAttribute;
+	_attributes[address(_cursorX, _cursorY)] = attribute;
 
 	// increment x and increment y if necessary
 	_cursorX++;
@@ -113,6 +123,10 @@
 {
 	return &_attributes[address(0, y)];
 }
+- (unichar *)characterBufferForY:(NSUInteger)y
+{
+	return &_characters[address(0, y)];
+}
 
 - (const unichar *)charactersBetweenStart:(IntegerPoint)start end:(IntegerPoint)end length:(size_t *)length
 {
@@ -130,6 +144,11 @@
 		CPMTerminalControlSequenceAction action = actionsByPrefix[prefix];
 		[_sequenceTree insertAction:action forPrefix:(uint8_t *)[prefix UTF8String]];
 	}
+}
+
+- (CPMTerminalControlSequenceTree *)sequenceTree
+{
+	return _sequenceTree;
 }
 
 - (id)initWithWidth:(NSUInteger)width height:(NSUInteger)height isColour:(BOOL)isColour
@@ -361,6 +380,11 @@
 	});
 }
 
+- (void)setAttributes:(CPMTerminalAttribute)attribute
+{
+	_currentAttribute = attribute;
+}
+
 - (void)setAttribute:(CPMTerminalAttribute)attribute
 {
 	_currentAttribute |= attribute;
@@ -369,6 +393,11 @@
 - (void)resetAttribute:(CPMTerminalAttribute)attribute
 {
 	_currentAttribute &= ~attribute;
+}
+
+- (void)toggleAttribute:(CPMTerminalAttribute)attribute
+{
+	_currentAttribute ^= attribute;
 }
 
 - (void)mapCharactersFromCursorUsingMapper:(CPMTerminalControlCharacterMapper)mapper

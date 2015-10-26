@@ -32,29 +32,32 @@
 		@"\x1e":	CPMTerminalAction(	[controlSet homeCursor];					),
 		@"\x08":	CPMTerminalAction(	[controlSet leftCursor];					),
 		@"\x0c":	CPMTerminalAction(	[controlSet rightCursor];					),
-		@"\33=??":	CPMTerminalAction(
+		@"\e=??":	CPMTerminalAction(
 										[controlSet
 												setCursorX:(NSUInteger)(inputQueue[3] - 32)%controlSet.width
 												y:(NSUInteger)(inputQueue[2] - 32)%controlSet.height];
 									),
 
-		@"\33B0":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeInverseVideo];		),
-		@"\33C0":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeInverseVideo];	),
-		@"\33B1":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeReducedIntensity];	),
-		@"\33C1":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeReducedIntensity];),
-		@"\33B2":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeBlinking];			),
-		@"\33C2":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeBlinking];		),
-		@"\33B3":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeUnderlined];		),
-		@"\33C3":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeUnderlined];		),
+		@"\eB0":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeInverseVideo];		),
+		@"\eC0":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeInverseVideo];	),
+		@"\eB1":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeReducedIntensity];	),
+		@"\eC1":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeReducedIntensity];),
+		@"\eB2":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeBlinking];			),
+		@"\eC2":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeBlinking];		),
+		@"\eB3":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeUnderlined];		),
+		@"\eC3":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeUnderlined];		),
 
-		@"\33B4":	CPMTerminalAction(	controlSet.cursorIsDisabled = NO;		),
-		@"\33C4":	CPMTerminalAction(	controlSet.cursorIsDisabled = YES;		),
+		// this is an ADM-5 addition; attributes are inline
+		@"\eG":		CPMTerminalAction(	[controlSet outputInlineAttribute:CPMTerminalAttributeToggle | CPMTerminalAttributeInverseVideo];	),
 
-		@"\33B6":	CPMTerminalAction(	[controlSet saveCursorPosition];		),
-		@"\33C6":	CPMTerminalAction(	[controlSet restoreCursorPosition];		),
+		@"\eB4":	CPMTerminalAction(	controlSet.cursorIsDisabled = NO;		),
+		@"\eC4":	CPMTerminalAction(	controlSet.cursorIsDisabled = YES;		),
 
-		@"\33E":	CPMTerminalAction(	[controlSet deleteLine];	),
-		@"\33R":	CPMTerminalAction(	[controlSet insertLine];	),
+		@"\eB6":	CPMTerminalAction(	[controlSet saveCursorPosition];		),
+		@"\eC6":	CPMTerminalAction(	[controlSet restoreCursorPosition];		),
+
+		@"\eE":		CPMTerminalAction(	[controlSet deleteLine];	),
+		@"\eR":		CPMTerminalAction(	[controlSet insertLine];	),
 	};
 
 	[set registerActionsByPrefix:actions];

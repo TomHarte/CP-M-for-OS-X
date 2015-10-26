@@ -30,6 +30,7 @@
 		4B5829BA16019899009515A6 /* FuseTestRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829B016019899009515A6 /* FuseTestRunner.m */; };
 		4B5829BB16019899009515A6 /* Processor.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829B216019899009515A6 /* Processor.m */; };
 		4B5829BC16019899009515A6 /* RAMModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5829B516019899009515A6 /* RAMModule.m */; };
+		4BFD51CA1BDD6C2B0083DB74 /* TerminalControlSet+WY50.m in Sources */ = {isa = PBXBuildFile; fileRef = 4BFD51C91BDD6C2B0083DB74 /* TerminalControlSet+WY50.m */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -78,6 +79,8 @@
 		4B5829B216019899009515A6 /* Processor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Processor.m; sourceTree = "<group>"; };
 		4B5829B416019899009515A6 /* RAMModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RAMModule.h; sourceTree = "<group>"; };
 		4B5829B516019899009515A6 /* RAMModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RAMModule.m; sourceTree = "<group>"; };
+		4BFD51C81BDD6C2B0083DB74 /* TerminalControlSet+WY50.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+WY50.h"; sourceTree = "<group>"; };
+		4BFD51C91BDD6C2B0083DB74 /* TerminalControlSet+WY50.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+WY50.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +129,8 @@
 				4B1A945C1BD4667F001088E6 /* TerminalControlSet+Osborne.m */,
 				4B1A945D1BD4667F001088E6 /* TerminalControlSet+VT52.h */,
 				4B1A945E1BD4667F001088E6 /* TerminalControlSet+VT52.m */,
+				4BFD51C81BDD6C2B0083DB74 /* TerminalControlSet+WY50.h */,
+				4BFD51C91BDD6C2B0083DB74 /* TerminalControlSet+WY50.m */,
 			);
 			path = Terminals;
 			sourceTree = "<group>";
@@ -318,6 +323,7 @@
 				4B1A94631BD4667F001088E6 /* TerminalControlSet+ANSI.m in Sources */,
 				4B582991160197E0009515A6 /* main.m in Sources */,
 				4B1A94651BD4667F001088E6 /* TerminalControlSet+Osborne.m in Sources */,
+				4BFD51CA1BDD6C2B0083DB74 /* TerminalControlSet+WY50.m in Sources */,
 				4B582998160197E0009515A6 /* CPMDocument.m in Sources */,
 				4B5829B616019899009515A6 /* BDOS.m in Sources */,
 				4B1A94601BD4667F001088E6 /* TerminalControlSequenceTree.m in Sources */,

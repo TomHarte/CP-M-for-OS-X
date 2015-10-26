@@ -26,20 +26,20 @@
 										[controlSet clearToEndOfScreen];
 									),								// i.e. ^Z
 		@"\x1e":	CPMTerminalAction(	[controlSet homeCursor];	),
-		@"\33=??":	CPMTerminalAction(
+		@"\e=??":	CPMTerminalAction(
 										[controlSet
 												setCursorX:(NSUInteger)(inputQueue[3] - 32)%controlSet.width
 												y:(NSUInteger)(inputQueue[2] - 32)%controlSet.height];
 									),
-		@"\33T":	CPMTerminalAction(	[controlSet clearToEndOfLine];	),
+		@"\eT":		CPMTerminalAction(	[controlSet clearToEndOfLine];	),
 
-		@"\33)":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeReducedIntensity];		),
-		@"\33(":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeReducedIntensity];	),
-		@"\33L":	CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeUnderlined];			),
-		@"\33M":	CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeUnderlined];			),
+		@"\e)":		CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeReducedIntensity];		),
+		@"\e(":		CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeReducedIntensity];	),
+		@"\eL":		CPMTerminalAction(	[controlSet setAttribute:CPMTerminalAttributeUnderlined];			),
+		@"\eM":		CPMTerminalAction(	[controlSet resetAttribute:CPMTerminalAttributeUnderlined];			),
 
-		@"\33E":	CPMTerminalAction(	[controlSet insertLine];	),
-		@"\33R":	CPMTerminalAction(	[controlSet deleteLine];	),
+		@"\eE":		CPMTerminalAction(	[controlSet insertLine];	),
+		@"\eR":		CPMTerminalAction(	[controlSet deleteLine];	),
 	};
 
 	[set registerActionsByPrefix:actions];

@@ -14,6 +14,16 @@
 #import "TerminalControlSet+VT52.h"
 #import "TerminalControlSet+Osborne.h"
 #import "TerminalControlSet+ANSI.h"
+#import "TerminalControlSet+WY50.h"
+
+@interface CPMTerminalViewColourSpan: NSObject
+@property (nonatomic, assign) NSUInteger y;
+@property (nonatomic, assign) NSUInteger startX, endX;
+@property (nonatomic, retain) NSColor *colour;
+@end
+
+@implementation CPMTerminalViewColourSpan
+@end
 
 @interface CPMTerminalView () <NSDraggingDestination>
 @end
@@ -46,6 +56,7 @@
 	[_candidateControlSets addObject:[CPMTerminalControlSet hazeltine1500ControlSet]];
 	[_candidateControlSets addObject:[CPMTerminalControlSet VT52ControlSet]];
 	[_candidateControlSets addObject:[CPMTerminalControlSet ANSIControlSet]];
+//	[_candidateControlSets addObject:[CPMTerminalControlSet WY50ControlSet]];
 
 	for(CPMTerminalControlSet *set in _candidateControlSets)
 	{
@@ -116,7 +127,7 @@
 - (void)writeByte:(uint8_t)character
 {
 	// perform accounting to decide who's ahead
-	if([_candidateControlSets count])
+	if([_candidateControlSets count] > 1)
 	{
 		// send the character to all control sets
 		for(CPMTerminalControlSet *set in _candidateControlSets)
@@ -204,77 +215,103 @@
 	return [self colourWithIntensity:0.5f];
 }
 
+typedef void (^ CPMTerminalViewCharacterIterator)(unichar input, CPMTerminalAttribute attribute, NSUInteger x, NSUInteger y);
+
+- (void)iterateBuffer:(CPMTerminalViewCharacterIterator)iterator
+{
+	CPMTerminalAttribute modalAttribute = 0;
+	for(NSUInteger y = 0; y < _controlSet.height; y++)
+	{
+		const CPMTerminalAttribute *attributes = [_controlSet attributeBufferForY:y];
+		const unichar *characters = [_controlSet characterBufferForY:y];
+
+		for(NSUInteger x = 0; x < _controlSet.width; x++)
+		{
+			CPMTerminalAttribute attributeCommand = attributes[x] & CPMTerminalAttributeCommandMask;
+			CPMTerminalAttribute attributeValue = attributes[x] & ~CPMTerminalAttributeCommandMask;
+			CPMTerminalAttribute attribute = 0;
+			CPMTerminalAttribute preModifiedModalAttribute = modalAttribute;
+			switch(attributeCommand)
+			{
+				case CPMTerminalAttributeSet:		modalAttribute |= attributeValue;	break;
+				case CPMTerminalAttributeReset:		modalAttribute &= ~attributeValue;	break;
+				case CPMTerminalAttributeToggle:	modalAttribute ^= attributeValue;	break;
+				default:							attribute = attributeValue;			break;
+			}
+
+			attribute |= preModifiedModalAttribute;
+			iterator(characters[x], attribute, x, y);
+		}
+	}
+}
+
 - (void)viewWillDraw
 {
 	// create a string of the characters first
 	NSString *asciiText = [NSString stringWithCharacters:_controlSet.characterBuffer length:_controlSet.characterBufferLength];
-	_attributedString = [[NSMutableAttributedString alloc] initWithString:asciiText];
+	NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:asciiText];
 
 	// establish the whole range as Monaco 12
 	CTFontRef monaco = CTFontCreateWithName((CFStringRef)@"Monaco", 12.0f, NULL);
-	[_attributedString
+	[attributedString
 		setAttributes:
 		@{
 			(id)kCTFontAttributeName : (__bridge id)monaco,
 			(id)kCTForegroundColorAttributeName: (id)[[self fullIntensityColour] CGColor]
 		}
-		range:NSMakeRange(0, _attributedString.length)];
+		range:NSMakeRange(0, attributedString.length)];
 	CFRelease(monaco);
 
-	CPMTerminalAttribute lastAttribute = 0;
-	for(NSUInteger y = 0; y < _controlSet.height; y++)
-	{
-		const CPMTerminalAttribute *attributes = [_controlSet attributeBufferForY:y];
-		for(NSUInteger x = 0; x < _controlSet.width; x++)
+	__block CPMTerminalAttribute lastAttribute = 0;
+	NSUInteger width = _controlSet.width;
+	[self iterateBuffer:^(unichar input, CPMTerminalAttribute attribute, NSUInteger x, NSUInteger y) {
+		if(attribute != lastAttribute)
 		{
-			CPMTerminalAttribute attribute = attributes[x];
+			NSMutableDictionary *newAttributes = [NSMutableDictionary dictionary];
+			CPMTerminalAttribute attributeChanges = attribute^lastAttribute;
+			lastAttribute = attribute;
 
-			if(attribute != lastAttribute)
+			if(
+				attributeChanges & (CPMTerminalAttributeReducedIntensity | CPMTerminalAttributeInverseVideo)
+			)
 			{
-				NSMutableDictionary *newAttributes = [NSMutableDictionary dictionary];
-				CPMTerminalAttribute attributeChanges = attribute^lastAttribute;
-				lastAttribute = attribute;
-
-				if(
-					attributeChanges & (CPMTerminalAttributeReducedIntensity | CPMTerminalAttributeInverseVideo)
-				)
+				NSColor *textColour = nil;
+				switch(attribute & (CPMTerminalAttributeReducedIntensity | CPMTerminalAttributeInverseVideo))
 				{
-					NSColor *textColour = nil;
-					switch(attribute & (CPMTerminalAttributeReducedIntensity | CPMTerminalAttributeInverseVideo))
-					{
-						default:
-							textColour = [self fullIntensityColour];
-						break;
-						case CPMTerminalAttributeReducedIntensity:
-							textColour = [self halfIntensityColour];
-						break;
-						case CPMTerminalAttributeInverseVideo:
-							textColour = [self zeroIntensityColour];
-						break;
-						case CPMTerminalAttributeInverseVideo | CPMTerminalAttributeReducedIntensity:
-							textColour = [self zeroIntensityColour];
-						break;
-					}
-					[newAttributes setValue:(id)[textColour CGColor] forKey:(id)kCTForegroundColorAttributeName];
+					default:
+						textColour = [self fullIntensityColour];
+					break;
+					case CPMTerminalAttributeReducedIntensity:
+						textColour = [self halfIntensityColour];
+					break;
+					case CPMTerminalAttributeInverseVideo:
+						textColour = [self zeroIntensityColour];
+					break;
+					case CPMTerminalAttributeInverseVideo | CPMTerminalAttributeReducedIntensity:
+						textColour = [self zeroIntensityColour];
+					break;
 				}
-
-				if(attributeChanges & CPMTerminalAttributeUnderlined)
-				{
-					if(attribute & CPMTerminalAttributeUnderlined)
-						[newAttributes setValue:@(kCTUnderlineStyleSingle) forKey:(id)kCTUnderlineStyleAttributeName];
-					else
-						[newAttributes setValue:@(kCTUnderlineStyleNone) forKey:(id)kCTUnderlineStyleAttributeName];
-				}
-
-				NSRange rangeFromHereToEnd;
-				rangeFromHereToEnd.location = y*(_controlSet.width+1) + x;
-				rangeFromHereToEnd.length = _attributedString.length - rangeFromHereToEnd.location;
-				[_attributedString
-					addAttributes:newAttributes
-					range:rangeFromHereToEnd];
+				[newAttributes setValue:(id)[textColour CGColor] forKey:(id)kCTForegroundColorAttributeName];
 			}
+
+			if(attributeChanges & CPMTerminalAttributeUnderlined)
+			{
+				if(attribute & CPMTerminalAttributeUnderlined)
+					[newAttributes setValue:@(kCTUnderlineStyleSingle) forKey:(id)kCTUnderlineStyleAttributeName];
+				else
+					[newAttributes setValue:@(kCTUnderlineStyleNone) forKey:(id)kCTUnderlineStyleAttributeName];
+			}
+
+			NSRange rangeFromHereToEnd;
+			rangeFromHereToEnd.location = y*(width+1) + x;
+			rangeFromHereToEnd.length = attributedString.length - rangeFromHereToEnd.location;
+			[attributedString
+				addAttributes:newAttributes
+				range:rangeFromHereToEnd];
 		}
-	}
+	}];
+
+	_attributedString = attributedString;
 }
 
 - (BOOL)canBecomeKeyView		{	return YES;	}
@@ -340,78 +377,88 @@
 	CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)_attributedString);
 	CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, (CFIndex)_attributedString.length), path, NULL);
 
-	// disable antialiasing in order to draw inverse video and highlighting boxes
-	CGContextSetAllowsAntialiasing(context, false);
-	CGFloat yPosition = (_lineHeight * _controlSet.height) - _lineHeight;
-
 	// get selection area
 	IntegerPoint startPoint;
 	IntegerPoint endPoint;
 	[self getSelectionStart:&startPoint end:&endPoint];
 
-	for(NSUInteger y = 0; y < _controlSet.height; y++)
-	{
-		uint8_t lastAttribute = 0;
-		NSUInteger startingColumn = 0;
-		NSColor *colour = nil;
-		const CPMTerminalAttribute *attributes = [_controlSet attributeBufferForY:y];
+	// create array of colour spans
+	__block NSUInteger lastY = ~(NSUInteger)0;
+	__block CPMTerminalAttribute lastAttribute = 0;
+	__block CPMTerminalViewColourSpan *span = nil;
+	__block NSMutableArray *colourSpans = [[NSMutableArray alloc] init];
+	NSUInteger width = _controlSet.width;
 
-		for(NSUInteger x = 0; x < _controlSet.width; x++)
+	[self iterateBuffer:^(unichar input, CPMTerminalAttribute attribute, NSUInteger x, NSUInteger y) {
+
+		if(lastY != y)
 		{
-			uint8_t attribute = attributes[x]&(CPMTerminalAttributeReducedIntensity | CPMTerminalAttributeInverseVideo);
+			lastY = y;
+			span.endX = width;
+			span = nil;
+		}
 
-			if(_hasSelection)
+		if(self->_hasSelection)
+		{
+			if(
+				((y == startPoint.y) && (y < endPoint.y) && (x >= startPoint.x)) ||
+				((y == endPoint.y) && (y > startPoint.y) && (x <= endPoint.x)) ||
+				((y == startPoint.y) && (y == endPoint.y) && (x >= startPoint.x) && (x <= endPoint.x)) ||
+				((y > startPoint.y) && (y < endPoint.y))
+			)
 			{
-				if(
-					((y == startPoint.y) && (y < endPoint.y) && (x >= startPoint.x)) ||
-					((y == endPoint.y) && (y > startPoint.y) && (x <= endPoint.x)) ||
-					((y == startPoint.y) && (y == endPoint.y) && (x >= startPoint.x) && (x <= endPoint.x)) ||
-					((y > startPoint.y) && (y < endPoint.y))
-				)
-				{
-					attribute = CPMTerminalAttributeSelected;
-				}
+				attribute = CPMTerminalAttributeSelected;
 			}
+		}
 
-			if(attribute != lastAttribute)
+		if(attribute != lastAttribute)
+		{
+			lastAttribute = attribute;
+			span.endX = x;
+
+			if(attribute & (CPMTerminalAttributeInverseVideo|CPMTerminalAttributeSelected))
 			{
-				lastAttribute = attribute;
-				if(colour)
-				{
-					[colour set];
-					NSRectFill(NSMakeRect((CGFloat)startingColumn * _characterWidth, yPosition, (CGFloat)(x - startingColumn) * _characterWidth, _lineHeight));
-				}
-				startingColumn = x;
+				span = [[CPMTerminalViewColourSpan alloc] init];
+				span.y = y;
+				span.startX = x;
+				[colourSpans addObject:span];
 
-				switch(attribute)
+				switch((NSUInteger)attribute)
 				{
-					default:
-					case CPMTerminalAttributeReducedIntensity:
-						colour = nil;
-					break;
 					case CPMTerminalAttributeInverseVideo:
-						colour = [self fullIntensityColour];
+						span.colour = [self fullIntensityColour];
 					break;
 					case CPMTerminalAttributeInverseVideo | CPMTerminalAttributeReducedIntensity:
-						colour = [self halfIntensityColour];
+						span.colour = [self halfIntensityColour];
 					break;
 					case CPMTerminalAttributeSelected:
-						colour = [NSColor selectedTextBackgroundColor];
+						span.colour = [NSColor selectedTextBackgroundColor];
 					break;
+
+					default: break;
 				}
 			}
+			else
+			{
+				span = nil;
+			}
 		}
+	}];
 
-		if(colour)
+	if([colourSpans count])
+	{
+		// disable antialiasing in order to draw inverse video and highlighting boxes
+		CGContextSetAllowsAntialiasing(context, false);
+
+		for(CPMTerminalViewColourSpan *colourSpan in colourSpans)
 		{
-			[colour set];
-			NSRectFill(NSMakeRect((CGFloat)startingColumn * _characterWidth, yPosition, (CGFloat)(_controlSet.width - startingColumn) * _characterWidth, _lineHeight));
-		}
-		yPosition -= _lineHeight;
-	}
-	CGContextSetAllowsAntialiasing(context, true);
+			[colourSpan.colour set];
 
-	// TODO: draw any graphics characters here
+			NSRectFill(NSMakeRect((CGFloat)colourSpan.startX * _characterWidth, (_lineHeight * (_controlSet.height - 1 - colourSpan.y)), (CGFloat)(colourSpan.endX - colourSpan.startX) * _characterWidth, _lineHeight));
+		}
+
+		CGContextSetAllowsAntialiasing(context, true);
+	}
 
 	// draw cursor?
 	if(!_controlSet.cursorIsDisabled)	// _flashCount&1 && 

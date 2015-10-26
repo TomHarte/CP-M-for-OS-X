@@ -46,7 +46,15 @@ typedef NS_OPTIONS(uint8_t, CPMTerminalAttribute)
 	CPMTerminalAttributeBlinking			= 1 << 2,
 	CPMTerminalAttributeUnderlined			= 1 << 3,
 
-	CPMTerminalAttributeSelected			= 1 << 5
+	CPMTerminalAttributeProtected			= 1 << 4,
+
+	CPMTerminalAttributeSelected			= 1 << 5,
+
+	CPMTerminalAttributeLoad				= 0 << 6,
+	CPMTerminalAttributeSet					= 1 << 6,
+	CPMTerminalAttributeReset				= 2 << 6,
+	CPMTerminalAttributeToggle				= 3 << 6,
+	CPMTerminalAttributeCommandMask			= 3 << 6
 };
 
 /*
@@ -88,6 +96,7 @@ typedef NS_OPTIONS(uint8_t, CPMTerminalAttribute)
 // attributeBufferForY: returns the C array of attributes for the given scanline; each scanline
 // is linear but they're not necessarily tightly packed
 - (const CPMTerminalAttribute *)attributeBufferForY:(NSUInteger)y;
+- (unichar *)characterBufferForY:(NSUInteger)y;
 
 // the current cursor position, in character coordinates; (0, 0) is the top left
 @property (nonatomic, readonly) NSUInteger cursorX, cursorY;

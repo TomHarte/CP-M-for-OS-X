@@ -39,13 +39,17 @@ typedef void (^ CPMTerminalControlCharacterMapper)(unichar *input, CPMTerminalAt
 
 - (void)setAttribute:(CPMTerminalAttribute)attribute;
 - (void)resetAttribute:(CPMTerminalAttribute)attribute;
+- (void)toggleAttribute:(CPMTerminalAttribute)attribute;
+- (void)setAttributes:(CPMTerminalAttribute)attribute;
 
 - (void)mapCharactersFromCursorUsingMapper:(CPMTerminalControlCharacterMapper)mapper;
 
 - (void)outputCharacter:(unichar)character;
+- (void)outputInlineAttribute:(CPMTerminalAttribute)attribute;
 - (void)recordRecognisedControlCode;
 
 - (void)registerActionsByPrefix:(NSDictionary *)actionsByPrefix;
+- (CPMTerminalControlSequenceTree *)sequenceTree;
 
 @end
 
