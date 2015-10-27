@@ -8,13 +8,7 @@
 
 #import "TerminalView.h"
 #import "TerminalControlSet+Actions.h"
-
-#import "TerminalControlSet+ADM3A.h"
-#import "TerminalControlSet+Hazeltine1500.h"
-#import "TerminalControlSet+VT52.h"
-#import "TerminalControlSet+Osborne.h"
-#import "TerminalControlSet+ANSI.h"
-#import "TerminalControlSet+WY50.h"
+#import <objc/runtime.h>
 
 @interface CPMTerminalViewColourSpan: NSObject
 @property (nonatomic, assign) NSUInteger y;
@@ -51,13 +45,28 @@
 	_incomingString = [[NSMutableString alloc] init];
 
 	_candidateControlSets = [[NSMutableArray alloc] init];
-	[_candidateControlSets addObject:[CPMTerminalControlSet ADM3AControlSet]];
-	[_candidateControlSets addObject:[CPMTerminalControlSet osborneControlSet]];
-	[_candidateControlSets addObject:[CPMTerminalControlSet hazeltine1500ControlSet]];
-	[_candidateControlSets addObject:[CPMTerminalControlSet VT52ControlSet]];
-	[_candidateControlSets addObject:[CPMTerminalControlSet ANSIControlSet]];
-//	[_candidateControlSets addObject:[CPMTerminalControlSet WY50ControlSet]];
 
+	// call all CPMTerminalControlSet class methods that end in 'ControlSet' to
+	// get a full list of control sets
+	unsigned int numberOfMethods;
+	Method *const methods = class_copyMethodList(object_getClass([CPMTerminalControlSet class]), &numberOfMethods);
+	for(unsigned int index = 0; index < numberOfMethods; index++)
+	{
+		SEL selector = method_getName(methods[index]);
+		NSString *const selectorName = NSStringFromSelector(selector);
+
+		const NSRange rangeOfControlSet = [selectorName rangeOfString:@"ControlSet"];
+		if(rangeOfControlSet.location + rangeOfControlSet.length == [selectorName length])
+		{
+			CPMTerminalControlSet *controlSet = [CPMTerminalControlSet valueForKey:selectorName];
+
+			if(controlSet)
+				[_candidateControlSets addObject:controlSet];
+		}
+	}
+	free(methods);
+
+	// tell everyone to track code points for now, for statistical purposes
 	for(CPMTerminalControlSet *set in _candidateControlSets)
 	{
 		set.isTrackingCodePoints = YES;
