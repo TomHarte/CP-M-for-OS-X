@@ -60,7 +60,7 @@
 	// indicate that something might be found but isn't yet
 	if(_action)
 	{
-		[controlSet recordRecognisedControlCode];
+		[controlSet recordRecognisedControlCodeOfLength:depth];
 		_action(controlSet, bytes);
 		return depth;
 	}
@@ -73,6 +73,10 @@
 
 	if(!nextSequence)
 	{
+//		if(depth > 0)
+//		{
+//			NSLog(@"%02x %c", bytes[1], bytes[1]);
+//		}
 		[controlSet outputCharacter:bytes[0] > 31  && bytes[0] < 128? bytes[0] : ' '];
 		return 1;
 	}

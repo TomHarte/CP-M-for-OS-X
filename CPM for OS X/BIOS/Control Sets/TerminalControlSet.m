@@ -63,9 +63,10 @@
 	}
 }
 
-- (void)recordRecognisedControlCode
+- (void)recordRecognisedControlCodeOfLength:(NSUInteger)length
 {
-	[(NSMutableSet *)_recognisedControlPoints addObject:@(_numberOfCharactersSoFar)];
+	for(NSUInteger index = 0; index < length; index++)
+		[(NSMutableSet *)_recognisedControlPoints addObject:@(_numberOfCharactersSoFar + index)];
 }
 
 - (void)outputInlineAttribute:(CPMTerminalAttribute)attribute

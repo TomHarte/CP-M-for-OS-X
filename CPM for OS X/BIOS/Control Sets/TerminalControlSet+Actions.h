@@ -46,7 +46,7 @@ typedef void (^ CPMTerminalControlCharacterMapper)(unichar *input, CPMTerminalAt
 
 - (void)outputCharacter:(unichar)character;
 - (void)outputInlineAttribute:(CPMTerminalAttribute)attribute;
-- (void)recordRecognisedControlCode;
+- (void)recordRecognisedControlCodeOfLength:(NSUInteger)length;
 
 - (void)registerActionsByPrefix:(NSDictionary *)actionsByPrefix;
 - (CPMTerminalControlSequenceTree *)sequenceTree;

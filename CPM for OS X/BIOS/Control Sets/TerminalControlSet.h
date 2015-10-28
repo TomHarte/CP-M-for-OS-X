@@ -39,7 +39,7 @@ CG_INLINE IntegerPoint integerPointMake(NSUInteger x, NSUInteger y)
 	return point;
 }
 
-typedef NS_OPTIONS(uint8_t, CPMTerminalAttribute)
+typedef NS_OPTIONS(uint16_t, CPMTerminalAttribute)
 {
 	CPMTerminalAttributeInverseVideo		= 1 << 0,
 	CPMTerminalAttributeReducedIntensity	= 1 << 1,
@@ -50,11 +50,12 @@ typedef NS_OPTIONS(uint8_t, CPMTerminalAttribute)
 
 	CPMTerminalAttributeSelected			= 1 << 5,
 
-	CPMTerminalAttributeLoad				= 0 << 6,
-	CPMTerminalAttributeSet					= 1 << 6,
-	CPMTerminalAttributeReset				= 2 << 6,
-	CPMTerminalAttributeToggle				= 3 << 6,
-	CPMTerminalAttributeCommandMask			= 3 << 6
+	CPMTerminalAttributeLoadTransient		= 0 << 13,
+	CPMTerminalAttributeSet					= 1 << 13,
+	CPMTerminalAttributeReset				= 2 << 13,
+	CPMTerminalAttributeToggle				= 3 << 13,
+	CPMTerminalAttributeLoadModal			= 4 << 13,
+	CPMTerminalAttributeCommandMask			= 7 << 13
 };
 
 /*

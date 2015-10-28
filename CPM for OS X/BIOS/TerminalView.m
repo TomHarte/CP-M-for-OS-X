@@ -245,6 +245,7 @@ typedef void (^ CPMTerminalViewCharacterIterator)(unichar input, CPMTerminalAttr
 				case CPMTerminalAttributeSet:		modalAttribute |= attributeValue;	break;
 				case CPMTerminalAttributeReset:		modalAttribute &= ~attributeValue;	break;
 				case CPMTerminalAttributeToggle:	modalAttribute ^= attributeValue;	break;
+				case CPMTerminalAttributeLoadModal:	modalAttribute = attributeValue;	break;
 				default:							attribute = attributeValue;			break;
 			}
 
