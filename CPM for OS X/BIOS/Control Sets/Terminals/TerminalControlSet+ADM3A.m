@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Thomas Harte. All rights reserved.
 //
 
-#import "TerminalControlSet+ADM3A.h"
+#import "TerminalControlSet.h"
 #import "TerminalControlSet+Actions.h"
 
 /*
@@ -25,6 +25,9 @@
 		Stop cursor blinking     OUT 28, 10: OUT 29, 0
 		Turn cursor to underline OUT 28, 10: OUT 29, 15* 
 */
+
+@interface CPMTerminalControlSet (ADM3A)
+@end
 
 @implementation CPMTerminalControlSet (ADM3A)
 

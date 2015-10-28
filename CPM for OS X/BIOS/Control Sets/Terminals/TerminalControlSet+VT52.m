@@ -6,8 +6,11 @@
 //  Copyright (c) 2014 Thomas Harte. All rights reserved.
 //
 
-#import "TerminalControlSet+VT52.h"
+#import "TerminalControlSet.h"
 #import "TerminalControlSet+Actions.h"
+
+@interface CPMTerminalControlSet (VT52)
+@end
 
 @implementation CPMTerminalControlSet (VT52)
 

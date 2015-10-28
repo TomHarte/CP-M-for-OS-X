@@ -6,8 +6,11 @@
 //  Copyright (c) 2014 Thomas Harte. All rights reserved.
 //
 
-#import "TerminalControlSet+Osborne.h"
+#import "TerminalControlSet.h"
 #import "TerminalControlSet+Actions.h"
+
+@interface CPMTerminalControlSet (Osborne)
+@end
 
 @implementation CPMTerminalControlSet (Osborne)
 

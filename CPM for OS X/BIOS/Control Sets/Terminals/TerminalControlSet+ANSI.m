@@ -6,8 +6,11 @@
 //  Copyright (c) 2015 Thomas Harte. All rights reserved.
 //
 
-#import "TerminalControlSet+ANSI.h"
+#import "TerminalControlSet.h"
 #import "TerminalControlSet+Actions.h"
+
+@interface CPMTerminalControlSet (ANSI)
+@end
 
 @implementation CPMTerminalControlSet (ANSI)
 

@@ -38,15 +38,10 @@
 		4B1A94511BD4667F001088E6 /* TerminalControlSequenceTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalControlSequenceTree.m; sourceTree = "<group>"; };
 		4B1A94521BD4667F001088E6 /* TerminalControlSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TerminalControlSet.h; sourceTree = "<group>"; };
 		4B1A94531BD4667F001088E6 /* TerminalControlSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TerminalControlSet.m; sourceTree = "<group>"; };
-		4B1A94551BD4667F001088E6 /* TerminalControlSet+ADM3A.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+ADM3A.h"; sourceTree = "<group>"; };
 		4B1A94561BD4667F001088E6 /* TerminalControlSet+ADM3A.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+ADM3A.m"; sourceTree = "<group>"; };
-		4B1A94571BD4667F001088E6 /* TerminalControlSet+ANSI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+ANSI.h"; sourceTree = "<group>"; };
 		4B1A94581BD4667F001088E6 /* TerminalControlSet+ANSI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+ANSI.m"; sourceTree = "<group>"; };
-		4B1A94591BD4667F001088E6 /* TerminalControlSet+Hazeltine1500.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+Hazeltine1500.h"; sourceTree = "<group>"; };
 		4B1A945A1BD4667F001088E6 /* TerminalControlSet+Hazeltine1500.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+Hazeltine1500.m"; sourceTree = "<group>"; };
-		4B1A945B1BD4667F001088E6 /* TerminalControlSet+Osborne.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+Osborne.h"; sourceTree = "<group>"; };
 		4B1A945C1BD4667F001088E6 /* TerminalControlSet+Osborne.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+Osborne.m"; sourceTree = "<group>"; };
-		4B1A945D1BD4667F001088E6 /* TerminalControlSet+VT52.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+VT52.h"; sourceTree = "<group>"; };
 		4B1A945E1BD4667F001088E6 /* TerminalControlSet+VT52.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TerminalControlSet+VT52.m"; sourceTree = "<group>"; };
 		4B1A94671BD466AD001088E6 /* TerminalControlSet+Actions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TerminalControlSet+Actions.h"; sourceTree = "<group>"; };
 		4B42CAAA193D812000E92BEE /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
@@ -116,15 +111,10 @@
 		4B1A94541BD4667F001088E6 /* Terminals */ = {
 			isa = PBXGroup;
 			children = (
-				4B1A94551BD4667F001088E6 /* TerminalControlSet+ADM3A.h */,
 				4B1A94561BD4667F001088E6 /* TerminalControlSet+ADM3A.m */,
-				4B1A94571BD4667F001088E6 /* TerminalControlSet+ANSI.h */,
 				4B1A94581BD4667F001088E6 /* TerminalControlSet+ANSI.m */,
-				4B1A94591BD4667F001088E6 /* TerminalControlSet+Hazeltine1500.h */,
 				4B1A945A1BD4667F001088E6 /* TerminalControlSet+Hazeltine1500.m */,
-				4B1A945B1BD4667F001088E6 /* TerminalControlSet+Osborne.h */,
 				4B1A945C1BD4667F001088E6 /* TerminalControlSet+Osborne.m */,
-				4B1A945D1BD4667F001088E6 /* TerminalControlSet+VT52.h */,
 				4B1A945E1BD4667F001088E6 /* TerminalControlSet+VT52.m */,
 			);
 			path = Terminals;

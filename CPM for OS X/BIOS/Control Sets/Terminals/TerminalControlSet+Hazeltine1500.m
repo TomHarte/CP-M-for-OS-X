@@ -6,8 +6,11 @@
 //  Copyright (c) 2014 Thomas Harte. All rights reserved.
 //
 
-#import "TerminalControlSet+Hazeltine1500.h"
+#import "TerminalControlSet.h"
 #import "TerminalControlSet+Actions.h"
+
+@interface CPMTerminalControlSet (Hazeltine1500)
+@end
 
 @implementation CPMTerminalControlSet (Hazeltine1500)
 
