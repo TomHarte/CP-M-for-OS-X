@@ -92,6 +92,13 @@
 	};
 }
 
++ (NSDictionary *)adm42Additions
+{
+	return @{
+		@"\e~1":			CPMTerminalAction(	[controlSet setCursorX:0 y:0]; [controlSet clearToEndOfScreen]; controlSet.cursorIsDisabled = YES;	),
+	};
+}
+
 + (NSDictionary *)televideoAdditions
 {
 	return @{
@@ -134,6 +141,15 @@
 	CPMTerminalControlSet *const set = [[self alloc] initWithWidth:80 height:24 isColour:NO];
 	[set registerActionsByPrefix:[self adm3aActions]];
 	[set registerActionsByPrefix:[self adm21Additions]];
+	return set;
+}
+
++ (instancetype)ADM42ControlSet
+{
+	CPMTerminalControlSet *const set = [[self alloc] initWithWidth:80 height:24 isColour:NO];
+	[set registerActionsByPrefix:[self adm3aActions]];
+	[set registerActionsByPrefix:[self adm21Additions]];
+	[set registerActionsByPrefix:[self adm42Additions]];
 	return set;
 }
 
