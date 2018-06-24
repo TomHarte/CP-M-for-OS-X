@@ -324,6 +324,11 @@
 	idealRect.origin = CGPointMake(0.0f, 0.0f);
 	idealRect.size = _idealSize;
 
+	// Expand the target rect a little as a workaround for rounding errors that can
+	// drop a row or column of text.
+	idealRect.size.width += 2.0f;
+	idealRect.size.height += 2.0f;
+
 	// make sure the text matrix is the identity
 	CGContextSetTextMatrix(context, CGAffineTransformIdentity);
 
