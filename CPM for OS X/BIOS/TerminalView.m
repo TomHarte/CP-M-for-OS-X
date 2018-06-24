@@ -132,7 +132,9 @@
 		if(topSet != _controlSet)
 		{
 			[self setControlSet:topSet];
-			[self setNeedsDisplay:YES];
+			dispatch_async(dispatch_get_main_queue(), ^{
+				[self setNeedsDisplay:YES];
+			});
 		}
 
 		// if there's a suitably large margin between positions one and two, and
