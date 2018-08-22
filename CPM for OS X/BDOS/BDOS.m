@@ -89,8 +89,9 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 		[_memory setValue:0x01 atAddress:kCPMBDOSCurrentDriveAddress];
 
 		// configure the bios trapping to occur as late as it can while
-		// still having room for a full BIOS jump table
-		uint16_t biosAddress = 65536-99;
+		// still having room for a full BIOS jump table and obeying the
+		// CP/M rule that it be 256-byte aligned
+		uint16_t biosAddress = 0xff00;
 		_processor.biosAddress = biosAddress;
 
 		// we'll be the delegate, in order to trap all that stuff
