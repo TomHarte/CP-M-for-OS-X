@@ -264,6 +264,8 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 			case 31: get address of disc parameter block
 		*/
 
+		case 29:	shouldBlock = [self getSoftwareWriteProtectFlags];				break;
+
 		case 32:	shouldBlock = [self getOrSetUserAreaWithParameter:parameter];	break;
 		case 33:	shouldBlock = [self readRandomRecordWithParameter:parameter];	break;
 		case 34:	shouldBlock = [self writeRandomRecordWithParameter:parameter];	break;
@@ -378,6 +380,15 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 - (BOOL)setDMAAddressWithParameter:(uint16_t)parameter
 {
 	_dmaAddress = parameter;
+	return NO;
+}
+
+#pragma mark -
+#pragma mark Write Protection
+
+- (BOOL)getSoftwareWriteProtectFlags
+{
+	[_processor set16bitCPMResult:0];
 	return NO;
 }
 
