@@ -89,8 +89,9 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 		[_memory setValue:0x01 atAddress:kCPMBDOSCurrentDriveAddress];
 
 		// configure the bios trapping to occur as late as it can while
-		// still having room for a full BIOS jump table
-		uint16_t biosAddress = 65536-99;
+		// still having room for a full BIOS jump table and obeying the
+		// CP/M rule that it be 256-byte aligned
+		uint16_t biosAddress = 0xff00;
 		_processor.biosAddress = biosAddress;
 
 		// we'll be the delegate, in order to trap all that stuff
@@ -263,6 +264,8 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 			case 31: get address of disc parameter block
 		*/
 
+		case 29:	shouldBlock = [self getSoftwareWriteProtectFlags];				break;
+
 		case 32:	shouldBlock = [self getOrSetUserAreaWithParameter:parameter];	break;
 		case 33:	shouldBlock = [self readRandomRecordWithParameter:parameter];	break;
 		case 34:	shouldBlock = [self writeRandomRecordWithParameter:parameter];	break;
@@ -377,6 +380,15 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 - (BOOL)setDMAAddressWithParameter:(uint16_t)parameter
 {
 	_dmaAddress = parameter;
+	return NO;
+}
+
+#pragma mark -
+#pragma mark Write Protection
+
+- (BOOL)getSoftwareWriteProtectFlags
+{
+	[_processor set16bitCPMResult:0];
 	return NO;
 }
 

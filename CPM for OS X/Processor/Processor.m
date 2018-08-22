@@ -1381,7 +1381,7 @@
 			_programCounter = [self pop];
 		}
 		else
-		{			
+		{
 			executeFromStandardPage(self, @selector(executeFromStandardPage));
 		}
 	}
