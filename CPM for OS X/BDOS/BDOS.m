@@ -91,7 +91,7 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 		// configure the bios trapping to occur as late as it can while
 		// still having room for a full BIOS jump table and obeying the
 		// CP/M rule that it be 256-byte aligned
-		uint16_t biosAddress = 0xff00;
+		const uint16_t biosAddress = 0xff00;
 		_processor.biosAddress = biosAddress;
 
 		// we'll be the delegate, in order to trap all that stuff
@@ -121,7 +121,7 @@ const uint16_t kCPMBDOSCurrentDriveAddress = 0x0004;
 		// to actual program code; some CP/M programs read the addresses and
 		// use other means to get into the BIOS. So we need to set up appropriate
 		// jump statments
-		for(int c = biosAddress; c < 65536; c += 3)
+		for(int c = biosAddress; c <= 65536 - 3; c += 3)
 		{
 			[_memory setValue:0xc3 atAddress:(uint16_t)c];
 			[_memory setValue:(uint8_t)(c&0xff) atAddress:(uint16_t)(c+1)];
