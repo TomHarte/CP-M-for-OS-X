@@ -151,7 +151,8 @@
 	[self.terminalView invalidate];
 	if(_serialDispatchQueue)
 	{
-		dispatch_release(_serialDispatchQueue), _serialDispatchQueue = NULL;
+		dispatch_release(_serialDispatchQueue);
+		_serialDispatchQueue = NULL;
 	}
 
 	[super close];
@@ -183,7 +184,8 @@
 
 - (void)endTimer
 {
-	[_executionTimer invalidate], _executionTimer = nil;
+	[_executionTimer invalidate];
+	_executionTimer = nil;
 }
 
 #pragma mark -
