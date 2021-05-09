@@ -122,9 +122,9 @@
 		case 0: return !!_lastZeroResult;							//NZ
 		case 1: return !_lastZeroResult;							//Z
 		case 2: return !(_generalFlags&LLZ80FlagCarry);				//NC
-		case 3: return (_generalFlags&LLZ80FlagCarry);				//C
+		case 3: return !!(_generalFlags&LLZ80FlagCarry);			//C
 		case 4: return !(_generalFlags&LLZ80FlagParityOverflow);	//PO
-		case 5: return (_generalFlags&LLZ80FlagParityOverflow);		//PE
+		case 5: return !!(_generalFlags&LLZ80FlagParityOverflow);	//PE
 		case 6: return !(_lastSignResult&0x80);						//P
 		case 7: return !!(_lastSignResult&0x80);					//M
 	}
