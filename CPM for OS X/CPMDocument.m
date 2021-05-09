@@ -151,7 +151,7 @@
 	[self.terminalView invalidate];
 	if(_serialDispatchQueue)
 	{
-		dispatch_release(_serialDispatchQueue);
+//		dispatch_release(_serialDispatchQueue);
 		_serialDispatchQueue = NULL;
 	}
 
